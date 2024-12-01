@@ -1,0 +1,20 @@
+var myVar "Hello world!";
+print myVar;
+free myVar;
+
+
+
+# TODO
++-*/%
+bool, int, float
+if else elif
+fun 
+
+?? 
+unsigned 
+struct 
+
+() - list of parameters
+{} - block code
+[] - index
+#
