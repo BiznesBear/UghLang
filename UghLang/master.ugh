@@ -1,20 +1,30 @@
-var myVar "Hello world!";
+var myVar 2137;
+
+
 print myVar;
 free myVar;
 
 
 
 # TODO
-+-*/%
-bool, int, float
+bool, float
+
 if else elif
 fun 
 
-?? 
+
+AST rework couse it sucks
+
+calculating expressions: 
+bool(10 < 5) int(60 + 10) float(4.5f - 2.3f)
+
+null 
 unsigned 
 struct 
 
 () - list of parameters
 {} - block code
 [] - index
+<> - type 
+
 #

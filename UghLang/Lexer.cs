@@ -17,13 +17,14 @@ public class Lexer
         {
             char c = contents[i];
 
-
+            // comments
             if (c == '#' && !insideString) {
                 insideComment = !insideComment;
                 continue;
             }
-
             if (insideComment) continue;
+
+
 
             if (c == '"' || c== '\'')
             {
@@ -34,24 +35,63 @@ public class Lexer
             {
                 // check if current part is not empty space
                 if(IsPartEmpty()) continue;
+                
                 AddPart(TokenType.None);
             }
             else if (c == ';' && !ignore)
             {
-                if(!IsPartEmpty())
-                {
-                    AddPart(TokenType.None);
-                }
+                if(!IsPartEmpty()) AddPart(TokenType.None);
+
                 AddChar(c);
                 AddPart(TokenType.Separator);
             }
+            else if (char.IsDigit(c) && !ignore)
+            {
+                AddChar(c);
+                while (true)
+                {
+                    char ch = CheckNext();
+                    if (char.IsDigit(ch))
+                    {
+                        AddChar(ch);
+                        Skip();
+                        continue;
+                    }
+                    else break; 
+                }
+                AddPart(TokenType.IntValue);
+            }
+            else if (IsOperator(c) && !ignore)
+            {
+                if (!IsPartEmpty()) AddPart(TokenType.None);
+
+                AddChar(c);
+
+                char next = CheckNext();
+                if (IsOperator(next)) { AddChar(next); Skip(); }
+
+                AddPart(TokenType.Operator);
+            }
             else AddChar(c);
+
+
+            void Skip()
+            {
+                if (i + 1 < contents.Length)
+                    i++;
+            }
+            char CheckNext()
+            {
+                if (i + 1 < contents.Length)
+                    return contents[i + 1];
+                return '\0';
+            }
         }
 
         // for testing only
-        Console.WriteLine(string.Join("\n", tokens));
+        Console.WriteLine(string.Join("\n", tokens));        
     }
-
+ 
 
     private bool IsPartEmpty() => currentPart == string.Empty;
     private void AddChar(char c) => currentPart += c;
@@ -64,4 +104,5 @@ public class Lexer
         // and clear current
         currentPart = string.Empty;
     }
+    public static bool IsOperator(char c) => c == '=' || c == '+' || c == '-' || c == '*' || c == '/';
 }

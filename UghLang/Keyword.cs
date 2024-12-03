@@ -11,9 +11,9 @@ public static class KeywordExtension
     {
         { "print", Keyword.Print },
         { "var", Keyword.Var },
-        { "free", Keyword.Free },
+        { "free", Keyword.Free }
     };
-    public static bool GetKeyword(this string word, out Keyword? type)
+    public static bool TryGetKeyword(this string word, out Keyword? type)
     {
         if (keywords.TryGetValue(word, out Keyword value))
         {

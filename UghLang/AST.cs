@@ -1,6 +1,6 @@
 ﻿namespace UghLang;
 
-
+// TODO: Rework this couse it useless
 public class AST(Master m)
 {
     public readonly Master master = m;
@@ -30,6 +30,19 @@ public abstract class ASTNode
         get => parent ?? throw new NullReferenceException("No assigned parent in node");
         set => parent = value;
     }
+    public Master Master => Parent.master;
+
+
+    public bool TryGetToken(int index, out Token token)
+    {
+        if (index >= tokens.Count)
+        {
+            token = Token.NULL;
+            return false;
+        }
+        token = tokens[index];
+        return true;
+    }
     public Token GetToken(int index)
     {
         if (index >= tokens.Count)
@@ -37,26 +50,26 @@ public abstract class ASTNode
         return tokens[index];
     }
 
-    public void AddValue(Token token) => tokens.Add(token);
-
-
-
+    public void AddToken(Token token) => tokens.Add(token);
     public abstract void Execute();
 }
 
-public class RefrenceNode : ASTNode
-{
-    public override void Execute()
-    {
 
-    }
-}
+public class NullNode : ASTNode { public override void Execute() { } }
 
 public class PrintNode : ASTNode
 {
     public override void Execute()
     {
-        Console.WriteLine(GetToken(0).GetValue().Get(Parent.master));
+        if(TryGetToken(0, out Token t))
+        {
+            object val = t.Value;
+            if(Master.TryGetVariable(t.StringValue, out Variable? var))
+            {
+                val = var.Get();
+            }
+            Console.WriteLine(val);
+        }
     }
 }
 
@@ -64,22 +77,40 @@ public class VarNode : ASTNode
 {
     public override void Execute()
     {
-        string name = GetToken(0).Value;
-        Token val = GetToken(1);
-        Parent.master.DeclareVariable(name, val.Value, val.GetDataType());
+        string name = GetToken(0).StringValue;
+        Token baseValueToken = GetToken(1);
+        Master.DeclareVariable(name, baseValueToken);
     }
 }
 public class FreeNode : ASTNode
 {
     public override void Execute()
     {
-        Token token = GetToken(0);
-        if(token == Token.NULL)
+        if(!TryGetToken(0,out Token t))
         {
-            Parent.master.FreeAllVariables();
+            Master.FreeAllVariables();
             return;
         }
-        string name = GetToken(0).Value;
-        Parent.master.FreeVariable(name);
+        string name = t.StringValue;
+        Master.FreeVariable(name);
+    }
+}
+
+public class RefrenceNode : ASTNode
+{
+    public override void Execute()
+    {
+        var variable = Master.GetVariable(GetToken(0).StringValue);
+
+        var oprToken = GetToken(1);
+
+        var valToken = GetToken(2);
+        
+        dynamic rVal = valToken.Value;
+        if(Master.TryGetVariable(valToken.StringValue, out var val)) rVal = val;
+
+        Operation operation = new(variable.Get(), rVal, oprToken.Operator ?? default);
+
+        variable.Set(operation.GetResult());
     }
 }

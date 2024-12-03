@@ -16,34 +16,40 @@ public class Parser
         for (int i = 0; i < tokens.Count; i++)
         {
             var token = tokens[i];
+            
 
             switch (token.Type)
             {
                 case TokenType.None:
                     // check current node if null create refrence node
                     if (currentNode == null) currentNode = new RefrenceNode();
-                    else currentNode.AddValue(token);
+                    currentNode.AddToken(token);
                     break;
-
                 case TokenType.Separator:
                     // end currentNode
                     ast.AddNode(GetCurrentNode());
                     currentNode = null;
                     break;
-
                 case TokenType.StringValue:
                     if(currentNode is not null)
-                        currentNode.AddValue(token);
+                        currentNode.AddToken(token);
                     break;
-
+                case TokenType.IntValue:
+                    if (currentNode is not null)
+                        currentNode.AddToken(token);
+                    break;
                 case TokenType.Keyword:
                     SetCurrentNode(token.Keyword ?? default);
                     break;
-
+                case TokenType.Operator:
+                    if (currentNode != null) currentNode.AddToken(token);
+                    else throw new NullReferenceException("Null operation");
+                    break;
                 default:
                     break;
             }
         }
+
         void SetCurrentNode(Keyword keyword)
         {
             currentNode = keyword switch

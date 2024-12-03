@@ -1,6 +1,6 @@
 ﻿namespace UghLang;
 
-internal class Expression
+public class Expression
 {
     public Expression(string expression)
     {
