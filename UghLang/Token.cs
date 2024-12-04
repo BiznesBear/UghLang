@@ -2,21 +2,33 @@
 
 public enum TokenType
 {
-    None, // other
+    None, // other (refrence or undefined)
     StringValue, // string 
     IntValue, // int
-    Separator, // ends current block of code
+    Separator, // ends somthing
     Keyword, // keyword
-    Operator,
+    Operator, // op
+    Comma, // op
+    OpenExpression, // opens expression
+    CloseExpression, // closes expression
+    OpenBlock, // opens block of code
+    CloseBlock, // closes block of code
 }
 
 
 public class Token
 {
+    public static readonly Token NULL_STR = new(string.Empty, TokenType.StringValue);
+    public static readonly Token NULL_INT = new("0", TokenType.IntValue) { IntValue = 0 };
+
+    public TokenType Type { get; set; }
+    public Keyword? Keyword { get; set; }
+    public Operator? Operator { get; set; }
+
     public string StringValue { get; set; }
     public int IntValue { get; set; }
 
-    public object Value
+    public dynamic Value
     {
         get
         {
@@ -38,24 +50,21 @@ public class Token
         }
     }
 
-    public TokenType Type { get; set; }
-    public Keyword? Keyword { get; set; }
-    public Operator? Operator { get; set; }
 
-    public static readonly Token NULL = new(string.Empty, TokenType.None);
 
     public Token(string val, TokenType type) 
     {
         StringValue = val;
         Type = type;
+
         if (StringValue.TryGetKeyword(out Keyword? t))
         {
             Keyword = t;
             Type = TokenType.Keyword;
         }
-        if(Type == TokenType.Operator)
+        else if(Type == TokenType.Operator)
             Operator = Operation.GetOperator(StringValue);
-        if (Type == TokenType.IntValue && int.TryParse(StringValue, out int result))
+        else if (Type == TokenType.IntValue && int.TryParse(StringValue, out int result))
             IntValue = result;
     }
 

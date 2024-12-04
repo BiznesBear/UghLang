@@ -6,11 +6,11 @@ public enum DataType
     Undefined
 }
 
-public class Variable(string name, Token token) : IDisposable
+public class Variable(Token baseToken, Token stdValueToken) : IDisposable
 {
-    public static readonly Variable NULL = new("",Token.NULL);
-    public string Name { get; } = name;
-    public Token Token { get; } = token;
+    public static readonly Variable NULL = new(Token.NULL_STR, Token.NULL_STR);
+    public string Name { get; } = baseToken.StringValue;
+    public Token Token { get; } = stdValueToken;
 
     public void Set(object value) => Token.Value = value;
     public object Get() => Token.Value;

@@ -6,13 +6,15 @@ public class Lexer
     public List<Token> Tokens => tokens;
 
     private List<Token> tokens = new();
+
     private string currentPart = string.Empty;
     private bool insideString = false;
     private bool insideComment = false;
-    private bool ignore => insideString || insideComment;
+    private bool Ignore => insideString || insideComment;
 
     public Lexer(string contents)
     {
+        // WARRING: DO NOT CHANGE THE ORDER
         for (int i = 0; i < contents.Length; i++)
         {
             char c = contents[i];
@@ -25,27 +27,25 @@ public class Lexer
             if (insideComment) continue;
 
 
-
-            if (c == '"' || c== '\'')
+            if (c == '"')
             {
                 insideString = !insideString;
                 if (!insideString) AddPart(TokenType.StringValue);
             }
-            else if (char.IsWhiteSpace(c) && !ignore)
+            else if (char.IsWhiteSpace(c) && !Ignore)
             {
                 // check if current part is not empty space
                 if(IsPartEmpty()) continue;
                 
                 AddPart(TokenType.None);
             }
-            else if (c == ';' && !ignore)
-            {
-                if(!IsPartEmpty()) AddPart(TokenType.None);
-
-                AddChar(c);
-                AddPart(TokenType.Separator);
-            }
-            else if (char.IsDigit(c) && !ignore)
+            else if (c == ';' && !Ignore) AddSingle(TokenType.Separator);
+            else if (c == ',' && !Ignore) AddSingle(TokenType.Comma);
+            else if (c == '(' && !Ignore) AddSingle(TokenType.OpenExpression);
+            else if (c == ')' && !Ignore) AddSingle(TokenType.CloseExpression);
+            else if (c == '{' && !Ignore) AddSingle(TokenType.OpenBlock);
+            else if (c == '}' && !Ignore) AddSingle(TokenType.CloseBlock);
+            else if ((char.IsDigit(c) || (c == '-' && char.IsDigit(CheckNext()))&& !Ignore))
             {
                 AddChar(c);
                 while (true)
@@ -61,9 +61,9 @@ public class Lexer
                 }
                 AddPart(TokenType.IntValue);
             }
-            else if (IsOperator(c) && !ignore)
+            else if (IsOperator(c) && !Ignore)
             {
-                if (!IsPartEmpty()) AddPart(TokenType.None);
+                StartNew();
 
                 AddChar(c);
 
@@ -72,6 +72,7 @@ public class Lexer
 
                 AddPart(TokenType.Operator);
             }
+
             else AddChar(c);
 
 
@@ -86,13 +87,23 @@ public class Lexer
                     return contents[i + 1];
                 return '\0';
             }
+            void AddSingle(TokenType type)
+            {
+                StartNew();
+                AddChar(c);
+                AddPart(type);
+            }
         }
 
         // for testing only
         Console.WriteLine(string.Join("\n", tokens));        
     }
  
-
+    private void StartNew()
+    {
+        if (!IsPartEmpty()) 
+            AddPart(TokenType.None);
+    }
     private bool IsPartEmpty() => currentPart == string.Empty;
     private void AddChar(char c) => currentPart += c;
     private void AddPart(TokenType type)
@@ -104,5 +115,5 @@ public class Lexer
         // and clear current
         currentPart = string.Empty;
     }
-    public static bool IsOperator(char c) => c == '=' || c == '+' || c == '-' || c == '*' || c == '/';
+    public static bool IsOperator(char c) => c == '=' || c == '+' || c == '-' || c == '*' || c == '/' || c == '<' || c == '>';
 }

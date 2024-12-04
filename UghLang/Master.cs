@@ -1,25 +1,21 @@
 ﻿namespace UghLang;
 
-/// <summary>
-/// Variable managment
-/// </summary>
+
 public class Master
 {
-    
     private readonly List<Variable> variables = new();
 
-    public void DeclareVariable(string name, Token token)
+    public void DeclareVariable(Variable var)
     {
-        Variable var = new(name,token);
         variables.Add(var);
 
         // TODO: Testing
         Console.WriteLine(var);
     }
 
-    public void FreeVariable(string name)
+    public void FreeVariable(Token token)
     {
-        var v = GetVariable(name);
+        var v = GetVariable(token);
         variables.Remove(v);
         v.Dispose();
     }
@@ -29,17 +25,21 @@ public class Master
         variables.Clear();
     }
 
-    public bool TryGetVariable(string name, out Variable var)
+    public bool TryGetVariable(Token token, out Variable var)
     {
-        var v = variables.Find(x => x.Name == name);
+        var = Variable.NULL;
+        if (token.Type != TokenType.None) return false;
+
+        var v = variables.Find(x => x.Name == token.StringValue);
+       
         var = v ?? Variable.NULL;
         return v != null;
     }
 
-    public Variable GetVariable(string name)
+    public Variable GetVariable(Token token)
     {
-        if (TryGetVariable(name, out var v)) return v;
-        else throw new NullReferenceException($"Cannot find variable named '{name}'");
+        if (TryGetVariable(token, out var v)) return v;
+        else throw new NullReferenceException($"Cannot find variable named '{token.StringValue}'");
     }
-    public bool Contains(string name) => TryGetVariable(name, out var v);
+    public bool Contains(Token token) => TryGetVariable(token, out var v);
 }

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "UghLang": {
+      "commandName": "Project",
+      "commandLineArgs": "master.ugh"
+    }
+  }
+}

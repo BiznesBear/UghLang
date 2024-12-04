@@ -2,21 +2,18 @@
 
 public class Parser
 {
-    private AST ast;
-    private Master master;
+    private readonly AST ast;
 
-    public Parser(Lexer lex,Master m)
+    public Parser(Lexer lex, Master m)
     {
-        master = m;
-        ast = new(master);
+        ast = new(m);
 
         var tokens = lex.Tokens;
-        ASTNode? currentNode = null;
+        ASTNode? currentNode = null; 
 
         for (int i = 0; i < tokens.Count; i++)
         {
             var token = tokens[i];
-            
 
             switch (token.Type)
             {
@@ -28,13 +25,9 @@ public class Parser
                 case TokenType.Separator:
                     // end currentNode
                     ast.AddNode(GetCurrentNode());
-                    currentNode = null;
+                    ClearNode();
                     break;
-                case TokenType.StringValue:
-                    if(currentNode is not null)
-                        currentNode.AddToken(token);
-                    break;
-                case TokenType.IntValue:
+                case TokenType.StringValue or TokenType.IntValue:
                     if (currentNode is not null)
                         currentNode.AddToken(token);
                     break;
@@ -45,19 +38,37 @@ public class Parser
                     if (currentNode != null) currentNode.AddToken(token);
                     else throw new NullReferenceException("Null operation");
                     break;
+                case TokenType.Comma:
+                    // separate
+                    break;
+                case TokenType.OpenExpression:
+                    // open expression node
+                    break;
+                case TokenType.CloseExpression:
+                    // close expression node
+                    break;
+                case TokenType.OpenBlock:
+                    // open code block node
+                    break;
+                case TokenType.CloseBlock:
+                    // close code block node
+                    break;
                 default:
                     break;
             }
         }
 
-        void SetCurrentNode(Keyword keyword)
+            
+        void ClearNode() => currentNode = null;
+
+
+        void SetCurrentNode(Keyword keyword) 
         {
             currentNode = keyword switch
             {
                 Keyword.Print => new PrintNode(),
-                Keyword.Var => new VarNode(),
                 Keyword.Free => new FreeNode(),
-                _ => new PrintNode()
+                _ => null
             };
         }
         ASTNode GetCurrentNode() => currentNode ?? throw new Exception("No node attached");

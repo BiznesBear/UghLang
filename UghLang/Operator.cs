@@ -3,7 +3,6 @@
 public enum Operator
 {
     Equals,
-    DoubleEquals,
     NotEquals,
     Plus,
     Minus,
@@ -11,16 +10,21 @@ public enum Operator
     Divide,
     PlusEquals,
     MinusEquals,
-    SubtractEquals,
     MultiplyEquals,
     DivideEquals,
+
+    // BOOLEAN
+    Less,
+    Higher,
+    DoubleEquals,
+    LessEquals,
+    HigherEquals,
 }
 public class Operation
 {
     private Operator Operator { get; }
     private dynamic Val1 { get; }
     private dynamic Val2 { get; }
-
 
     public Operation(dynamic val1, dynamic val2, Operator opr) 
     {
@@ -31,17 +35,21 @@ public class Operation
 
     public dynamic GetResult()
     {
-        switch (Operator)
+        return Operator switch
         {
-            case Operator.Equals: return Val2;
-            case Operator.DoubleEquals: return Val1 == Val2;
-            case Operator.NotEquals: return Val1 != Val2;
-            case Operator.Plus or Operator.PlusEquals: return Val1 + Val2;
-            case Operator.Minus or Operator.MinusEquals: return Val1 - Val2;
-            case Operator.Multiply or Operator.MultiplyEquals: return Val1 * Val2;
-            case Operator.Divide or Operator.DivideEquals: return Val1 / Val2;
-            default: return Val1;
-        }
+            Operator.Equals => Val2,
+            Operator.NotEquals => Val1 != Val2,
+            Operator.Plus or Operator.PlusEquals => Val1 + Val2,
+            Operator.Minus or Operator.MinusEquals => Val1 - Val2,
+            Operator.Multiply or Operator.MultiplyEquals => Val1 * Val2,
+            Operator.Divide or Operator.DivideEquals => Val1 / Val2,
+            Operator.DoubleEquals => Val1 == Val2,
+            Operator.Higher => Val1 > Val2,
+            Operator.Less => Val1 < Val2,
+            Operator.HigherEquals => Val1 >= Val2,
+            Operator.LessEquals => Val1 <= Val2,
+            _ => Val1,
+        };
     }
 
     public static Operator GetOperator(string opr)
@@ -49,16 +57,20 @@ public class Operation
         return opr switch
         {
             "=" => Operator.Equals ,
-            "==" => Operator.DoubleEquals,
             "!=" => Operator.NotEquals,
             "+" => Operator.Plus,
             "-" => Operator.Minus,
             "*" => Operator.Multiply,
             "/" => Operator.Divide,
             "+=" => Operator.PlusEquals,
-            "-=" => Operator.SubtractEquals,
+            "-=" => Operator.MinusEquals,
             "*=" => Operator.MultiplyEquals,
             "/=" => Operator.DivideEquals,
+            "==" => Operator.DoubleEquals,
+            "<" => Operator.Less,
+            ">" => Operator.Higher,
+            "<=" => Operator.LessEquals,
+            ">=" => Operator.HigherEquals,
             _ => throw new("Cannot find operator " + opr),
         };
     }
