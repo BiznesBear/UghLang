@@ -3,6 +3,7 @@ public enum DataType
 {
     String,
     Int,
+    Bool,
     Undefined
 }
 

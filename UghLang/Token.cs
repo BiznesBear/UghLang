@@ -23,7 +23,15 @@ public class Token
 
     public string StringValue { get; set; }
     public int IntValue { get; set; }
+    public bool BoolValue { get; set; }
 
+
+    public Keyword? Keyword { get; set; }
+    public Operator? Operator { get; set; }
+
+    /// <summary>
+    /// Return value.
+    /// </summary>
     public dynamic Dynamic
     {
         get
@@ -32,6 +40,7 @@ public class Token
             {
                 DataType.String => StringValue,
                 DataType.Int => IntValue,
+                DataType.Bool => BoolValue,
                 _ => StringValue,
             };
         }
@@ -41,32 +50,33 @@ public class Token
             {
                 case DataType.String: StringValue = value.ToString() ?? string.Empty; break;
                 case DataType.Int: IntValue = int.Parse(value.ToString() ?? "0"); break;
+                case DataType.Bool: BoolValue = bool.Parse(value.ToString() ?? "false"); break;
                 default: break;
             }
         }
     }
 
+    /// <summary>
+    /// Assign, and check values.
+    /// </summary>
+    /// <param name="val">Input for token</param>
+    /// <param name="type">Interpretation of value</param>
     public Token(string val, TokenType type) 
     {
         StringValue = val;
         Type = type;
 
-        
-    }
-    public SpecialValue GetSpecialValue()
-    {
-        var val = new SpecialValue();
         if (StringValue.TryGetKeyword(out Keyword? t))
         {
-            val.Keyword = t;
+            Keyword = t;
             Type = TokenType.Keyword;
         }
         else if (Type == TokenType.Operator)
-            val.Operator = Operation.GetOperator(StringValue);
+            Operator = Operation.GetOperator(StringValue);
         else if (Type == TokenType.IntValue && int.TryParse(StringValue, out int result))
             IntValue = result;
-        return val;
     }
+
 
 
     public DataType GetDataType()
@@ -78,10 +88,6 @@ public class Token
             _ => DataType.Undefined,
         };
     }
-    public override string ToString() => $"{nameof(Token)} {{ Value = {StringValue}, Type = {Type}, Keyword = {GetSpecialValue().Keyword}, Operator = {GetSpecialValue().Operator} }}";
-}
-public record SpecialValue
-{
-    public Keyword? Keyword { get; set; }
-    public Operator? Operator { get; set; }
+
+    public override string ToString() => $"{nameof(Token)} {{ Value = {StringValue}, Type = {Type}, Keyword = {Keyword}, Operator = {Operator} }}";
 }

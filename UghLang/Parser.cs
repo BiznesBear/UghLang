@@ -3,25 +3,32 @@
 public class Parser
 {
     public readonly AST AST;
+    public readonly List<Token> tokens = new();
 
     private ASTNode currentNode;
     private string treeString = string.Empty;
 
-    public Parser(Lexer lex, Ugh ugh)
+    public Parser(Ugh ugh)
     {
         AST = new(ugh);
         currentNode = AST;
-        var tokens = lex.Tokens;
+    }
 
+    public void AddToken(Token token)
+    {
+        tokens.Add(token);
+    }
 
-        for (int i = 0; i < tokens.Count; i++)
+    public AST Parse()
+    {
+        for (int i = 0; i < tokens.Count; i++) //TODO: Remove for loop and parse everything with new tokens from lexer 
         {
             Token currentToken = tokens[i];
 
-            switch (currentToken.Type) 
+            switch (currentToken.Type)
             {
                 case TokenType.Keyword:
-                    ActionByKeyword(currentToken.GetSpecialValue().Keyword ?? default); 
+                    ActionByKeyword(currentToken.Keyword ?? default);
                     break;
                 case TokenType.Separator:
                     EndBranch();
@@ -44,13 +51,13 @@ public class Parser
                     {
                         var opr = CheckNext();
                         var val = CheckNext(2);
-                        EnterNode(new InitVariableNode() { Token = currentToken, Operator = opr, ValueToken = val });
+                        EnterNode(new InitVariableNode() { Token = currentToken, Operator = opr.Operator ?? default, ValueToken = val });
                         Skip();
                     }
-                    else EnterNode(new RefrenceNode() { Token = currentToken,  });
+                    else EnterNode(new RefrenceNode() { Token = currentToken });
                     break;
                 default:
-                    break; 
+                    break;
             }
 
 
@@ -66,25 +73,31 @@ public class Parser
                 return Token.NULL;
             }
         }
+        return AST;
     }
 
-    private void EnterNode(ASTNode node)
+    #region NodeManagment
+
+    private void CreateNode(ASTNode node)
     {
         currentNode.AddNode(node);
-        currentNode = node;
-        
-        
+
         // FOR TESTING ONLY
         Debug.Print(treeString + node);
-        treeString += "**";
+        treeString += "+";
     }
+    private void EnterNode(ASTNode node)
+    {
+        CreateNode(node);
+        currentNode = node;
+    }
+
     private void QuitNode<T>()
     {
         if (CurrentNodeIs<T>())
         {
-            
             currentNode = currentNode.Parent;
-            treeString.Remove(treeString.Length - 1); // FOR TESTING ONLY
+            treeString = treeString.Remove(treeString.Length - 1); // FOR TESTING ONLY
         }
     }
     private void EndBranch()
@@ -94,17 +107,6 @@ public class Parser
     }
     private bool IsEmptyBranch() => currentNode == AST;
     private bool CurrentNodeIs<T>() => currentNode.GetType() == typeof(T);
-    private bool TryGetNode<T>(out T? node) where T : ASTNode
-    {
-        node = null;
-        if (CurrentNodeIs<T>())
-        {
-            node = (T)currentNode;
-            return true;
-        }
-        else return false;
-    }
-
 
     private void ActionByKeyword(Keyword keyword)
     {
@@ -118,6 +120,12 @@ public class Parser
         }
     }
 
-    public void Execute() => AST.Execute();
-}
+    #endregion
 
+    public void Execute() => AST.Execute();
+    public void ParseAndExecute()
+    {
+        Parse();
+        Execute();
+    }
+}

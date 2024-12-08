@@ -1,7 +1,9 @@
 myVar = 5; 
-myVar = 3; 
+myVar += 3; 
+myVar / 2;
 
 print myVar;
+free myVar;
 
 
 # TODO
@@ -10,7 +12,6 @@ expressions
 
 bool, float
 if else elif
-
 fun 
 
 // ERROR HANDLING

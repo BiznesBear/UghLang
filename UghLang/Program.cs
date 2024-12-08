@@ -7,13 +7,16 @@ if (args.Length < 1)
     return;
 }
 
+
+Debug.Enabled = false;
+
 string path = args[0];
 
 string file = File.ReadAllText(path);
 var ugh = new Ugh();
-var lexer = new Lexer(file);
-var parser = new Parser(lexer, ugh);
+var parser = new Parser(ugh);
+var lexer = new Lexer(file, parser);
 
 Debug.Print("\nEXECUTION:\n");
 
-parser.Execute();
+parser.ParseAndExecute();

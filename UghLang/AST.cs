@@ -31,7 +31,7 @@ public abstract class ASTNode
         Nodes.Add(node);
     }
 
-    public bool TryGetNode<T>(out T node) where T : ASTNode
+    public bool TryGetNodeWithType<T>(out T node) where T : ASTNode
     {
         foreach (var n in Nodes)
         {
@@ -44,6 +44,13 @@ public abstract class ASTNode
         node = (T)NULL;
         return false;
     }
+    public IEnumerable<T> GetNodesWithType<T>() where T : ASTNode 
+    {
+        foreach (var n in Nodes)
+            if (CheckNodeType<T>(n))
+                yield return (T)n;
+    }
+
 
     public static bool CheckNodeType<T>(ASTNode node)  => node.GetType() == typeof(T);
 
@@ -86,7 +93,7 @@ public class DynamicNode : ASTNode
 
 public class ExpressionNode : DynamicNode
 {
-
+    
 }
 public class PrintNode : ASTNode
 {
@@ -94,17 +101,17 @@ public class PrintNode : ASTNode
     {
         base.Execute();
 
-        if (TryGetNode(out DynamicNode node)) Log(node.Dynamic);
-        else if (TryGetNode(out RefrenceNode refNode)) Log(refNode.Dynamic);
+        if(TryGetNodeWithType(out DynamicNode dyna)) Log(dyna.Dynamic);
+        else if (TryGetNodeWithType(out RefrenceNode refr)) Log(refr.Dynamic);
     }
-    private void Log(object message) => Console.WriteLine(message);
+    private static void Log(object message) => Console.WriteLine(message);
 }
 public class FreeNode : ASTNode
 {
     public override void Execute()
     {
         base.Execute();
-        if (TryGetNode(out RefrenceNode node))
+        if (TryGetNodeWithType(out RefrenceNode node))
             Ugh.FreeVariable(node.GetVariable());
     }
 }
@@ -115,14 +122,14 @@ public class FreeNode : ASTNode
 public class InitVariableNode : ASTNode
 {
     public required Token Token { get; init; }
-    public required Token Operator { get; init; }
+    public required Operator Operator { get; init; }
     public required Token ValueToken { get; init; }
 
     public override void Execute()
     {
         base.Execute();
-        if (Ugh.TryGetVariable(Token, out var variable)) 
-            variable.Set(ValueToken.Dynamic);
+        if (Ugh.TryGetVariable(Token, out var variable))
+            variable.Set(Operation.Operate(variable.Get(), ValueToken.Dynamic, Operator));
         else Ugh.DeclareVariable(new(Token.StringValue, ValueToken.Dynamic));
     }
 }
