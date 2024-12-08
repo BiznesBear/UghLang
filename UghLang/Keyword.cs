@@ -21,4 +21,14 @@ public static class KeywordExtension
         type = null;
         return false;
     }
+
+    public static ASTNode GetNode(this Keyword keyword)
+    {
+        return keyword switch
+        {
+            Keyword.Print => new PrintNode(),
+            Keyword.Free => new FreeNode(),
+            _ => new UndefinedNode(),
+        };
+    }
 }

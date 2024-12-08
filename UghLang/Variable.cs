@@ -6,15 +6,15 @@ public enum DataType
     Undefined
 }
 
-public class Variable(Token baseToken, Token stdValueToken) : IDisposable
+public class Variable(string name, dynamic val) : IDisposable
 {
-    public static readonly Variable NULL = new(Token.NULL_STR, Token.NULL_STR);
-    public string Name { get; } = baseToken.StringValue;
-    public Token Token { get; } = stdValueToken;
+    public static readonly Variable NULL = new("", 0);
+    public string Name { get; } = name;
+    private dynamic value  = val; 
 
-    public void Set(object value) => Token.Value = value;
-    public object Get() => Token.Value;
+    public void Set(dynamic val) => value = val;
+    public dynamic Get() => value;
 
     public void Dispose() => GC.SuppressFinalize(true);
-    public override string ToString() => $"{nameof(Variable)} {{ Name = {Name}, Value = {Get()}, Type = {Token.Type} }}";
+    public override string ToString() => $"{nameof(Variable)} {{ Name = {Name}, Value = {Get()} }}";
 }

@@ -20,39 +20,91 @@ public enum Operator
     LessEquals,
     HigherEquals,
 }
-public class Operation
+public record Pair(dynamic Left,dynamic Right,Operator Operator);
+public static class Operation
 {
-    private Operator Operator { get; }
-    private dynamic Val1 { get; }
-    private dynamic Val2 { get; }
-
-    public Operation(dynamic val1, dynamic val2, Operator opr) 
+    public static dynamic Operate(dynamic left, dynamic right, Operator opr)
     {
-        Operator = opr;
-        Val1 = val1;
-        Val2 = val2;
-    }
-
-    public dynamic GetResult()
-    {
-        return Operator switch
+        return opr switch
         {
-            Operator.Equals => Val2,
-            Operator.NotEquals => Val1 != Val2,
-            Operator.Plus or Operator.PlusEquals => Val1 + Val2,
-            Operator.Minus or Operator.MinusEquals => Val1 - Val2,
-            Operator.Multiply or Operator.MultiplyEquals => Val1 * Val2,
-            Operator.Divide or Operator.DivideEquals => Val1 / Val2,
-            Operator.DoubleEquals => Val1 == Val2,
-            Operator.Higher => Val1 > Val2,
-            Operator.Less => Val1 < Val2,
-            Operator.HigherEquals => Val1 >= Val2,
-            Operator.LessEquals => Val1 <= Val2,
-            _ => Val1,
+            Operator.Equals => right,
+            Operator.NotEquals => left != right,
+            Operator.Plus or Operator.PlusEquals => left + right,
+            Operator.Minus or Operator.MinusEquals => left - right,
+            Operator.Multiply or Operator.MultiplyEquals => left * right,
+            Operator.Divide or Operator.DivideEquals => left / right,
+            Operator.DoubleEquals => left == right,
+            Operator.Higher => left > right,
+            Operator.Less => left < right,
+            Operator.HigherEquals => left >= right,
+            Operator.LessEquals => left <= right,
+            _ => left,
         };
     }
+    public static dynamic Operate(this Pair pair) => Operate(pair.Left,pair.Right,pair.Operator);
 
-    public static Operator GetOperator(string opr)
+
+
+    //public static dynamic Operate(Operation operation)
+    //{
+    //    var type = operation.Values[0].GetType();
+    //    List<dynamic> results = new();
+    //    //
+
+    //    for (int i = 0; i < operation.Values.Count; i++)
+    //    {
+    //        var current = operation.Values[i];
+
+    //        if (current.Operator is not null)
+    //        {
+    //            // operate 
+    //            if (!TryGetPrevious(out Value left)) throw new NullReferenceException("Cannot find left side of operation");
+
+    //            if (!TryGetNext(out Value right)) throw new NullReferenceException("Cannot find right side of operation");
+
+    //            // TODO: Find other way than setting result
+    //            results.Add(Operate(left.Dynamic, right.Dynamic, current.Operator ?? default));
+
+    //            Skip();
+    //        }
+
+
+    //        void Skip(int skips = 1)
+    //        {
+    //            if (i + skips < operation.Values.Count)
+    //                i+=skips;
+    //        }
+    //        bool TryGetNext(out Value val)
+    //        {
+    //            if (i + 1 < operation.Values.Count)
+    //            {
+    //                val = operation.Values[i + 1];
+    //                return true;
+    //            }
+    //            val = Value.NULL;
+    //            return false;
+    //        }
+    //        bool TryGetPrevious(out Value val)
+    //        {
+    //            if (i - 1 < operation.Values.Count)
+    //            {
+    //                val = operation.Values[i - 1];
+    //                return true;
+    //            }
+    //            val = Value.NULL;
+    //            return false;
+    //        }
+    //    }
+    //    dynamic result = type.IsValueType ? Activator.CreateInstance(type) ?? 0 : 0;
+    //    foreach (var value in results) {
+    //        result += value;
+    //    }
+    //    return result;
+    //}
+    //public dynamic Operate() => Operate(this);
+
+
+    public static Operator GetOperator(this string opr)
     {
         return opr switch
         {

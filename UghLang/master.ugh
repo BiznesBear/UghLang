@@ -1,15 +1,17 @@
-myVar = -5;
+myVar = 5; 
+myVar = 3; 
 
-print "myVar equals: " myVar;
-
-free myVar;
+print myVar;
 
 
 # TODO
+make print prints expression not constant value
+expressions
+
 bool, float
+if else elif
 
 fun 
-if else elif
 
 // ERROR HANDLING
 

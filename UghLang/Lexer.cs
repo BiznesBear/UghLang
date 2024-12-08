@@ -40,11 +40,8 @@ public class Lexer
                 AddPart(TokenType.None);
             }
             else if (c == ';' && !Ignore) AddSingle(TokenType.Separator);
-            else if (c == ',' && !Ignore) AddSingle(TokenType.Comma);
             else if (c == '(' && !Ignore) AddSingle(TokenType.OpenExpression);
             else if (c == ')' && !Ignore) AddSingle(TokenType.CloseExpression);
-            else if (c == '{' && !Ignore) AddSingle(TokenType.OpenBlock);
-            else if (c == '}' && !Ignore) AddSingle(TokenType.CloseBlock);
             else if ((char.IsDigit(c) || (c == '-' && char.IsDigit(CheckNext()))&& !Ignore))
             {
                 AddChar(c);
@@ -72,19 +69,18 @@ public class Lexer
 
                 AddPart(TokenType.Operator);
             }
-
             else AddChar(c);
 
 
-            void Skip()
+            void Skip(int skips = 1)
             {
-                if (i + 1 < contents.Length)
-                    i++;
+                if (i + skips < contents.Length)
+                    i += skips;
             }
-            char CheckNext()
+            char CheckNext(int next = 1)
             {
-                if (i + 1 < contents.Length)
-                    return contents[i + 1];
+                if (i + next < contents.Length)
+                    return contents[i + next];
                 return '\0';
             }
             void AddSingle(TokenType type)
@@ -95,8 +91,7 @@ public class Lexer
             }
         }
 
-        // for testing only
-        Console.WriteLine(string.Join("\n", tokens));        
+        Debug.Print(string.Join("\n", tokens));  // For testing only     
     }
  
     private void StartNew()
@@ -108,11 +103,9 @@ public class Lexer
     private void AddChar(char c) => currentPart += c;
     private void AddPart(TokenType type)
     {
-        // save last part
+        // save last part and clear current 
         Token token = new(currentPart, type);
         tokens.Add(token);
-
-        // and clear current
         currentPart = string.Empty;
     }
     public static bool IsOperator(char c) => c == '=' || c == '+' || c == '-' || c == '*' || c == '/' || c == '<' || c == '>';

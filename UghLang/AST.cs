@@ -3,116 +3,141 @@
 
 public abstract class ASTNode
 {
-    protected readonly List<Token> tokens = new();
-    protected List<ASTNode> Children { get; } = new();
+    public const ASTNode NULL = default;
+    protected List<ASTNode> Nodes { get; } = new();
 
-    private Master? master;
-    public Master Master
+    private Ugh? ugh;
+    public Ugh Ugh
     {
-        get => master ?? throw new NullReferenceException("No assigned AST in node");
-        set => master = value;
+        get => ugh ?? throw new NullReferenceException("No assigned Ugh in node");
+        set => ugh = value;
     }
 
     private ASTNode? parent;
     public ASTNode Parent
     {
-        get => parent ?? throw new NullReferenceException("No assigned parent in node");
+        get => parent ?? this;
         set => parent = value;
     }
 
-
+    /// <summary>
+    /// Add node with assigned parent and ugh
+    /// </summary>
+    /// <param name="node">Node to assign</param>
     public void AddNode(ASTNode node)
     {
         node.Parent = this;
-        node.Master = Master;
-        Children.Add(node);
+        node.Ugh = Ugh;
+        Nodes.Add(node);
     }
-    public void AddToken(Token token) => tokens.Add(token);
 
-    public bool TryGetToken(int index, out Token token)
+    public bool TryGetNode<T>(out T node) where T : ASTNode
     {
-        if (index >= tokens.Count)
+        foreach (var n in Nodes)
         {
-            token = Token.NULL_STR;
-            return false;
+            if (CheckNodeType<T>(n))
+            {
+                node = (T)n;
+                return true;
+            }
         }
-        token = tokens[index];
-        return true;
-    }
-    public Token GetToken(int index)
-    {
-        if (index >= tokens.Count)
-            return Token.NULL_STR;
-        return tokens[index];
+        node = (T)NULL;
+        return false;
     }
 
-    public abstract void Execute();
+    public static bool CheckNodeType<T>(ASTNode node)  => node.GetType() == typeof(T);
+
+
+    /// <summary>
+    /// Execute all assigned nodes.
+    /// </summary>
+    public virtual void Execute()
+    {
+        foreach (ASTNode node in Nodes)
+        {
+            Debug.Print("EXE " + node);
+            node.Execute();
+        }
+    }
+    public override string ToString() => $"{GetType().Name}";
 }
 
 
 public class AST : ASTNode
 {
-    public AST(Master m) => Master = m;
-    public override void Execute()
+    public AST(Ugh ugh)
     {
-        foreach (ASTNode node in Children)
-            node.Execute();
+        Parent = this;
+        Ugh = ugh;
     }
 }
 
+public class UndefinedNode : ASTNode { }
+
+
+/// <summary>
+/// End value for node
+/// </summary>
+public class DynamicNode : ASTNode
+{
+    private dynamic? dyna;
+    public virtual dynamic Dynamic { get => dyna ?? throw new NullReferenceException("DYNAMITE"); set => dyna = value; }
+}
+
+public class ExpressionNode : DynamicNode
+{
+
+}
 public class PrintNode : ASTNode
 {
     public override void Execute()
     {
-        string sentence = string.Empty;
-        foreach(Token t in tokens)
-        {
-            object val = t.Value;
-            if (Master.TryGetVariable(t, out Variable? var))
-                val = var.Get();
-            sentence += val;
-        }
-        Console.WriteLine(sentence);
-    }
-}
+        base.Execute();
 
+        if (TryGetNode(out DynamicNode node)) Log(node.Dynamic);
+        else if (TryGetNode(out RefrenceNode refNode)) Log(refNode.Dynamic);
+    }
+    private void Log(object message) => Console.WriteLine(message);
+}
 public class FreeNode : ASTNode
 {
     public override void Execute()
     {
-        if(!TryGetToken(0,out Token t))
-        {
-            Master.FreeAllVariables();
-            return;
-        }
-        Master.FreeVariable(t);
+        base.Execute();
+        if (TryGetNode(out RefrenceNode node))
+            Ugh.FreeVariable(node.GetVariable());
     }
 }
 
-public class RefrenceNode : ASTNode
+/// <summary>
+/// Used to declare and set variables
+/// </summary>
+public class InitVariableNode : ASTNode
 {
+    public required Token Token { get; init; }
+    public required Token Operator { get; init; }
+    public required Token ValueToken { get; init; }
+
     public override void Execute()
     {
-        var token = GetToken(0);
-        var oprToken = GetToken(1);
-        var valToken = GetToken(2);
+        base.Execute();
+        if (Ugh.TryGetVariable(Token, out var variable)) 
+            variable.Set(ValueToken.Dynamic);
+        else Ugh.DeclareVariable(new(Token.StringValue, ValueToken.Dynamic));
+    }
+}
 
-        // check if right value is variable
-        dynamic rVal = valToken.Value;
-        if (Master.TryGetVariable(valToken, out var val)) rVal = val;
-
-
-        // create new variable if 
-        Variable variable;
-        if (Master.TryGetVariable(token, out Variable var)) variable = var;
-        else
-        {
-            variable = new(token, valToken);
-            Master.DeclareVariable(variable);
-        }
-
-
-        Operation operation = new(variable.Get(), rVal, oprToken.Operator ?? default);
-        variable.Set(operation.GetResult());
+/// <summary>
+/// Used as refrence to variables by other nodes
+/// </summary>
+public class RefrenceNode : DynamicNode
+{
+    public required Token Token { get; init; }
+    public override dynamic Dynamic { get => GetVariable().Get(); set => GetVariable().Set(value); }
+    public Variable GetVariable()
+    {
+        if (Ugh.TryGetVariable(Token, out var variable))
+            return variable;
+        else throw new NullVariableRefrenceException(Token); 
     }
 }
