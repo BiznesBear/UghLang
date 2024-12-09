@@ -7,7 +7,7 @@ public class Ugh
     public void DeclareVariable(Variable var)
     {
         variables.Add(var);
-        Debug.Print(var); // For testing only
+        Debug.Print("Declared " + var); // For testing only
     }
 
     public void FreeVariable(Variable variable)

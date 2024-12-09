@@ -4,6 +4,8 @@
 public abstract class ASTNode
 {
     public const ASTNode NULL = default;
+
+    #region Properties
     protected List<ASTNode> Nodes { get; } = new();
 
     private Ugh? ugh;
@@ -19,6 +21,7 @@ public abstract class ASTNode
         get => parent ?? this;
         set => parent = value;
     }
+    #endregion
 
     /// <summary>
     /// Add node with assigned parent and ugh
@@ -30,6 +33,9 @@ public abstract class ASTNode
         node.Ugh = Ugh;
         Nodes.Add(node);
     }
+
+    #region Generics
+    public static bool CheckNodeType<T>(ASTNode node)  => node.GetType() == typeof(T);
 
     public bool TryGetNodeWith<T>(out T node) where T : ASTNode
     {
@@ -44,29 +50,32 @@ public abstract class ASTNode
         node = (T)NULL;
         return false;
     }
+    /// <summary>
+    /// Searches for T in Nodes
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public IEnumerable<T> GetChildrensWith<T>() 
+    {
+        foreach (var n in Nodes)
+            if (n is T t) yield return t;
+    }
 
-    //public IEnumerable<T> GetNodesWith<T>() where T : ASTNode 
-    //{
-    //    foreach (var n in Nodes)
-    //        if (CheckNodeType<T>(n))
-    //            yield return (T)n;
-    //}
-
-
-    public IEnumerable<T> GetTypesWith<T>() 
+    /// <summary>
+    /// Searches for T in Nodes and nodes of childrens
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public IEnumerable<T> GetAllChildrensWith<T>()
     {
         foreach (var n in Nodes)
         {
             if (n is T t) yield return t;
-            foreach (var dyn in n.GetTypesWith<T>())
+            foreach (var dyn in n.GetChildrensWith<T>())
                 yield return dyn;
         }
-            
     }
-
-
-    public static bool CheckNodeType<T>(ASTNode node)  => node.GetType() == typeof(T);
-
+    #endregion
 
     /// <summary>
     /// Execute all assigned nodes.
@@ -74,10 +83,7 @@ public abstract class ASTNode
     public virtual void Execute()
     {
         foreach (ASTNode node in Nodes)
-        {
-            Debug.Print("EXE " + node);
             node.Execute();
-        }
     }
     public override string ToString() => $"{GetType().Name}";
 }
@@ -110,17 +116,17 @@ public class ExpressionNode : DynamicNode
 }
 public class PrintNode : ASTNode
 {
+    private static void Log(object message) => Console.Write(message);
     public override void Execute()
     {
         base.Execute();
         if(TryGetNodeWith<ExpressionNode>(out var expr))
         {
-            foreach(var obj in expr.GetTypesWith<IDynamic>())
+            foreach(var obj in expr.GetChildrensWith<IDynamic>())
                 Log(obj.Dynamic);
             Log('\n');
         }
     }
-    private static void Log(object message) => Console.Write(message);
 }
 public class FreeNode : ASTNode
 {

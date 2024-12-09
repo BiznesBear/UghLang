@@ -1,23 +1,28 @@
-myVar = 5; 
+myVar = 5;
+
 myVar + 3; 
 myVar / 2;
+
 
 print("myVar equals: " myVar);
 
 free "all"; 
-
 
 # TODO
 commas to comunicate ast that theres more values than one (with operators too)
 make print prints expression not constant value
 expressions
 
+??? Somehow separate keyword and operator (as value) from tokens
+
+create abomination by making parser dynamic to given tokens by lexer
+
 bool, float
 if else elif
 fun 
 
-// ERROR HANDLING
+ADD ANY ERROR HANDLING
 
-() - expression/ list of parameters
-{} - block code
+() - expression / list of expressions
+{} - block of nodes
 [] - index #

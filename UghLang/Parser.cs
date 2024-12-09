@@ -44,7 +44,7 @@ public class Parser
                     break;
                 case TokenType.StringValue or TokenType.IntValue or TokenType.Operator:
                     // add new value to expression
-                    EnterNode(new DynamicNode() { Dynamic = currentToken.Dynamic });
+                    CreateNode(new DynamicNode() { Dynamic = currentToken.Dynamic });
                     break;
                 case TokenType.None:
                     if (IsEmptyBranch())
@@ -78,17 +78,20 @@ public class Parser
 
     #region NodeManagment
 
-    private void CreateNode(ASTNode node)
-    {
-        currentNode.AddNode(node);
+    /// <summary>
+    /// Adds new node
+    /// </summary>
+    /// <param name="node"></param>
+    private void CreateNode(ASTNode node) { currentNode.AddNode(node); Debug.Print(treeString + node); }
 
-        // FOR TESTING ONLY
-        Debug.Print(treeString + node);
-        treeString += "+";
-    }
+    /// <summary>
+    /// Creates and enters new node
+    /// </summary>
+    /// <param name="node"></param>
     private void EnterNode(ASTNode node)
     {
         CreateNode(node);
+        treeString += "+";
         currentNode = node;
     }
 
