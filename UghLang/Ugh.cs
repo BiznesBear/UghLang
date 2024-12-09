@@ -18,7 +18,7 @@ public class Ugh
     public void FreeVariable(Token token) => FreeVariable(GetVariable(token));
     public void FreeAllVariables()
     {
-        variables.ForEach(FreeVariable);
+        variables.ForEach(v => v.Dispose());
         variables.Clear();
     }
 

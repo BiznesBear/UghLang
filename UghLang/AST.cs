@@ -31,7 +31,7 @@ public abstract class ASTNode
         Nodes.Add(node);
     }
 
-    public bool TryGetNodeWithType<T>(out T node) where T : ASTNode
+    public bool TryGetNodeWith<T>(out T node) where T : ASTNode
     {
         foreach (var n in Nodes)
         {
@@ -44,11 +44,24 @@ public abstract class ASTNode
         node = (T)NULL;
         return false;
     }
-    public IEnumerable<T> GetNodesWithType<T>() where T : ASTNode 
+
+    //public IEnumerable<T> GetNodesWith<T>() where T : ASTNode 
+    //{
+    //    foreach (var n in Nodes)
+    //        if (CheckNodeType<T>(n))
+    //            yield return (T)n;
+    //}
+
+
+    public IEnumerable<T> GetTypesWith<T>() 
     {
         foreach (var n in Nodes)
-            if (CheckNodeType<T>(n))
-                yield return (T)n;
+        {
+            if (n is T t) yield return t;
+            foreach (var dyn in n.GetTypesWith<T>())
+                yield return dyn;
+        }
+            
     }
 
 
@@ -85,10 +98,10 @@ public class UndefinedNode : ASTNode { }
 /// <summary>
 /// End value for node
 /// </summary>
-public class DynamicNode : ASTNode
+public class DynamicNode : ASTNode, IDynamic
 {
-    private dynamic? dyna;
-    public virtual dynamic Dynamic { get => dyna ?? throw new NullReferenceException("DYNAMITE"); set => dyna = value; }
+    protected dynamic? dnmc;
+    public dynamic Dynamic { get => dnmc ?? throw new NullReferenceException(); set => dnmc = value; }
 }
 
 public class ExpressionNode : DynamicNode
@@ -100,19 +113,24 @@ public class PrintNode : ASTNode
     public override void Execute()
     {
         base.Execute();
-
-        if(TryGetNodeWithType(out DynamicNode dyna)) Log(dyna.Dynamic);
-        else if (TryGetNodeWithType(out RefrenceNode refr)) Log(refr.Dynamic);
+        if(TryGetNodeWith<ExpressionNode>(out var expr))
+        {
+            foreach(var obj in expr.GetTypesWith<IDynamic>())
+                Log(obj.Dynamic);
+            Log('\n');
+        }
     }
-    private static void Log(object message) => Console.WriteLine(message);
+    private static void Log(object message) => Console.Write(message);
 }
 public class FreeNode : ASTNode
 {
     public override void Execute()
     {
         base.Execute();
-        if (TryGetNodeWithType(out RefrenceNode node))
+        if (TryGetNodeWith(out RefrenceNode node))
             Ugh.FreeVariable(node.GetVariable());
+        else if(TryGetNodeWith<DynamicNode>(out var modifier) && modifier.Dynamic == "all")
+            Ugh.FreeAllVariables();
     }
 }
 
@@ -140,7 +158,13 @@ public class InitVariableNode : ASTNode
 public class RefrenceNode : DynamicNode
 {
     public required Token Token { get; init; }
-    public override dynamic Dynamic { get => GetVariable().Get(); set => GetVariable().Set(value); }
+
+    public override void Execute()
+    {
+        base.Execute();
+        Dynamic = GetVariable().Get();
+    }
+
     public Variable GetVariable()
     {
         if (Ugh.TryGetVariable(Token, out var variable))

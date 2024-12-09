@@ -7,7 +7,6 @@ if (args.Length < 1)
     return;
 }
 
-
 Debug.Enabled = false;
 
 string path = args[0];

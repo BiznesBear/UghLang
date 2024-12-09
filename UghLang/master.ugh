@@ -1,12 +1,14 @@
 myVar = 5; 
-myVar += 3; 
+myVar + 3; 
 myVar / 2;
 
-print myVar;
-free myVar;
+print("myVar equals: " myVar);
+
+free "all"; 
 
 
 # TODO
+commas to comunicate ast that theres more values than one (with operators too)
 make print prints expression not constant value
 expressions
 
