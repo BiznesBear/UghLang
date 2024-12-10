@@ -3,17 +3,15 @@
 public enum Operator
 {
     Equals,
-    NotEquals,
     Plus,
     Minus,
     Multiply,
     Divide,
-    PlusEquals,
-    MinusEquals,
-    MultiplyEquals,
-    DivideEquals,
+    Power,
+    Sqrt,
 
     // BOOLEAN
+    NotEquals,
     Less,
     Higher,
     DoubleEquals,
@@ -28,11 +26,16 @@ public static class Operation
         return opr switch
         {
             Operator.Equals => right,
+            Operator.Plus => left + right,
+            Operator.Minus => left - right,
+            Operator.Multiply => left * right,
+            Operator.Divide => left / right,
+
+            Operator.Power => Math.Pow(left, right),
+            Operator.Sqrt => Math.Pow(left, 1f / right),
+
+            // BOOLEAN
             Operator.NotEquals => left != right,
-            Operator.Plus or Operator.PlusEquals => left + right,
-            Operator.Minus or Operator.MinusEquals => left - right,
-            Operator.Multiply or Operator.MultiplyEquals => left * right,
-            Operator.Divide or Operator.DivideEquals => left / right,
             Operator.DoubleEquals => left == right,
             Operator.Higher => left > right,
             Operator.Less => left < right,
@@ -42,7 +45,6 @@ public static class Operation
         };
     }
     public static dynamic Operate(this Pair pair) => Operate(pair.Left,pair.Right,pair.Operator);
-
     public static bool IsOperator(this char c) => c == '=' || c == '+' || c == '-' || c == '*' || c == '/' || c == '<' || c == '>';
 
     public static Operator GetOperator(this string opr)
@@ -50,16 +52,17 @@ public static class Operation
         return opr switch
         {
             "=" => Operator.Equals ,
-            "!=" => Operator.NotEquals,
-            "+" => Operator.Plus,
-            "-" => Operator.Minus,
-            "*" => Operator.Multiply,
-            "/" => Operator.Divide,
-            "+=" => Operator.PlusEquals,
-            "-=" => Operator.MinusEquals,
-            "*=" => Operator.MultiplyEquals,
-            "/=" => Operator.DivideEquals,
+            "+" or "+=" => Operator.Plus,
+            "-" or "-=" => Operator.Minus,
+            "*" or "*=" => Operator.Multiply,
+            "/" or "/=" => Operator.Divide,
+
+            "**" => Operator.Power,
+            "//" => Operator.Sqrt,
+            
+            // BOOLEAN
             "==" => Operator.DoubleEquals,
+            "!=" => Operator.NotEquals,
             "<" => Operator.Less,
             ">" => Operator.Higher,
             "<=" => Operator.LessEquals,

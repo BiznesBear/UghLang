@@ -14,11 +14,6 @@ public class Parser
         currentNode = AST;
     }
 
-    public void AddToken(Token token)
-    {
-        tokens.Add(token);
-    }
-
     public AST Parse()
     {
         for (int i = 0; i < tokens.Count; i++) //TODO: Remove for loop and parse everything with new tokens from lexer 
@@ -26,13 +21,9 @@ public class Parser
             Token currentToken = tokens[i];
 
             switch (currentToken.Type)
-            {
+            {   
                 case TokenType.Keyword:
                     ActionByKeyword(currentToken.Keyword ?? default);
-                    break;
-                case TokenType.Separator:
-                    EndBranch();
-                    // end branch
                     break;
                 case TokenType.OpenExpression:
                     // add new expression
@@ -42,35 +33,25 @@ public class Parser
                     // exit and calculate current expression
                     QuitNode<ExpressionNode>();
                     break;
-                case TokenType.StringValue or TokenType.IntValue or TokenType.Operator:
+                case TokenType.Operator:
+                    CreateNode(new OperatorNode() { Operator = currentToken.Operator ?? default });
+                    break;
+                case TokenType.StringValue or TokenType.IntValue:
                     // add new value to expression
                     CreateNode(new DynamicNode() { Dynamic = currentToken.Dynamic });
                     break;
+                case TokenType.Separator:
+                    // end branch
+                    EndBranch();
+                    break;
                 case TokenType.None:
-                    if (IsEmptyBranch())
-                    {
-                        var opr = CheckNext();
-                        var val = CheckNext(2);
-                        EnterNode(new InitVariableNode() { Token = currentToken, Operator = opr.Operator ?? default, ValueToken = val });
-                        Skip();
-                    }
-                    else EnterNode(new RefrenceNode() { Token = currentToken });
+                    EnterNode(IsEmptyBranch()
+                        ? new InitVariableNode() { Token = currentToken }
+                        : new RefrenceNode() { Token = currentToken });
                     break;
                 default:
+                    Debug.Print("Somthing is unhandled");
                     break;
-            }
-
-
-            void Skip(int skips = 1)
-            {
-                if (i + skips < tokens.Count)
-                    i += skips;
-            }
-            Token CheckNext(int next = 1)
-            {
-                if (i + next < tokens.Count)
-                    return tokens[i + next];
-                return Token.NULL;
             }
         }
         return AST;
@@ -124,7 +105,7 @@ public class Parser
     }
 
     #endregion
-
+    public void AddToken(Token token) => tokens.Add(token);
     public void Execute() => AST.Execute();
     public void ParseAndExecute()
     {

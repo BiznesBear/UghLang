@@ -1,21 +1,20 @@
-myVar = 5;
+myVar = 2;
 
-myVar + 3; 
-myVar / 2;
-
+myVar ** 32;
 
 print("myVar equals: " myVar);
 
-free "all"; 
+free myVar; 
+
+
 
 # TODO
 commas to comunicate ast that theres more values than one (with operators too)
-make print prints expression not constant value
 expressions
 
-??? Somehow separate keyword and operator (as value) from tokens
+Somehow separate keyword, operator (as value) from tokens
 
-create abomination by making parser dynamic to given tokens by lexer
+??? create abomination by making parser dynamic to given tokens by lexer
 
 bool, float
 if else elif

@@ -34,7 +34,7 @@ public abstract class ASTNode
         Nodes.Add(node);
     }
 
-    #region Generics
+    #region Searching
     public static bool CheckNodeType<T>(ASTNode node)  => node.GetType() == typeof(T);
 
     public bool TryGetNodeWith<T>(out T node) where T : ASTNode
@@ -50,6 +50,7 @@ public abstract class ASTNode
         node = (T)NULL;
         return false;
     }
+
     /// <summary>
     /// Searches for T in Nodes
     /// </summary>
@@ -112,8 +113,22 @@ public class DynamicNode : ASTNode, IDynamic
 
 public class ExpressionNode : DynamicNode
 {
-    
+    public override void Execute()
+    {
+        base.Execute();
+        Dynamic = Express();
+    }
+    public dynamic Express()
+    {
+        // TODO: Add expression calculating
+        return Dynamic; // TODO: Change to real result
+    } 
 }
+public class OperatorNode : ASTNode
+{
+    public required Operator Operator { get; set; }
+}
+
 public class PrintNode : ASTNode
 {
     private static void Log(object message) => Console.Write(message);
@@ -146,15 +161,16 @@ public class FreeNode : ASTNode
 public class InitVariableNode : ASTNode
 {
     public required Token Token { get; init; }
-    public required Operator Operator { get; init; }
-    public required Token ValueToken { get; init; }
 
     public override void Execute()
     {
         base.Execute();
-        if (Ugh.TryGetVariable(Token, out var variable))
-            variable.Set(Operation.Operate(variable.Get(), ValueToken.Dynamic, Operator));
-        else Ugh.DeclareVariable(new(Token.StringValue, ValueToken.Dynamic));
+
+        var val = GetChildrensWith<IDynamic>().First(); // TODO: Rework by creating here local expression
+        
+        if (Ugh.TryGetVariable(Token, out var variable) && TryGetNodeWith<OperatorNode>(out var opr))
+            variable.Set(Operation.Operate(variable.Get(), val.Dynamic, opr.Operator));
+        else Ugh.DeclareVariable(new(Token.StringValue, val.Dynamic));
     }
 }
 
