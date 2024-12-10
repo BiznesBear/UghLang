@@ -7,6 +7,7 @@ public class Parser
 
     private ASTNode currentNode;
     private string treeString = string.Empty;
+    private const string treeChar = "+-";
 
     public Parser(Ugh ugh)
     {
@@ -25,6 +26,7 @@ public class Parser
                 case TokenType.Keyword:
                     ActionByKeyword(currentToken.Keyword ?? default);
                     break;
+
                 case TokenType.OpenExpression:
                     // add new expression
                     EnterNode(new ExpressionNode() { Dynamic = currentToken.Dynamic });
@@ -33,9 +35,18 @@ public class Parser
                     // exit and calculate current expression
                     QuitNode<ExpressionNode>();
                     break;
+
                 case TokenType.Operator:
                     CreateNode(new OperatorNode() { Operator = currentToken.Operator ?? default });
                     break;
+
+                case TokenType.OpenBlock:
+                    EnterNode(new TagNode());
+                    break;
+                case TokenType.CloseBlock:
+                    QuitNode<TagNode>();
+                    break;
+
                 case TokenType.StringValue or TokenType.IntValue:
                     // add new value to expression
                     CreateNode(new DynamicNode() { Dynamic = currentToken.Dynamic });
@@ -72,7 +83,7 @@ public class Parser
     private void EnterNode(ASTNode node)
     {
         CreateNode(node);
-        treeString += "+";
+        treeString += treeChar;
         currentNode = node;
     }
 
@@ -81,7 +92,7 @@ public class Parser
         if (CurrentNodeIs<T>())
         {
             currentNode = currentNode.Parent;
-            treeString = treeString.Remove(treeString.Length - 1); // FOR TESTING ONLY
+            treeString = treeString.Remove(treeString.Length - treeChar.Length,treeChar.Length); // FOR TESTING ONLY
         }
     }
     private void EndBranch()
@@ -96,11 +107,7 @@ public class Parser
     {
         switch (keyword)
         {
-            case Keyword.Print or Keyword.Free:
-                // add node by keyword
-                EnterNode(keyword.GetNode());
-                break;
-            default: break;
+            default: EnterNode(keyword.GetNode()); break;
         }
     }
 

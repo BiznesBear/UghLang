@@ -14,7 +14,7 @@ print("Hello, world!");
 ### Declaring variables
 ```ugh
 myVar = 5;
-print("myVar equals " myVar);
+print("myVar equals " + myVar);
 ```
 
 ### Releasing resources

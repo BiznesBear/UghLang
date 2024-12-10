@@ -36,7 +36,7 @@ public abstract class ASTNode
 
     #region Searching
     public static bool CheckNodeType<T>(ASTNode node)  => node.GetType() == typeof(T);
-
+    public bool HasEmptyBranch() => Nodes.Count < 1;
     public bool TryGetNodeWith<T>(out T node) where T : ASTNode
     {
         foreach (var n in Nodes)
@@ -101,14 +101,23 @@ public class AST : ASTNode
 
 public class UndefinedNode : ASTNode { }
 
+public class TagNode : ASTNode
+{
+    public void RealExecute() => base.Execute();
+    public override void Execute() { }
+}
 
 /// <summary>
-/// End value for node
+/// Contains result value for execution
 /// </summary>
 public class DynamicNode : ASTNode, IDynamic
 {
     protected dynamic? dnmc;
     public dynamic Dynamic { get => dnmc ?? throw new NullReferenceException(); set => dnmc = value; }
+}
+public class OperatorNode : ASTNode
+{
+    public required Operator Operator { get; set; }
 }
 
 public class ExpressionNode : DynamicNode
@@ -118,42 +127,36 @@ public class ExpressionNode : DynamicNode
         base.Execute();
         Dynamic = Express();
     }
+
     public dynamic Express()
     {
-        // TODO: Add expression calculating
-        return Dynamic; // TODO: Change to real result
-    } 
-}
-public class OperatorNode : ASTNode
-{
-    public required Operator Operator { get; set; }
-}
+        if (HasEmptyBranch()) return Variable.NULL.Get();
 
-public class PrintNode : ASTNode
-{
-    private static void Log(object message) => Console.Write(message);
-    public override void Execute()
-    {
-        base.Execute();
-        if(TryGetNodeWith<ExpressionNode>(out var expr))
+        Stack<dynamic> vals = new();
+        Stack<Operator> operators = new();
+
+        foreach (var node in Nodes)
         {
-            foreach(var obj in expr.GetChildrensWith<IDynamic>())
-                Log(obj.Dynamic);
-            Log('\n');
+            if (node is IDynamic d)
+                vals.Push(d.Dynamic);
+            else if (node is OperatorNode opNode)
+                operators.Push(opNode.Operator);
         }
+
+        while(vals.Count > 1)
+        {
+            if (operators.Count < 1) break;
+
+            var left = vals.Pop();
+            var right = vals.Pop();
+            var op = operators.Pop();
+
+            vals.Push(Operation.Operate(right, left, op)); // DONT ASK WHY right IS LEFT AND left IS RIGHT 
+        }
+
+        return vals.First();
     }
-}
-public class FreeNode : ASTNode
-{
-    public override void Execute()
-    {
-        base.Execute();
-        if (TryGetNodeWith(out RefrenceNode node))
-            Ugh.FreeVariable(node.GetVariable());
-        else if(TryGetNodeWith<DynamicNode>(out var modifier) && modifier.Dynamic == "all")
-            Ugh.FreeAllVariables();
-    }
-}
+} 
 
 /// <summary>
 /// Used to declare and set variables
@@ -192,5 +195,45 @@ public class RefrenceNode : DynamicNode
         if (Ugh.TryGetVariable(Token, out var variable))
             return variable;
         else throw new NullVariableRefrenceException(Token); 
+    }
+}
+
+
+public class PrintNode : ASTNode
+{
+    public override void Execute()
+    {
+        base.Execute();
+        if (TryGetNodeWith<ExpressionNode>(out var expr))
+            Console.WriteLine(expr.Dynamic);
+        // TODO: Add exception here.
+    }
+}
+public class FreeNode : ASTNode
+{
+    public override void Execute()
+    {
+        base.Execute();
+        if (TryGetNodeWith(out RefrenceNode node))
+            Ugh.FreeVariable(node.GetVariable());
+        else if (TryGetNodeWith<DynamicNode>(out var modifier) && modifier.Dynamic == "all")
+            Ugh.FreeAllVariables();
+    }
+}
+
+/// <summary>
+/// If statment
+/// </summary>
+public class IfNode : ASTNode
+{
+    public override void Execute()
+    {
+        base.Execute();
+        if (TryGetNodeWith<ExpressionNode>(out var expr) && expr.Dynamic == true)
+        {
+            if (TryGetNodeWith<TagNode>(out var block)) 
+                block.RealExecute(); 
+        }
+        
     }
 }

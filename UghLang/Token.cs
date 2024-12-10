@@ -10,6 +10,8 @@ public enum TokenType
     Operator, // op
     OpenExpression, // opens expression
     CloseExpression, // closes expression
+    OpenBlock, // opens block of code
+    CloseBlock, // closes block of code
 }
 
 

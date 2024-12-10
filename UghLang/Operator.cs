@@ -18,7 +18,6 @@ public enum Operator
     LessEquals,
     HigherEquals,
 }
-public record Pair(dynamic Left,dynamic Right,Operator Operator);
 public static class Operation
 {
     public static dynamic Operate(dynamic left, dynamic right, Operator opr)
@@ -31,8 +30,8 @@ public static class Operation
             Operator.Multiply => left * right,
             Operator.Divide => left / right,
 
-            Operator.Power => Math.Pow(left, right),
-            Operator.Sqrt => Math.Pow(left, 1f / right),
+            Operator.Power => Math.Pow(right, left),
+            Operator.Sqrt => Math.Pow(right, 1f / left),
 
             // BOOLEAN
             Operator.NotEquals => left != right,
@@ -44,8 +43,7 @@ public static class Operation
             _ => left,
         };
     }
-    public static dynamic Operate(this Pair pair) => Operate(pair.Left,pair.Right,pair.Operator);
-    public static bool IsOperator(this char c) => c == '=' || c == '+' || c == '-' || c == '*' || c == '/' || c == '<' || c == '>';
+    public static bool IsOperator(this char c) => c == '=' || c == '+' || c == '-' || c == '*' || c == '/' || c == '<' || c == '>' || c == '!';
 
     public static Operator GetOperator(this string opr)
     {

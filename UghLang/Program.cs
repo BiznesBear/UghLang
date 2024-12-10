@@ -6,7 +6,7 @@ if (args.Length < 1)
     return;
 }
 
-Debug.Enabled = false;
+Debug.Enabled = true;
 
 string path = string.Empty;
 foreach(var arg in args)

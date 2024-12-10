@@ -42,6 +42,8 @@ public class Lexer
             else if (c == ';' && !Ignore) AddSingle(TokenType.Separator);
             else if (c == '(' && !Ignore) AddSingle(TokenType.OpenExpression);
             else if (c == ')' && !Ignore) AddSingle(TokenType.CloseExpression);
+            else if (c == '{' && !Ignore) AddSingle(TokenType.OpenBlock);
+            else if (c == '}' && !Ignore) AddSingle(TokenType.CloseBlock);
             else if ((char.IsDigit(c) || (c == '-' && char.IsDigit(CheckNext()))&& !Ignore))
             {
                 AddChar(c);
