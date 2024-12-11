@@ -3,7 +3,8 @@ public enum Keyword
 {
     Print,
     Free,
-    If
+    If,
+    Repeat,
 }
 public static class KeywordExtension
 {
@@ -12,6 +13,7 @@ public static class KeywordExtension
         { "print", Keyword.Print },
         { "free", Keyword.Free },
         { "if", Keyword.If },
+        { "repeat", Keyword.Repeat },
     };
     public static bool TryGetKeyword(this string word, out Keyword? type)
     {
@@ -31,6 +33,7 @@ public static class KeywordExtension
             Keyword.Print => new PrintNode(),
             Keyword.Free => new FreeNode(),
             Keyword.If => new IfNode(),
+            Keyword.Repeat => new RepeatNode(),
             _ => new UndefinedNode(),
         };
     }

@@ -78,15 +78,22 @@ public abstract class ASTNode
     }
     #endregion
 
+
+
+    // Some nodes uses it to "pre-execute" itself for faster runtime (e.g. dont loading the same variable for X time)
+    public virtual void Load()
+    {
+        foreach (ASTNode node in Nodes)
+            node.Load();
+    }
+
     /// <summary>
     /// Execute all assigned nodes.
     /// </summary>
     public virtual void Execute()
     {
         foreach (ASTNode node in Nodes)
-        {
             node.Execute();
-        }
     }
     public override string ToString() => $"{GetType().Name}";
 }
@@ -130,6 +137,7 @@ public class ExpressionNode : DynamicNode
         Dynamic = Express();
     }
 
+
     public dynamic Express()
     {
         if (HasEmptyBranch()) return Variable.NULL.Get();
@@ -167,11 +175,12 @@ public class InitVariableNode : ASTNode
 {
     public required Token Token { get; init; }
 
-    public override void Execute()
+    
+    public override void Execute() 
     {
         base.Execute();
 
-        var val = GetChildrensWith<IDynamic>().First(); // TODO: Rework by creating here local expression
+        var val = GetChildrensWith<IDynamic>().First(); 
         
         if (Ugh.TryGetVariable(Token, out var variable) && TryGetNodeWith<OperatorNode>(out var opr))
             variable.Set(Operation.Operate(variable.Get(), val.Dynamic, opr.Operator));
@@ -235,8 +244,27 @@ public class IfNode : ASTNode
         if (TryGetNodeWith<ExpressionNode>(out var expr) && expr.Dynamic == true)
         {
             if (TryGetNodeWith<TagNode>(out var block))
-            {
                 block.BaseExecute();
+        }
+    }
+}
+
+/// <summary>
+/// While statment
+/// </summary>
+public class RepeatNode : ASTNode
+{
+    public override void Execute()
+    {
+        base.Execute();
+        if (TryGetNodeWith<ExpressionNode>(out var expr))
+        {
+            if (TryGetNodeWith<TagNode>(out var block))
+            {
+                for (int i = 0; i < expr.Dynamic; i++)
+                {
+                    block.BaseExecute();
+                }
             }
         }
     }

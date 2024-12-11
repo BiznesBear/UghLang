@@ -35,3 +35,19 @@ myVar / 5; myVar /= 5;# Divide #
 myVar ** 2; # Power #
 myVar // 2; # Square root #
 ```
+
+## Statements and loops
+### If
+```ugh
+if(5 > 3){
+	print("5 is higher than 3")
+}
+```
+### Repeat
+```ugh
+myVar = 0;
+repeat(10){
+	myVar + 1;
+	print(myVar);
+}
+```

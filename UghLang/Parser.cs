@@ -61,9 +61,14 @@ public class Parser
                     GoDefalut();
                     break;
                 case TokenType.None:
-                    EnterNode(IsEmptyBranch()
-                        ? new InitVariableNode() { Token = currentToken }
-                        : new RefrenceNode() { Token = currentToken });
+                    if (IsEmptyBranch())
+                    {
+                        EnterNode(new InitVariableNode() { Token = currentToken });
+                    }
+                    else
+                    {
+                        CreateNode(new RefrenceNode() { Token = currentToken });
+                    }
                     break;
                 default:
                     Debug.Print("Somthing is unhandled");
@@ -103,12 +108,14 @@ public class Parser
     }
 
 
+    private ASTNode GetTop() => blocks.Count < 1 ? AST : blocks.Peek();
+    
     /// <summary>
     /// Go to last block (without removing item from top)
     /// </summary>
     private bool GoReset()
     {
-        if (blocks.Count < 1) // Reset
+        if (GetTop() == AST) // Reset
         {
             currentNode = AST;
             treeString = string.Empty;
@@ -147,7 +154,8 @@ public class Parser
         }
     }
 
-    private bool IsEmptyBranch() => currentNode == AST;
+    private bool IsEmptyBranch() => currentNode == GetTop();
+
     private bool CurrentNodeIs<T>() => currentNode.GetType() == typeof(T);
 
     private void ActionByKeyword(Keyword keyword)
@@ -160,7 +168,12 @@ public class Parser
 
     #endregion
     public void AddToken(Token token) => tokens.Add(token);
-    public void Execute() => AST.Execute();
+    public void Execute()
+    {
+        AST.Load();
+        AST.Execute();
+    }
+
     public void ParseAndExecute()
     {
         Parse();

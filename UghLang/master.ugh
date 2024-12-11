@@ -1,33 +1,14 @@
-myVar = 2;
-myVar = ((30 / 3) * myVar);
-print("myVar equals: " + myVar);
-
-if(5 != 3){ 
-	print("Yes its true");
-	print("Yes its true");
-	print("Yes its true");
-}
-
-
-
-print("Hello from outside!");
-
-
 # TODO
-remove ending branch from separator and replace it with ending current sentence (quiting from current master who started branch) becouse it ends if (and it shuldn't)
 priority for operators
+OPTIMALIZATIONS
 commas
 
 Somehow separate keyword, operator (as value) from tokens
 
 ??? create abomination by making parser dynamic to given tokens by lexer
 
-bool, float
-if else elif
+true, false, float
+else elif
 fun 
 
-ADD ANY ERROR HANDLING
-
-() - expression / list of expressions
-{} - block of nodes
-[] - index #
+ADD ANY ERROR HANDLING #
