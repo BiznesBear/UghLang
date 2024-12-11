@@ -5,9 +5,12 @@ public class Parser
     public readonly AST AST;
     public readonly List<Token> tokens = new();
 
-    private ASTNode currentNode;
+    private const string treeChar = "+--";
+
     private string treeString = string.Empty;
-    private const string treeChar = "+-";
+    private string recoveryTree = string.Empty;
+    private ASTNode currentNode;
+    private Stack<ASTNode> blocks = new();
 
     public Parser(Ugh ugh)
     {
@@ -42,9 +45,11 @@ public class Parser
 
                 case TokenType.OpenBlock:
                     EnterNode(new TagNode());
+                    GoNext();
                     break;
                 case TokenType.CloseBlock:
                     QuitNode<TagNode>();
+                    GoBack();
                     break;
 
                 case TokenType.StringValue or TokenType.IntValue:
@@ -53,7 +58,7 @@ public class Parser
                     break;
                 case TokenType.Separator:
                     // end branch
-                    EndBranch();
+                    GoDefalut();
                     break;
                 case TokenType.None:
                     EnterNode(IsEmptyBranch()
@@ -83,6 +88,7 @@ public class Parser
     private void EnterNode(ASTNode node)
     {
         CreateNode(node);
+        recoveryTree = treeString;
         treeString += treeChar;
         currentNode = node;
     }
@@ -95,11 +101,52 @@ public class Parser
             treeString = treeString.Remove(treeString.Length - treeChar.Length,treeChar.Length); // FOR TESTING ONLY
         }
     }
-    private void EndBranch()
+
+
+    /// <summary>
+    /// Go to last block (without removing item from top)
+    /// </summary>
+    private bool GoReset()
     {
-        currentNode = AST;
-        treeString = string.Empty;
+        if (blocks.Count < 1) // Reset
+        {
+            currentNode = AST;
+            treeString = string.Empty;
+            return true;
+        }
+        return false;
     }
+
+    /// <summary>
+    /// Go to last block (without removing item from top)
+    /// </summary>
+    private void GoDefalut()
+    {
+        if (GoReset()) return; 
+        currentNode = blocks.Peek();
+        treeString = treeString.Remove(treeString.Length - treeChar.Length, treeChar.Length);
+    }
+
+    /// <summary>
+    /// Create new block
+    /// </summary>
+    private void GoNext()
+    {
+        blocks.Push(currentNode);
+    }
+
+    /// <summary>
+    /// Remove last block 
+    /// </summary>
+    private void GoBack()
+    {
+        for (int i = 0; i < 2; i++) // PLEASE DONT ASK WHAT THE HELL IS THIS
+        {
+            if (GoReset()) return;
+            currentNode = blocks.Pop();
+        }
+    }
+
     private bool IsEmptyBranch() => currentNode == AST;
     private bool CurrentNodeIs<T>() => currentNode.GetType() == typeof(T);
 

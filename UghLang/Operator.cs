@@ -17,6 +17,8 @@ public enum Operator
     DoubleEquals,
     LessEquals,
     HigherEquals,
+    And,
+    Or
 }
 public static class Operation
 {
@@ -40,10 +42,12 @@ public static class Operation
             Operator.Less => left < right,
             Operator.HigherEquals => left >= right,
             Operator.LessEquals => left <= right,
+            Operator.And => left && right,
+            Operator.Or => left || right,
             _ => left,
         };
     }
-    public static bool IsOperator(this char c) => c == '=' || c == '+' || c == '-' || c == '*' || c == '/' || c == '<' || c == '>' || c == '!';
+    public static bool IsOperator(this char c) => c == '=' || c == '+' || c == '-' || c == '*' || c == '/' || c == '<' || c == '>' || c == '!' || c == '&' || c == '|';
 
     public static Operator GetOperator(this string opr)
     {
@@ -65,6 +69,8 @@ public static class Operation
             ">" => Operator.Higher,
             "<=" => Operator.LessEquals,
             ">=" => Operator.HigherEquals,
+            "&&" => Operator.And,
+            "||" => Operator.Or,
             _ => throw new("Cannot find operator " + opr),
         };
     }

@@ -1,15 +1,16 @@
 myVar = 2;
-
 myVar = ((30 / 3) * myVar);
-
 print("myVar equals: " + myVar);
 
-free myVar; 
-
-if(5 > 3)
-{
-	print("YES")print("YES")
+if(5 != 3){ 
+	print("Yes its true");
+	print("Yes its true");
+	print("Yes its true");
 }
+
+
+
+print("Hello from outside!");
 
 
 # TODO

@@ -84,7 +84,9 @@ public abstract class ASTNode
     public virtual void Execute()
     {
         foreach (ASTNode node in Nodes)
+        {
             node.Execute();
+        }
     }
     public override string ToString() => $"{GetType().Name}";
 }
@@ -103,8 +105,8 @@ public class UndefinedNode : ASTNode { }
 
 public class TagNode : ASTNode
 {
-    public void RealExecute() => base.Execute();
-    public override void Execute() { }
+    public void BaseExecute() => base.Execute();
+    public override void Execute() { return; }
 }
 
 /// <summary>
@@ -209,6 +211,7 @@ public class PrintNode : ASTNode
         // TODO: Add exception here.
     }
 }
+
 public class FreeNode : ASTNode
 {
     public override void Execute()
@@ -231,9 +234,10 @@ public class IfNode : ASTNode
         base.Execute();
         if (TryGetNodeWith<ExpressionNode>(out var expr) && expr.Dynamic == true)
         {
-            if (TryGetNodeWith<TagNode>(out var block)) 
-                block.RealExecute(); 
+            if (TryGetNodeWith<TagNode>(out var block))
+            {
+                block.BaseExecute();
+            }
         }
-        
     }
 }
