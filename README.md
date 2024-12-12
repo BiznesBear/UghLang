@@ -5,11 +5,6 @@ The side-purpose of this project is to show the power of simplicity.
 # Mini documentation
 This section is dedicated to the basic functions of the ugh language.
 
-## Hello world!
-```ugh
-print("Hello, world!");
-```
-
 ## Variables
 ### Declaring variables
 ```ugh
@@ -43,6 +38,15 @@ if(5 > 3){
 	print("5 is higher than 3")
 }
 ```
+
+### Break
+```ugh
+if(5 > 3){
+	break;
+	print("5 is higher than 3") # Wont be executed#
+}
+```
+
 ### Repeat
 ```ugh
 myVar = 0;

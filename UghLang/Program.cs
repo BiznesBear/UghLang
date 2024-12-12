@@ -30,18 +30,8 @@ if (path == string.Empty) return;
 
 string file = File.ReadAllText(path);
 
-
 var ugh = new Ugh();
 var parser = new Parser(ugh);
-
-Debug.Print("TOKENIZATION:\n");
-
 var lexer = new Lexer(file, parser);
-
-Debug.Print("\nPARSE:\n");
-
-parser.Parse();
-
-Debug.Print("\nEXECUTION:\n");
 
 parser.Execute();

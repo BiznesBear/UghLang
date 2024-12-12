@@ -3,8 +3,6 @@
 
 public class Lexer
 {
-    
-
     private string currentPart = string.Empty;
     private bool insideString = false;
     private bool insideComment = false;
@@ -44,7 +42,7 @@ public class Lexer
             else if (c == ')' && !Ignore) AddSingle(TokenType.CloseExpression);
             else if (c == '{' && !Ignore) AddSingle(TokenType.OpenBlock);
             else if (c == '}' && !Ignore) AddSingle(TokenType.CloseBlock);
-            else if ((char.IsDigit(c) || (c == '-' && char.IsDigit(CheckNext()))&& !Ignore))
+            else if ((char.IsDigit(c) || (c == '-' && char.IsDigit(CheckNext())) && !Ignore))
             {
                 AddChar(c);
                 while (true)
@@ -80,8 +78,13 @@ public class Lexer
             }
             char CheckNext(int next = 1)
             {
-                if (i + next < contents.Length)
-                    return contents[i + next];
+                int realIndex = i + next;
+                if (realIndex < contents.Length)
+                {
+                    char c = contents[realIndex];
+                    if (char.IsWhiteSpace(c)) CheckNext(next + 1);
+                    else return c;
+                }
                 return '\0';
             }
             void AddSingle(TokenType type)
@@ -91,8 +94,6 @@ public class Lexer
                 AddPart(type);
             }
         }
-
-        Debug.Print(string.Join("\n", Parser.tokens));  // For testing only     
     }
     private void StartNew()
     {
@@ -101,7 +102,6 @@ public class Lexer
     }
     private bool IsPartEmpty() => currentPart == string.Empty;
     private void AddChar(char c) => currentPart += c;
-
 
 
     /// <summary>
@@ -115,5 +115,4 @@ public class Lexer
         Parser.AddToken(token);
         currentPart = string.Empty;
     }
-
 }

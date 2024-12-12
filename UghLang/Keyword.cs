@@ -3,6 +3,9 @@ public enum Keyword
 {
     Print,
     Free,
+    True,
+    False,
+    Break,
     If,
     Repeat,
 }
@@ -12,17 +15,25 @@ public static class KeywordExtension
     {
         { "print", Keyword.Print },
         { "free", Keyword.Free },
+        { "true", Keyword.True },
+        { "false", Keyword.False },
+        { "break", Keyword.Break },
         { "if", Keyword.If },
         { "repeat", Keyword.Repeat },
     };
-    public static bool TryGetKeyword(this string word, out Keyword? type)
+
+    public static bool TryGetKeyword(this string word, out Keyword keyword, out TokenType type)
     {
         if (keywords.TryGetValue(word, out Keyword value))
         {
-            type = value;
+            keyword = value;
+            type = keyword == Keyword.True || keyword == Keyword.False ? 
+                TokenType.BoolValue : TokenType.Keyword;
             return true;
         }
-        type = null;
+
+        keyword = default;
+        type = default;
         return false;
     }
 
@@ -32,6 +43,9 @@ public static class KeywordExtension
         {
             Keyword.Print => new PrintNode(),
             Keyword.Free => new FreeNode(),
+            Keyword.True => new ValueNode() { Value = true },
+            Keyword.False => new ValueNode() { Value = false },
+            Keyword.Break => new BreakNode(),
             Keyword.If => new IfNode(),
             Keyword.Repeat => new RepeatNode(),
             _ => new UndefinedNode(),

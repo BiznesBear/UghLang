@@ -1,15 +1,4 @@
 ﻿namespace UghLang;
-public enum DataType
-{
-    String,
-    Int,
-    Bool,
-    Undefined
-}
-public interface IDynamic
-{
-    public dynamic Dynamic { get; set; }
-}
 public class Variable(string name, dynamic val) : IDisposable
 {
     public static readonly Variable NULL = new("", 0);
@@ -22,7 +11,18 @@ public class Variable(string name, dynamic val) : IDisposable
     public dynamic Get() => dnmc;
 
 
-    public void Dispose() => GC.SuppressFinalize(this);
 
+    public void Dispose() => GC.SuppressFinalize(this);
     public override string ToString() => $"{nameof(Variable)} {{ Name = {Name}, Value = {Get()} }}";
+}
+public enum DataType
+{
+    String,
+    Int,
+    Bool,
+    Undefined
+}
+public interface IValue
+{
+    public dynamic Value { get; set; }
 }

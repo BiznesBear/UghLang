@@ -1,11 +1,22 @@
+myVar = true;
+
+if(myVar){
+
+	print("First print");
+
+	if(true){
+		print("Second print");
+	}
+
+	print("Last print");
+}
+
 # TODO
+REMOVE MOST OF THE DYNAMICS FROM CODE (except operations)
 priority for operators
 OPTIMALIZATIONS
 commas
 
-Somehow separate keyword, operator (as value) from tokens
-
-??? create abomination by making parser dynamic to given tokens by lexer
 
 true, false, float
 else elif

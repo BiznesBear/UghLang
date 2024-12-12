@@ -71,6 +71,7 @@ public static class Operation
             ">=" => Operator.HigherEquals,
             "&&" => Operator.And,
             "||" => Operator.Or,
+
             _ => throw new("Cannot find operator " + opr),
         };
     }
