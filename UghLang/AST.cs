@@ -114,37 +114,54 @@ public class AST : ASTNode
     }
 }
 
-public class UndefinedNode : ASTNode { }
+public class UndefinedNode : ASTNode {
 
-public class TagNode : ASTNode
-{
-    public void BaseExecute() => base.Execute();
-    public override void Execute() { return; }
+    public override void Execute()
+    {
+        base.Execute();
+        throw new NotImplementedException("Undefined instructions");
+    }
 }
 
-/// <summary>
-/// Contains result value for execution
-/// </summary>
-public class ValueNode : ASTNode, IValue
+
+public interface IReturnAny
 {
-    protected dynamic? dnmc;
-    public dynamic Value { get => dnmc ?? throw new NullReferenceException(); set => dnmc = value; }
+    public object AnyValue { get; }
 }
+
+public interface IReturn<T> : IReturnAny
+{
+    public T Value { get; set; }
+}
+
+public class AnyValueNode<T>(T defalutValue) : ASTNode, IReturn<T>
+{
+    public T Value { get; set; } = defalutValue;
+    public object AnyValue => Value ?? throw new NullReferenceException("Cannot find value");
+}
+
+public class StringValueNode : AnyValueNode<string> { public StringValueNode() : base(string.Empty) { } }
+public class IntValueNode : AnyValueNode<int> { public IntValueNode() : base(0) { } }
+public class BoolValueNode : AnyValueNode<bool> { public BoolValueNode() : base(false) { } }
+
 
 public class OperatorNode : ASTNode
 {
     public required Operator Operator { get; set; }
 }
 
-public class ExpressionNode : ValueNode
+public class ExpressionNode : ASTNode, IReturnAny
 {
+    private object? val;
+    public object AnyValue => val ?? throw new NullReferenceException();
+
     public override void Execute()
     {
         base.Execute();
-        Value = Express();
+        val = Express();
     }
 
-    public dynamic Express()
+    public object Express()
     {
         if (HasEmptyBranch()) return Variable.NULL.Get();
 
@@ -153,8 +170,8 @@ public class ExpressionNode : ValueNode
 
         foreach (var node in Nodes)
         {
-            if (node is IValue d)
-                vals.Push(d.Value);
+            if (node is IReturnAny d)
+                vals.Push(d.AnyValue);
             else if (node is OperatorNode opNode)
                 operators.Push(opNode.Operator);
         }
@@ -172,7 +189,14 @@ public class ExpressionNode : ValueNode
 
         return vals.First();
     }
-} 
+}
+
+public class TagNode : ASTNode
+{
+    public void BaseExecute() => base.Execute();
+    public override void Execute() { return; }
+}
+
 
 /// <summary>
 /// Used to declare and set variables
@@ -180,7 +204,7 @@ public class ExpressionNode : ValueNode
 public class InitVariableNode : ASTNode
 {
     public required Token Token { get; init; }
-    private IValue? value;
+    private IReturnAny? value;
     private bool isSet;
     private OperatorNode? oprNode;
 
@@ -195,27 +219,30 @@ public class InitVariableNode : ASTNode
     {
         base.Execute();
 
-        value = GetChildrensWith<IValue>().First();
+        value = GetChildrensWith<IReturnAny>().First();
 
         if (value is null) return; // TODO: Throw here exception
 
         if (Ugh.TryGetVariable(Token, out var variable) && oprNode is not null && isSet)
-            variable.Set(Operation.Operate(variable.Get(), value.Value, oprNode.Operator));
-        else Ugh.DeclareVariable(new(Token.StringValue, value.Value));
+            variable.Set(Operation.Operate(variable.Get(), value.AnyValue, oprNode.Operator));
+        else Ugh.DeclareVariable(new(Token.StringValue, value.AnyValue));
     }
 }
 
 /// <summary>
 /// Used as refrence to variables by other nodes
 /// </summary>
-public class RefrenceNode : ValueNode
+public class RefrenceNode : ASTNode, IReturnAny
 {
     public required Token Token { get; init; }
+
+    private object? val;
+    public object AnyValue => val ?? throw new NullReferenceException();
 
     public override void Execute()
     {
         base.Execute();
-        Value = GetVariable().Get();
+        val = GetVariable().Get();
     }
 
     public Variable GetVariable()
@@ -233,7 +260,7 @@ public class PrintNode : ASTNode
     {
         base.Execute();
         if (TryGetNodeWith<ExpressionNode>(out var expr))
-            Console.WriteLine(expr.Value);
+            Console.WriteLine(expr.AnyValue);
         // TODO: Add exception here.
     }
 }
@@ -254,7 +281,7 @@ public class FreeNode : ASTNode
         base.Execute();
         if (isRef && refNode is not null)
             Ugh.FreeVariable(refNode.GetVariable());
-        else if (TryGetNodeWith<ValueNode>(out var modifier) && modifier.Value == "all")
+        else if (TryGetNodeWith<AnyValueNode<string>>(out var modifier) && modifier.Value == "all")
             Ugh.FreeAllVariables();
         return; // TODO: Throw here exception
     }
@@ -287,7 +314,7 @@ public class IfNode : ASTNode
     public override void Execute()
     {
         base.Execute();
-        if (exprs is not null && exprs.Value == true)
+        if (exprs is not null && (bool)exprs.AnyValue == true)
             tag?.BaseExecute();
     }
 }
@@ -313,7 +340,7 @@ public class RepeatNode : ASTNode
         base.Execute();
         if (exprs is not null)
         {
-            for (int i = 0; i < exprs.Value; i++)
+            for (int i = 0; i < (int)exprs.AnyValue; i++)
                 tag?.BaseExecute();
         }
     }

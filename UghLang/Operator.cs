@@ -47,7 +47,6 @@ public static class Operation
             _ => left,
         };
     }
-    public static bool IsOperator(this char c) => c == '=' || c == '+' || c == '-' || c == '*' || c == '/' || c == '<' || c == '>' || c == '!' || c == '&' || c == '|';
 
     public static Operator GetOperator(this string opr)
     {
@@ -75,4 +74,5 @@ public static class Operation
             _ => throw new("Cannot find operator " + opr),
         };
     }
+    public static bool IsOperator(this char c) => c == '=' || c == '+' || c == '-' || c == '*' || c == '/' || c == '<' || c == '>' || c == '!' || c == '&' || c == '|';
 }

@@ -1,24 +1,11 @@
-myVar = true;
-
-if(myVar){
-
-	print("First print");
-
-	if(true){
-		print("Second print");
-	}
-
-	print("Last print");
-}
-
 # TODO
-REMOVE MOST OF THE DYNAMICS FROM CODE (except operations)
 priority for operators
-OPTIMALIZATIONS
+OPTIMALIZATIONS (remove dynamic totaly)
 commas
 
+free "tag"; - release variables declared inside the same node
 
-true, false, float
+float
 else elif
 fun 
 

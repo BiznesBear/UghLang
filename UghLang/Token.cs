@@ -31,7 +31,7 @@ public class Token
     /// <summary>
     /// Return value.
     /// </summary>
-    public object Value
+    public object Value // TODO: Remove this
     {
         get
         {
@@ -76,5 +76,5 @@ public class Token
         };
     }
 
-    public override string ToString() => $"{nameof(Token)} {{ Value = {StringValue}, Type = {Type}, Keyword = {Keyword}, Operator = {Operator} }}";
+    public override string ToString() => $"{nameof(Token)} {{ Value = {StringValue}, Type = {Type}, Keyword = {Keyword} }}";
 }

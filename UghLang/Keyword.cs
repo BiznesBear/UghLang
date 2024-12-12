@@ -43,8 +43,8 @@ public static class KeywordExtension
         {
             Keyword.Print => new PrintNode(),
             Keyword.Free => new FreeNode(),
-            Keyword.True => new ValueNode() { Value = true },
-            Keyword.False => new ValueNode() { Value = false },
+            Keyword.True => new BoolValueNode() { Value = true },
+            Keyword.False => new BoolValueNode() { Value = false },
             Keyword.Break => new BreakNode(),
             Keyword.If => new IfNode(),
             Keyword.Repeat => new RepeatNode(),

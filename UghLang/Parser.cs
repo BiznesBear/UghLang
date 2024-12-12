@@ -26,7 +26,7 @@ public class Parser
                 break;
             case TokenType.OpenExpression:
                 // add new expression
-                EnterNode(new ExpressionNode() { Value = token.Value });
+                EnterNode(new ExpressionNode() ); // { AnyValue = token.Value }
                 break;
             case TokenType.CloseExpression:
                 // exit and calculate current expression
@@ -45,10 +45,19 @@ public class Parser
                 QuitNode<TagNode>();
                 RemoveMasterBranch<TagNode>();
                 break;
-            case TokenType.StringValue or TokenType.IntValue or TokenType.BoolValue:
+            case TokenType.StringValue:
                 // add new value to expression
-                CreateNode(new ValueNode() { Value = token.Value });
+                CreateNode(new StringValueNode() { Value = token.StringValue });
                 break;
+            case TokenType.IntValue:
+                // add new value to expression
+                CreateNode(new IntValueNode() { Value = token.IntValue });
+                break;
+            case TokenType.BoolValue:
+                // add new value to expression
+                CreateNode(new BoolValueNode() { Value = token.BoolValue });
+                break;
+
             case TokenType.Separator:
                 // end branch
                 BackToMasterBranch();
@@ -100,12 +109,20 @@ public class Parser
         }
     }
 
+    /// <summary>
+    /// Adds currentNode to masterBranches
+    /// </summary>
     private void CreateMasterBranch()
     {
         masterBranches.Push(currentNode);
         recoveryDebugTree = debugTree;
     }
 
+    /// <summary>
+    /// Removes peek of masterBranches
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <exception cref="Exception"></exception>
     private void RemoveMasterBranch<T>()
     {
         if (GetMasterBranch().GetType() != typeof(T)) throw new Exception("This is not your branch"); // TODO: Add beter exception
@@ -113,6 +130,10 @@ public class Parser
         debugTree += treeString;
         currentNode = GetMasterBranch();
     }
+
+    /// <summary>
+    /// Set current node from peek of masterBranches
+    /// </summary>
     private void BackToMasterBranch()
     {
         currentNode = GetMasterBranch();
@@ -122,14 +143,24 @@ public class Parser
 
 
     /// <summary>
-    /// 
+    /// Returns current master branch
     /// </summary>
     private ASTNode GetMasterBranch() => masterBranches.Count < 1? AST : masterBranches.Peek();
+
+    /// <summary>
+    /// Checks if current node is current masterBranch
+    /// </summary>
+    /// <returns></returns>
     private bool IsMasterBranch() => currentNode == GetMasterBranch();
+
     private bool CurrentNodeIs<T>() => currentNode.GetType() == typeof(T);
 
 
     #endregion
+
+    /// <summary>
+    /// Loads and executes every node
+    /// </summary>
     public void Execute()
     {
         AST.Load();

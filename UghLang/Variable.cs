@@ -22,7 +22,3 @@ public enum DataType
     Bool,
     Undefined
 }
-public interface IValue
-{
-    public dynamic Value { get; set; }
-}
