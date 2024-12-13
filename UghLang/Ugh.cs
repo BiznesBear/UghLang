@@ -10,7 +10,7 @@ public class Ugh
     public void InitializeVariable(Variable var)
     {
         variables.Add(var);
-        Debug.Print("Declared " + var); // For testing only
+        Debug.Print("Initialized " + var); // For testing only
     }
 
     public bool TryGetVariable(Token token, out Variable var)
@@ -27,7 +27,7 @@ public class Ugh
     public Variable GetVariable(Token token)
     {
         if (TryGetVariable(token, out var v)) return v;
-        else throw new NullReferenceException("Cannot find function named " + token.StringValue);
+        else throw new UghException("Cannot find function named " + token.StringValue);
     }
     #endregion
 
@@ -35,7 +35,7 @@ public class Ugh
     public void DeclareFunction(Function fun)
     {
         functions.Add(fun);
-        Debug.Print("Initialized " + fun); // For testing only
+        Debug.Print("Declared " + fun); // For testing only
     }
 
     public bool TryGetFunction(string name, out Function func)
@@ -49,8 +49,9 @@ public class Ugh
     public Function GetFunction(string name)
     {
         if (TryGetFunction(name, out var v)) return v;
-        else throw new NullReferenceException("Cannot find function named " + name);
+        else throw new UghException("Cannot find function named " + name);
     }
+
     #endregion
 
     #region Free
@@ -73,6 +74,6 @@ public record Function(string Name, TagNode Node)
 
     public void Invoke() // TODO: Add invoking with arguments
     {
-        Node.Execute();
+        Node.BaseExecute();
     }
 }

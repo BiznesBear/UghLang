@@ -1,7 +1,4 @@
-﻿using System.IO.Compression;
-
-namespace UghLang;
-
+﻿namespace UghLang;
 
 public abstract class ASTNode
 {
@@ -16,7 +13,7 @@ public abstract class ASTNode
     private Ugh? ugh;
     public Ugh Ugh
     {
-        get => ugh ?? throw new NullReferenceException("No Ugh in node");
+        get => ugh ?? throw new UghException("No Ugh in node");
         set => ugh = value;
     }
 
@@ -99,6 +96,7 @@ public abstract class ASTNode
     }
     #endregion
 
+
     /// <summary>
     /// Used for preloading nodes (to avoid it in execution)
     /// </summary>
@@ -127,7 +125,7 @@ public abstract class ASTNode
     public static bool CheckNodeType<T>(ASTNode node) => node.GetType() == typeof(T);
 }
 
-
+#region OtherNodes
 public class AST : ASTNode
 {
     public AST(Ugh ugh)
@@ -145,6 +143,7 @@ public class UndefinedNode : ASTNode {
         throw new NotImplementedException("Undefined instructions");
     }
 }
+#endregion
 
 #region ValueNodes
 public interface IReturnAny
@@ -158,7 +157,7 @@ public interface IReturn<T> : IReturnAny
 public class AnyValueNode<T>(T defalutValue) : ASTNode, IReturn<T>
 {
     public T Value { get; set; } = defalutValue;
-    public object AnyValue => Value ?? throw new NullReferenceException("Cannot find value");
+    public object AnyValue => Value ?? throw new UghException("Cannot find value");
 }
 public class StringValueNode : AnyValueNode<string> { public StringValueNode() : base(string.Empty) { } }
 public class IntValueNode : AnyValueNode<int> { public IntValueNode() : base(0) { } }
@@ -227,31 +226,51 @@ public class TagNode : ASTNode
 /// <summary>
 /// Used to declare and set variables
 /// </summary>
-public class InitVariableNode : ASTNode
+public class InitializeNode : ASTNode
 {
     public required Token Token { get; init; }
-    private IReturnAny? value;
-    private bool isSet;
-    private OperatorNode? oprNode;
 
+    private IReturnAny? value;
+    private OperatorNode? oprNode;
+    private ExpressionNode? argsNode;
+
+    private bool isOperation;
+    private Function? function;
     public override void Load()
     {
         base.Load();
-        isSet = TryGetNodeWith<OperatorNode>(out var opr);
-        oprNode = opr;
+        if(TryGetNodeWith<OperatorNode>(out var opr))
+        {
+            oprNode = opr;
+            isOperation = true;
+            return;
+        }
+
+        if(TryGetNodeWith<ExpressionNode>(out var arg))
+        {
+            argsNode = arg;
+            if (Ugh.TryGetFunction(Token.StringValue, out Function fun))
+                function = fun;
+        }
     }
 
     public override void Execute() 
     {
         base.Execute();
 
-        value = GetNodesWith<IReturnAny>().First();
 
-        if (value is null) return; // TODO: Throw here exception
+        if (isOperation)
+        {
+            value = GetNodesWith<IReturnAny>().First();
 
-        if (Ugh.TryGetVariable(Token, out var variable) && oprNode is not null && isSet)
-            variable.Value = Operation.Operate(variable.Value, value.AnyValue, oprNode.Operator);
-        else Ugh.InitializeVariable(new(Token.StringValue, value.AnyValue));
+            if (value is null) return; // TODO: Throw here exception
+
+            if (Ugh.TryGetVariable(Token, out var variable) && oprNode is not null && isOperation)
+                variable.Value = Operation.Operate(variable.Value, value.AnyValue, oprNode.Operator);
+            else Ugh.InitializeVariable(new(Token.StringValue, value.AnyValue));
+        }
+        else if(function is not null) function.Invoke(); 
+        else throw new UghException("Invalid initialize of object");
     }
 }
 
@@ -263,7 +282,7 @@ public class RefrenceNode : ASTNode, IReturnAny
     public required Token Token { get; init; }
 
     private object? val;
-    public object AnyValue => val ?? throw new NullReferenceException();
+    public object AnyValue => val ?? throw new UghException();
 
     public override void Execute()
     {
@@ -273,9 +292,8 @@ public class RefrenceNode : ASTNode, IReturnAny
 
     public Variable GetVariable()
     {
-        if (Ugh.TryGetVariable(Token, out var variable))
-            return variable;
-        else throw new NullReferenceException(); 
+        Ugh.TryGetVariable(Token, out var variable);
+        return variable;
     }
 }
 #endregion
@@ -288,7 +306,7 @@ public class PrintNode : ASTNode
         base.Execute();
         if (TryGetNodeWith<ExpressionNode>(out var expr))
             Console.WriteLine(expr.AnyValue);
-        else throw new NullReferenceException();
+        else throw new UghException();
     }
 }
 public class InputNode : AnyValueNode<string>
@@ -322,30 +340,28 @@ public class FreeNode : ASTNode
             Ugh.FreeVariable(refNode.GetVariable());
         else if (TryGetNodeWith<AnyValueNode<string>>(out var modifier) && modifier.Value == "all")
             Ugh.FreeAllVariables();
-        // TODO: Throw here exception
+        else throw new UghException();
     }
 }
 public class DeclareFuntionNode : ASTNode 
 {
     private ExpressionNode? decArgument;
     private TagNode? tag;
+    private RefrenceNode? name;
 
     public override void Load()
     {
         base.Load();
         TryGetNodeWith<ExpressionNode>(out var expr);
         TryGetNodeWith<TagNode>(out var t);
+        TryGetNodeWith<RefrenceNode>(out var n);
         decArgument = expr;
         tag = t;
-    }
+        name = n;
 
-    public override void Execute()
-    {
-        base.Execute();
         if (decArgument is null) return;
-        Function fun = new("",tag ?? TagNode.EMPTY);
+        Function fun = new(name?.Token.StringValue ?? throw new UghException(), tag ?? TagNode.EMPTY);
         Ugh.DeclareFunction(fun);
-        // declare function here
     }
 }
 
@@ -372,8 +388,12 @@ public class IfNode : ASTNode
     {
         base.Load();
 
-        if (TryGetNodeWith<ExpressionNode>(out var expr)) exprs = expr;
-        if (TryGetNodeWith<TagNode>(out var t)) tag = t;
+        TryGetNodeWith<ExpressionNode>(out var expr);
+        exprs = expr;
+
+        TryGetNodeWith<TagNode>(out var t);
+        tag = t;
+
         if (TryGetNextBrother<ElseNode>(out var elN)) elseNode = elN;
     }
 
@@ -386,7 +406,7 @@ public class IfNode : ASTNode
                 tag?.BaseExecute();
             else elseNode?.BaseExecute();
         }
-        else throw new NullReferenceException("Cannot find expression in if statement");
+        else throw new UghException("Cannot find expression in if statement");
     }
 }
 
@@ -403,7 +423,7 @@ public class ElseNode : ASTNode
         tag = t;
     }
     public void BaseExecute() => tag?.BaseExecute();
-    public override void Execute() { }
+    public override void Execute() { return; }
 }
 
 /// <summary>

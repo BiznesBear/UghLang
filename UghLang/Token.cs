@@ -4,18 +4,21 @@ namespace UghLang;
 
 public enum TokenType
 {
-    None, // other (refrence or undefined)
-    StringValue, // string 
-    IntValue, // int
-    BoolValue, // boolean
-    FloatValue, // boolean
-    Separator, // ends somthing
+    None, // can be everything 
     Keyword, // keyword
+
     Operator, // op
+    Separator, // ends somthing
+
     OpenExpression, // opens expression
     CloseExpression, // closes expression
     OpenBlock, // opens block of code
     CloseBlock, // closes block of code
+
+    StringValue, // string 
+    IntValue, // int
+    BoolValue, // boolean
+    FloatValue, // boolean
 }
 
 

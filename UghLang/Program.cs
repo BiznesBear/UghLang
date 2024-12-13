@@ -5,7 +5,11 @@ if (args.Length < 1)
     Console.WriteLine("Ugh");
     return;
 }
+
+#if DEBUG
 Debug.Enabled = true;
+#endif
+
 string path = string.Empty;
 foreach(var arg in args)
 {
@@ -19,7 +23,7 @@ foreach(var arg in args)
             case "--debug": // Enables debug
                 Debug.Enabled = true; // TODO: Add error handling when is nothing to execute
                 break;
-            default: throw new ArgumentException(""); // ADD HERE UNDEFINED ARGUMENT EXCEPTION
+            default: throw new UghException(); // ADD HERE UNDEFINED ARGUMENT EXCEPTION
         }
     }
     else path = arg;

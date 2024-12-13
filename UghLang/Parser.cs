@@ -17,7 +17,6 @@ public class Parser
 
     public void AddToken(Token token)
     {
-        Debug.Print(token);
         switch (token.Type)
         {
             case TokenType.Keyword:
@@ -64,8 +63,8 @@ public class Parser
                 // end branch
                 BackToMasterBranch();
                 break;
-            case TokenType.None:
-                if (IsMasterBranch()) EnterNode(new InitVariableNode() { Token = token });
+            case TokenType.None: // TODO: Rework this 
+                if (IsMasterBranch()) EnterNode(new InitializeNode() { Token = token });
                 else CreateNode(new RefrenceNode() { Token = token });
                 break;
             default:
@@ -83,8 +82,8 @@ public class Parser
     /// <param name="node"></param>
     private void CreateNode(ASTNode node) 
     { 
-        currentNode.AddNode(node); 
-
+        currentNode.AddNode(node);
+        Debug.Print(node);
     }
 
     /// <summary>

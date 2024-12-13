@@ -1,11 +1,10 @@
 # TODO
-
-??? OPTIMALIZATIONS (remove dynamic totaly) ???
-
-functions 
-commas
+commas (arguments)
 
 local (thing marked as local cannot be accesed by other script)
-insert keyword (inserts other ugh file into script)
+
+insert keyword (inserts other ugh files/librarys into script in runtime)
+example: `insert myLib "mylib.ugh";`
+usage: `myLib.Foo();` - assigning libraries (and other scripts) to variables is supposed to speed up runtime 
 
 ADD ANY ERROR HANDLING #

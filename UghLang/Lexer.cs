@@ -63,6 +63,11 @@ public class Lexer
                         digitType = TokenType.FloatValue;
                         continue;
                     }
+                    else if (ch == '_')
+                    {
+                        Skip();
+                        continue;
+                    }
                     else break; 
                 }
                 AddPart(digitType);
