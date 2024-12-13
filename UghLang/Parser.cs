@@ -8,8 +8,6 @@ public class Parser
     private ASTNode currentNode;
     private Stack<ASTNode> masterBranches = new();
 
-    private string debugTree = string.Empty;
-    private string recoveryDebugTree = string.Empty;
 
     public Parser(Ugh ugh)
     {
@@ -19,6 +17,7 @@ public class Parser
 
     public void AddToken(Token token)
     {
+        Debug.Print(token);
         switch (token.Type)
         {
             case TokenType.Keyword:
@@ -57,7 +56,10 @@ public class Parser
                 // add new value to expression
                 CreateNode(new BoolValueNode() { Value = token.BoolValue });
                 break;
-
+            case TokenType.FloatValue:
+                // add new value to expression
+                CreateNode(new FloatValueNode() { Value = token.FloatValue });
+                break;
             case TokenType.Separator:
                 // end branch
                 BackToMasterBranch();
@@ -82,7 +84,7 @@ public class Parser
     private void CreateNode(ASTNode node) 
     { 
         currentNode.AddNode(node); 
-        Debug.Print(debugTree + node); 
+
     }
 
     /// <summary>
@@ -92,7 +94,7 @@ public class Parser
     private void EnterNode(ASTNode node)
     {
         CreateNode(node);
-        debugTree += treeString;
+
         currentNode = node;
     }
 
@@ -105,7 +107,7 @@ public class Parser
         if (CurrentNodeIs<T>())
         {
             currentNode = currentNode.Parent;
-            debugTree = debugTree.Remove(debugTree.Length - treeString.Length,treeString.Length); // FOR TESTING ONLY
+           
         }
     }
 
@@ -115,7 +117,6 @@ public class Parser
     private void CreateMasterBranch()
     {
         masterBranches.Push(currentNode);
-        recoveryDebugTree = debugTree;
     }
 
     /// <summary>
@@ -127,7 +128,7 @@ public class Parser
     {
         if (GetMasterBranch().GetType() != typeof(T)) throw new Exception("This is not your branch"); // TODO: Add beter exception
         masterBranches.Pop();
-        debugTree += treeString;
+
         currentNode = GetMasterBranch();
     }
 
@@ -137,8 +138,6 @@ public class Parser
     private void BackToMasterBranch()
     {
         currentNode = GetMasterBranch();
-        debugTree = recoveryDebugTree;
-
     }
 
 

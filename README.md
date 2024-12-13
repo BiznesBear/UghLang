@@ -1,9 +1,21 @@
 # UghLang
 Created in C# for educational purpose interpeted programing language.
-The side-purpose of this project is to show the power of simplicity.
+The side-purpose of this project is to show the real power of simplicity.
 
 # Mini documentation
 This section is dedicated to the basic functions of the ugh language.
+
+## Keywords list
+- print
+- input
+- free
+- true
+- false
+- fun
+- break
+- if
+- else
+- repeat
 
 ## Variables
 ### Declaring variables
@@ -32,18 +44,14 @@ myVar // 2; # Square root #
 ```
 
 ## Statements and loops
-### If
-```ugh
-if(5 > 3){
-	print("5 is higher than 3")
-}
-```
 
-### Break
+### If and else
 ```ugh
 if(5 > 3){
-	break;
-	print("5 is higher than 3") # Wont be executed#
+	print("5 is higher than 3");
+}
+else {
+	print("5 is lower than 3");
 }
 ```
 

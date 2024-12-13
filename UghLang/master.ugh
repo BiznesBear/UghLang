@@ -1,12 +1,11 @@
 # TODO
-priority for operators
-OPTIMALIZATIONS (remove dynamic totaly)
+
+??? OPTIMALIZATIONS (remove dynamic totaly) ???
+
+functions 
 commas
 
-free "tag"; - release variables declared inside the same node
-
-float
-else elif
-fun 
+local (thing marked as local cannot be accesed by other script)
+insert keyword (inserts other ugh file into script)
 
 ADD ANY ERROR HANDLING #

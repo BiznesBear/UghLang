@@ -1,6 +1,13 @@
 ﻿namespace UghLang;
 
+// TODO: Better exceptions 
+
 
 [Serializable]
-public class NullVariableRefrenceException(Token token) 
-    : Exception($"Cannot find variable named {token.StringValue}") { }
+public class UghException : Exception
+{
+    public UghException() 
+    {
+        
+    }
+}

@@ -1,11 +1,14 @@
-﻿namespace UghLang;
+﻿using System.Globalization;
+
+namespace UghLang;
 
 public enum TokenType
 {
     None, // other (refrence or undefined)
     StringValue, // string 
     IntValue, // int
-    BoolValue, // int
+    BoolValue, // boolean
+    FloatValue, // boolean
     Separator, // ends somthing
     Keyword, // keyword
     Operator, // op
@@ -22,11 +25,13 @@ public class Token
 
     public string StringValue { get; set; }
     public int IntValue => int.Parse(StringValue);
+    public float FloatValue => float.Parse(StringValue, CultureInfo.InvariantCulture);
     public bool BoolValue => bool.Parse(StringValue);
 
 
     public Keyword? Keyword { get; set; }
     public Operator Operator => Operation.GetOperator(StringValue);
+
 
     /// <summary>
     /// Return value.
@@ -35,11 +40,12 @@ public class Token
     {
         get
         {
-            return GetDataType() switch
+            return Type switch
             {
-                DataType.String => StringValue,
-                DataType.Int => IntValue,
-                DataType.Bool => BoolValue,
+                TokenType.StringValue => StringValue,
+                TokenType.IntValue => IntValue,
+                TokenType.BoolValue => BoolValue,
+                TokenType.FloatValue => FloatValue,
                 _ => StringValue,
             };
         }
@@ -56,25 +62,13 @@ public class Token
         StringValue = val;
         Type = type;
 
-        if (StringValue.TryGetKeyword(out Keyword kw, out TokenType t))
+        if (StringValue.TryGetKeyword(out Keyword kw, out TokenType t)) // check if none type can be keyword
         {
             Keyword = kw;
             Type = t;
         }
     }
 
-
-
-    public DataType GetDataType()
-    {
-        return Type switch 
-        { 
-            TokenType.StringValue => DataType.String,
-            TokenType.IntValue => DataType.Int,
-            TokenType.BoolValue => DataType.Bool,
-            _ => DataType.Undefined,
-        };
-    }
 
     public override string ToString() => $"{nameof(Token)} {{ Value = {StringValue}, Type = {Type}, Keyword = {Keyword} }}";
 }

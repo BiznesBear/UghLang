@@ -3,16 +3,17 @@
 
 public class Lexer
 {
+    public Parser Parser { get; }
+
     private string currentPart = string.Empty;
     private bool insideString = false;
     private bool insideComment = false;
     private bool Ignore => insideString || insideComment;
-    private Parser Parser { get; }
+
     public Lexer(string contents, Parser parser)
     {
         Parser = parser;
 
-        // WARRING: DO NOT CHANGE THE ORDER
         for (int i = 0; i < contents.Length; i++)
         {
             char c = contents[i];
@@ -45,6 +46,7 @@ public class Lexer
             else if ((char.IsDigit(c) || (c == '-' && char.IsDigit(CheckNext())) && !Ignore))
             {
                 AddChar(c);
+                var digitType = TokenType.IntValue;
                 while (true)
                 {
                     char ch = CheckNext();
@@ -54,9 +56,16 @@ public class Lexer
                         Skip();
                         continue;
                     }
+                    else if(ch == '.')
+                    {
+                        AddChar(ch);
+                        Skip();
+                        digitType = TokenType.FloatValue;
+                        continue;
+                    }
                     else break; 
                 }
-                AddPart(TokenType.IntValue);
+                AddPart(digitType);
             }
             else if (c.IsOperator() && !Ignore)
             {

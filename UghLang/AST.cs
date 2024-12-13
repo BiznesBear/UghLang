@@ -1,4 +1,6 @@
-﻿namespace UghLang;
+﻿using System.IO.Compression;
+
+namespace UghLang;
 
 
 public abstract class ASTNode
@@ -7,12 +9,14 @@ public abstract class ASTNode
 
     #region Properties
     public bool CanExecute { get; set; } = true;
+    public int CurrentIteration { get; private set; }
+
     protected List<ASTNode> Nodes { get; } = new();
 
     private Ugh? ugh;
     public Ugh Ugh
     {
-        get => ugh ?? throw new NullReferenceException("No assigned Ugh in node");
+        get => ugh ?? throw new NullReferenceException("No Ugh in node");
         set => ugh = value;
     }
 
@@ -22,12 +26,9 @@ public abstract class ASTNode
         get => parent ?? this;
         set => parent = value;
     }
+
     #endregion
 
-    /// <summary>
-    /// Add node with assigned parent and ugh
-    /// </summary>
-    /// <param name="node">Node to assign</param>
     public void AddNode(ASTNode node)
     {
         node.Parent = this;
@@ -35,58 +36,76 @@ public abstract class ASTNode
         Nodes.Add(node);
     }
 
-    #region Searching
-    public static bool CheckNodeType<T>(ASTNode node)  => node.GetType() == typeof(T);
     public bool HasEmptyBranch() => Nodes.Count < 1;
-    public bool TryGetNodeWith<T>(out T node) where T : ASTNode
+
+    #region GettingNodes
+
+
+    public bool TryGetNextBrother<T>(out T node) where T : ASTNode
     {
-        foreach (var n in Nodes)
+        var index = Parent.CurrentIteration + 1;
+        if (index < Parent.Nodes.Count )
         {
-            if (CheckNodeType<T>(n))
+            var n = Parent.Nodes[index];
+            if(n is T t)
             {
-                node = (T)n;
+                node = t;
                 return true;
             }
         }
+
         node = (T)NULL;
         return false;
     }
 
-    /// <summary>
-    /// Searches for T in Nodes
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
-    public IEnumerable<T> GetChildrensWith<T>() 
+    public T? GetNodeWith<T>() where T : ASTNode
+    {
+        foreach (var n in Nodes)
+        {
+            if (CheckNodeType<T>(n))
+                return (T)n;
+        }
+        return null;
+    }
+
+    public bool TryGetNodeWith<T>(out T node) where T : ASTNode
+    {
+        var n = GetNodeWith<T>();
+
+        if(n is null)
+        {
+            node = (T)NULL;
+            return false;
+        }
+
+        node = n;
+        return true;
+    }
+
+    public IEnumerable<T> GetNodesWith<T>() 
     {
         foreach (var n in Nodes)
             if (n is T t) yield return t;
     }
 
-    /// <summary>
-    /// Searches for T in Nodes and nodes of childrens
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
-    public IEnumerable<T> GetAllChildrensWith<T>()
+    public IEnumerable<T> GetAllNodesWith<T>()
     {
         foreach (var n in Nodes)
         {
             if (n is T t) yield return t;
-            foreach (var dyn in n.GetChildrensWith<T>())
+            foreach (var dyn in n.GetAllNodesWith<T>())
                 yield return dyn;
         }
     }
-
     #endregion
 
     /// <summary>
     /// Used for preloading nodes (to avoid it in execution)
     /// </summary>
     public virtual void Load()
-    {
-        foreach (ASTNode node in Nodes)
-            node.Load();
+    { 
+        for (int i = 0; i < Nodes.Count; i++)
+            Nodes[i].Load();     
     }
 
     /// <summary>
@@ -94,14 +113,18 @@ public abstract class ASTNode
     /// </summary>
     public virtual void Execute()
     {
-        foreach (ASTNode node in Nodes)
+        for (int i = 0; i < Nodes.Count; i++) 
         {
-            if (!CanExecute) return;
-            node.Execute();
+            if (CanExecute)
+            {
+                CurrentIteration = i;
+                Nodes[i].Execute();
+            }
         }
     }
 
     public override string ToString() => $"{GetType().Name}";
+    public static bool CheckNodeType<T>(ASTNode node) => node.GetType() == typeof(T);
 }
 
 
@@ -123,28 +146,27 @@ public class UndefinedNode : ASTNode {
     }
 }
 
-
+#region ValueNodes
 public interface IReturnAny
 {
     public object AnyValue { get; }
 }
-
 public interface IReturn<T> : IReturnAny
 {
     public T Value { get; set; }
 }
-
 public class AnyValueNode<T>(T defalutValue) : ASTNode, IReturn<T>
 {
     public T Value { get; set; } = defalutValue;
     public object AnyValue => Value ?? throw new NullReferenceException("Cannot find value");
 }
-
 public class StringValueNode : AnyValueNode<string> { public StringValueNode() : base(string.Empty) { } }
 public class IntValueNode : AnyValueNode<int> { public IntValueNode() : base(0) { } }
 public class BoolValueNode : AnyValueNode<bool> { public BoolValueNode() : base(false) { } }
+public class FloatValueNode : AnyValueNode<float> { public FloatValueNode() : base(0f) { } }
+#endregion
 
-
+#region BasicNodes
 public class OperatorNode : ASTNode
 {
     public required Operator Operator { get; set; }
@@ -152,18 +174,11 @@ public class OperatorNode : ASTNode
 
 public class ExpressionNode : ASTNode, IReturnAny
 {
-    private object? val;
-    public object AnyValue => val ?? throw new NullReferenceException();
-
-    public override void Execute()
-    {
-        base.Execute();
-        val = Express();
-    }
+    public object AnyValue => Express();
 
     public object Express()
     {
-        if (HasEmptyBranch()) return Variable.NULL.Get();
+        if (HasEmptyBranch()) return Variable.NULL.Value;
 
         Stack<dynamic> vals = new();
         Stack<Operator> operators = new();
@@ -173,7 +188,16 @@ public class ExpressionNode : ASTNode, IReturnAny
             if (node is IReturnAny d)
                 vals.Push(d.AnyValue);
             else if (node is OperatorNode opNode)
+            {
+                while (operators.Count > 0 &&
+                       Operation.GetPrecedence(operators.Peek()) >= Operation.GetPrecedence(opNode.Operator))
+                {
+                    var right = vals.Pop();
+                    var left = vals.Pop();
+                    vals.Push(Operation.Operate(left, right, operators.Pop()));
+                }
                 operators.Push(opNode.Operator);
+            }
         }
 
         while(vals.Count > 1)
@@ -193,6 +217,8 @@ public class ExpressionNode : ASTNode, IReturnAny
 
 public class TagNode : ASTNode
 {
+    public const TagNode EMPTY = default;
+
     public void BaseExecute() => base.Execute();
     public override void Execute() { return; }
 }
@@ -219,13 +245,13 @@ public class InitVariableNode : ASTNode
     {
         base.Execute();
 
-        value = GetChildrensWith<IReturnAny>().First();
+        value = GetNodesWith<IReturnAny>().First();
 
         if (value is null) return; // TODO: Throw here exception
 
         if (Ugh.TryGetVariable(Token, out var variable) && oprNode is not null && isSet)
-            variable.Set(Operation.Operate(variable.Get(), value.AnyValue, oprNode.Operator));
-        else Ugh.DeclareVariable(new(Token.StringValue, value.AnyValue));
+            variable.Value = Operation.Operate(variable.Value, value.AnyValue, oprNode.Operator);
+        else Ugh.InitializeVariable(new(Token.StringValue, value.AnyValue));
     }
 }
 
@@ -242,18 +268,19 @@ public class RefrenceNode : ASTNode, IReturnAny
     public override void Execute()
     {
         base.Execute();
-        val = GetVariable().Get();
+        val = GetVariable().Value;
     }
 
     public Variable GetVariable()
     {
         if (Ugh.TryGetVariable(Token, out var variable))
             return variable;
-        else throw new NullVariableRefrenceException(Token); 
+        else throw new NullReferenceException(); 
     }
 }
+#endregion
 
-
+#region KeywordNodes
 public class PrintNode : ASTNode
 {
     public override void Execute()
@@ -261,7 +288,19 @@ public class PrintNode : ASTNode
         base.Execute();
         if (TryGetNodeWith<ExpressionNode>(out var expr))
             Console.WriteLine(expr.AnyValue);
-        // TODO: Add exception here.
+        else throw new NullReferenceException();
+    }
+}
+public class InputNode : AnyValueNode<string>
+{
+    public InputNode() : base(string.Empty) { }
+
+    public override void Execute()
+    {
+        base.Execute();
+        if (TryGetNodeWith<ExpressionNode>(out var expr))
+            Console.Write(expr.AnyValue);
+        Value = Console.ReadLine() ?? string.Empty;
     }
 }
 
@@ -283,9 +322,33 @@ public class FreeNode : ASTNode
             Ugh.FreeVariable(refNode.GetVariable());
         else if (TryGetNodeWith<AnyValueNode<string>>(out var modifier) && modifier.Value == "all")
             Ugh.FreeAllVariables();
-        return; // TODO: Throw here exception
+        // TODO: Throw here exception
     }
 }
+public class DeclareFuntionNode : ASTNode 
+{
+    private ExpressionNode? decArgument;
+    private TagNode? tag;
+
+    public override void Load()
+    {
+        base.Load();
+        TryGetNodeWith<ExpressionNode>(out var expr);
+        TryGetNodeWith<TagNode>(out var t);
+        decArgument = expr;
+        tag = t;
+    }
+
+    public override void Execute()
+    {
+        base.Execute();
+        if (decArgument is null) return;
+        Function fun = new("",tag ?? TagNode.EMPTY);
+        Ugh.DeclareFunction(fun);
+        // declare function here
+    }
+}
+
 
 public class BreakNode : ASTNode
 {
@@ -297,26 +360,50 @@ public class BreakNode : ASTNode
 }
 
 /// <summary>
-/// If statment
+/// Checks if next expression value equals true
 /// </summary>
 public class IfNode : ASTNode
 {
     private ExpressionNode? exprs;
     private TagNode? tag;
+    private ElseNode? elseNode; // TODO: Add implementation for else node
+
     public override void Load()
     {
         base.Load();
-        TryGetNodeWith<ExpressionNode>(out var expr);
-        TryGetNodeWith<TagNode>(out var t);
-        exprs = expr;
-        tag = t;
+
+        if (TryGetNodeWith<ExpressionNode>(out var expr)) exprs = expr;
+        if (TryGetNodeWith<TagNode>(out var t)) tag = t;
+        if (TryGetNextBrother<ElseNode>(out var elN)) elseNode = elN;
     }
+
     public override void Execute()
     {
         base.Execute();
-        if (exprs is not null && (bool)exprs.AnyValue == true)
-            tag?.BaseExecute();
+        if (exprs is not null)
+        {
+            if ((bool)exprs.AnyValue == true)
+                tag?.BaseExecute();
+            else elseNode?.BaseExecute();
+        }
+        else throw new NullReferenceException("Cannot find expression in if statement");
     }
+}
+
+/// <summary>
+/// Else statment
+/// </summary>
+public class ElseNode : ASTNode
+{
+    private TagNode? tag;
+    public override void Load()
+    {
+        base.Load();
+        TryGetNodeWith<TagNode>(out var t);
+        tag = t;
+    }
+    public void BaseExecute() => tag?.BaseExecute();
+    public override void Execute() { }
 }
 
 /// <summary>
@@ -345,3 +432,4 @@ public class RepeatNode : ASTNode
         }
     }
 }
+#endregion
