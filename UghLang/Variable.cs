@@ -1,4 +1,6 @@
-﻿namespace UghLang;
+﻿using UghLang.Nodes;
+
+namespace UghLang;
 public class Variable(string name, object val) : IDisposable, IReturnAny
 {
     public static readonly Variable NULL = new("", 0);

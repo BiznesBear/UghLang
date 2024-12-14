@@ -1,4 +1,6 @@
-﻿namespace UghLang;
+﻿using UghLang.Nodes;
+
+namespace UghLang;
 public enum Keyword
 {
     Print,
@@ -55,7 +57,7 @@ public static class KeywordExtension
             Keyword.Free => new FreeNode(),
             Keyword.True => new BoolValueNode() { Value = true },
             Keyword.False => new BoolValueNode() { Value = false },
-            Keyword.Fun => new DeclareFuntionNode(),
+            Keyword.Fun => new DeclareFunctionNode(),
             Keyword.Break => new BreakNode(),
             Keyword.If => new IfNode(),
             Keyword.Else => new ElseNode(),

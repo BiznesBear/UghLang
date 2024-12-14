@@ -1,4 +1,6 @@
-﻿namespace UghLang;
+﻿using UghLang.Nodes;
+
+namespace UghLang;
 
 
 public class Ugh

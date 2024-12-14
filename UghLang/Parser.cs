@@ -1,14 +1,14 @@
-﻿namespace UghLang;
+﻿using UghLang.Nodes;
+
+namespace UghLang;
 
 public class Parser
 {
     public readonly AST AST;
-    public string treeString = "+--";
 
     private ASTNode currentNode;
     private Stack<ASTNode> masterBranches = new();
-
-
+    
     public Parser(Ugh ugh)
     {
         AST = new(ugh);
@@ -65,7 +65,7 @@ public class Parser
                 break;
             case TokenType.None: // TODO: Rework this 
                 if (IsMasterBranch()) EnterNode(new InitializeNode() { Token = token });
-                else CreateNode(new RefrenceNode() { Token = token });
+                else CreateNode(new NameNode() { Token = token });
                 break;
             default:
                 Debug.Print("Somthing is unhandled");
