@@ -8,7 +8,8 @@ public abstract class ASTNode
     public bool CanExecute { get; set; } = true;
     public int CurrentIteration { get; private set; }
 
-    protected List<ASTNode> Nodes { get; } = new();
+    private List<ASTNode> nodes = new();
+    public IReadOnlyList<ASTNode> Nodes => nodes.AsReadOnly();
 
     private Ugh? ugh;
     public Ugh Ugh
@@ -30,14 +31,24 @@ public abstract class ASTNode
     {
         node.Parent = this;
         node.Ugh = Ugh;
-        Nodes.Add(node);
+        nodes.Add(node);
     }
 
     public bool HasEmptyBranch() => Nodes.Count < 1;
 
     #region GettingNodes
 
-
+    public T? GetNextBrother<T>() where T : ASTNode
+    {
+        var index = Parent.CurrentIteration + 1;
+        if (index < Parent.Nodes.Count)
+        {
+            var n = Parent.Nodes[index];
+            if (n is T t)
+                return t;
+        }
+        return null;
+    }
     public bool TryGetNextBrother<T>(out T node) where T : ASTNode
     {
         var index = Parent.CurrentIteration + 1;
@@ -121,6 +132,7 @@ public abstract class ASTNode
             }
         }
     }
+
 
     public override string ToString() => $"{GetType().Name}";
     public static bool CheckNodeType<T>(ASTNode node) => node.GetType() == typeof(T);

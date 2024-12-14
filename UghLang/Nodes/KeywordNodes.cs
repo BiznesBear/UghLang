@@ -89,7 +89,7 @@ public class IfNode : ASTNode
 
         exprs = GetNodeWith<ExpressionNode>();
         tag = GetNodeWith<TagNode>();
-        elseNode = GetNodeWith<ElseNode>();
+        elseNode = GetNextBrother<ElseNode>();
     }
 
     public override void Execute()
@@ -102,7 +102,6 @@ public class IfNode : ASTNode
                 tag?.BaseExecute();
                 if (elseNode is not null) elseNode.CanExecute = false;
             }
-            else CanExecute = false;
         }
         else throw new UghException("Cannot find expression in if statement");
     }

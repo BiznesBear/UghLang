@@ -37,3 +37,6 @@ var parser = new Parser(ugh);
 var lexer = new Lexer(file, parser);
 
 parser.Execute();
+
+
+Debug.PrintTree(parser.AST);

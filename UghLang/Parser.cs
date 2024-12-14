@@ -8,7 +8,8 @@ public class Parser
 
     private ASTNode currentNode;
     private Stack<ASTNode> masterBranches = new();
-    
+
+
     public Parser(Ugh ugh)
     {
         AST = new(ugh);
@@ -67,9 +68,7 @@ public class Parser
                 if (IsMasterBranch()) EnterNode(new InitializeNode() { Token = token });
                 else CreateNode(new NameNode() { Token = token });
                 break;
-            default:
-                Debug.Print("Somthing is unhandled");
-                break;
+            default: throw new Exception($"Unhandled token type: {token.Type}");
         }
     }
 
@@ -80,11 +79,7 @@ public class Parser
     /// Adds node to currentNode 
     /// </summary>
     /// <param name="node"></param>
-    private void CreateNode(ASTNode node) 
-    { 
-        currentNode.AddNode(node);
-        Debug.Print(node);
-    }
+    private void CreateNode(ASTNode node) => currentNode.AddNode(node);
 
     /// <summary>
     /// Add node to currentNode and becomes currentNode
@@ -93,7 +88,6 @@ public class Parser
     private void EnterNode(ASTNode node)
     {
         CreateNode(node);
-
         currentNode = node;
     }
 
@@ -104,40 +98,31 @@ public class Parser
     private void QuitNode<T>()
     {
         if (CurrentNodeIs<T>())
-        {
             currentNode = currentNode.Parent;
-           
-        }
     }
 
     /// <summary>
     /// Adds currentNode to masterBranches
     /// </summary>
-    private void CreateMasterBranch()
-    {
-        masterBranches.Push(currentNode);
-    }
+    private void CreateMasterBranch() => masterBranches.Push(currentNode);
+
 
     /// <summary>
     /// Removes peek of masterBranches
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <exception cref="Exception"></exception>
-    private void RemoveMasterBranch<T>()
+    private void RemoveMasterBranch<T>() // TODO: Fix debug tree in this function
     {
-        if (GetMasterBranch().GetType() != typeof(T)) throw new Exception("This is not your branch"); // TODO: Add beter exception
+        if (GetMasterBranch().GetType() != typeof(T)) return;
         masterBranches.Pop();
-
         currentNode = GetMasterBranch();
     }
 
     /// <summary>
     /// Set current node from peek of masterBranches
     /// </summary>
-    private void BackToMasterBranch()
-    {
-        currentNode = GetMasterBranch();
-    }
+    private void BackToMasterBranch() => currentNode = GetMasterBranch();
 
 
     /// <summary>
@@ -150,7 +135,6 @@ public class Parser
     /// </summary>
     /// <returns></returns>
     private bool IsMasterBranch() => currentNode == GetMasterBranch();
-
     private bool CurrentNodeIs<T>() => currentNode.GetType() == typeof(T);
 
 
