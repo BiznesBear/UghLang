@@ -16,8 +16,9 @@ This section is dedicated to the basic functions of the ugh language.
 - if
 - else
 - repeat
+- insert
 
-## Variables
+
 ### Declaring variables
 ```ugh
 myVar = 5;
@@ -43,7 +44,6 @@ myVar ** 2; # Power #
 myVar // 2; # Square root #
 ```
 
-## Statements and loops
 
 ### If and else
 ```ugh
@@ -62,4 +62,9 @@ repeat(10){
 	myVar + 1;
 	print(myVar);
 }
+```
+### Insert
+```ugh
+insert("std"); # You can put any name of ugh file here (or directory which contains source.ugh)#
+cube(2,3,4); 
 ```

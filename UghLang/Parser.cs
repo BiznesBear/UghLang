@@ -17,7 +17,6 @@ public class Parser
 
     public void AddToken(Token token)
     {
-        Debug.Print(token);
         switch (token.Type)
         {
             case TokenType.Keyword:

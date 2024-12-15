@@ -16,6 +16,7 @@ public enum Keyword
     If,
     Else,
     Repeat,
+    Insert,
 }
 public static class KeywordExtension
 {
@@ -31,6 +32,7 @@ public static class KeywordExtension
         { "if", Keyword.If },
         { "else", Keyword.Else },
         { "repeat", Keyword.Repeat },
+        { "insert", Keyword.Insert },
     };
 
     public static bool TryGetKeyword(this string word, out Keyword keyword, out TokenType type)
@@ -62,6 +64,7 @@ public static class KeywordExtension
             Keyword.If => new IfNode(),
             Keyword.Else => new ElseNode(),
             Keyword.Repeat => new RepeatNode(),
+            Keyword.Insert => new InsertNode(),
             _ => new UndefinedNode(),
         };
     }

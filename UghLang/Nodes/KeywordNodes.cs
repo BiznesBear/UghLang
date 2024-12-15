@@ -5,9 +5,10 @@ public class PrintNode : ASTNode
     public override void Execute()
     {
         base.Execute();
-        if (TryGetNodeWith<ExpressionNode>(out var expr))
-            Console.WriteLine(expr.AnyValue);
-        else throw new UghException();
+        if (!TryGetNodeWith<ExpressionNode>(out var expr)) 
+            throw new UghException("Invalid spelling of print keyword");
+        Console.WriteLine(expr.AnyValue);
+
     }
 }
 public class InputNode : AnyValueNode<string>
@@ -17,8 +18,9 @@ public class InputNode : AnyValueNode<string>
     public override void Execute()
     {
         base.Execute();
-        if (TryGetNodeWith<ExpressionNode>(out var expr))
-            Console.Write(expr.AnyValue);
+        if (!TryGetNodeWith<ExpressionNode>(out var expr))
+            throw new UghException("Invalid spelling of input keyword");
+        Console.Write(expr.AnyValue);
         Value = Console.ReadLine() ?? string.Empty;
     }
 }
@@ -150,5 +152,25 @@ public class RepeatNode : ASTNode
             for (int i = 0; i < (int)exprs.AnyValue; i++)
                 tag?.BaseExecute();
         }
+    }
+}
+public class InsertNode : ASTNode
+{
+    public override void Load()
+    {
+        base.Load();
+        if (!TryGetNodeWith<ExpressionNode>(out var expr)) throw new UghException("Invalid spelling of insert keyword");
+        string path = (string)expr.AnyValue;
+
+        if (File.Exists(path)) { }
+        else if (Path.Exists(path))
+            path += "/source.ugh";
+        else throw new UghException("Cannot find ugh named " + path);
+
+        var file = File.ReadAllText(path);
+
+        var parser = new Parser(Ugh);
+        var lexer = new Lexer(file, parser);
+        parser.Execute();
     }
 }

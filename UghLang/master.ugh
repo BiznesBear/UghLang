@@ -1,21 +1,23 @@
 # TODO
 
-dynamic tag node(allows to implement one node directly to if/else/fun)
-recurrency (couse now doesnt work for... reasons...)
+return, return [object];
 
-insert keyword (inserts other ugh files/librarys into script in runtime)
-example: `insert myLib "mylib.ugh";`
-usage: `myLib.Foo();` - assigning libraries (and other scripts) to variables is supposed to speed up runtime 
+dynamic tag node(allows to implement one node directly to if/else/fun)
 local (thing marked as local cannot be accesed by other script)
 
-return, return [object];
 lists, stack, queue, dictionary
 
 open/close file
 
+??? recurrency (couse now doesnt work for... reasons...) ???
 
-ADD ANY ERROR HANDLING as {
+ADD ANY ERROR HANDLING as 
 	unrecognizable (variable, function) names,
 	invalid format,
 	expected X in Y
-} #
+
+
+use keyword (for dlls and libs): `use myLib "mylib.ugh";`
+usage: `myLib.Foo();` - assigning libraries (and other scripts) to variables is supposed to speed up runtime 
+ #
+
