@@ -36,7 +36,7 @@ var ugh = new Ugh();
 var parser = new Parser(ugh);
 var lexer = new Lexer(file, parser);
 
-parser.Execute();
 
+parser.Execute();
 
 Debug.PrintTree(parser.AST);

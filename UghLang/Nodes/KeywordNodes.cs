@@ -28,6 +28,7 @@ public class FreeNode : ASTNode
 {
     private bool isRef;
     private NameNode? refNode;
+
     public override void Load()
     {
         base.Load();
@@ -39,30 +40,34 @@ public class FreeNode : ASTNode
     {
         base.Execute();
         if (isRef && refNode is not null)
-            Ugh.FreeVariable(refNode.GetVariable());
+            Ugh.FreeName(refNode.GetName());
         else if (TryGetNodeWith<AnyValueNode<string>>(out var modifier) && modifier.Value == "all")
-            Ugh.FreeAllVariables();
-        else throw new UghException();
+            Ugh.FreeAll();
+        else throw new UghException("Invalid initialization of free keyword");
     }
 
 }
 public class DeclareFunctionNode : ASTNode
 {
-    private ExpressionNode? funArgs;
+    private ExpressionNode? exprs;
     private TagNode? tag;
     private NameNode? name;
+
 
     public override void Load()
     {
         base.Load();
-        funArgs = GetNodeWith<ExpressionNode>();
+
+        exprs = GetNodeWith<ExpressionNode>();
         tag = GetNodeWith<TagNode>();
         name = GetNodeWith<NameNode>();
 
+        if (exprs is null || tag is null || name is null) 
+            throw new UghException("Wrong implementation of fun");
 
-        if (funArgs is null) return;
-        Function fun = new(name?.Token.StringValue ?? throw new UghException(), tag ?? (TagNode)NULL);
-        Ugh.DeclareFunction(fun);
+
+        Function fun = new(name.Token.StringValue, tag, exprs);
+        Ugh.RegisterName(fun);
     }
 }
 

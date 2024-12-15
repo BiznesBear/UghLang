@@ -9,7 +9,6 @@ public class Parser
     private ASTNode currentNode;
     private Stack<ASTNode> masterBranches = new();
 
-
     public Parser(Ugh ugh)
     {
         AST = new(ugh);
@@ -18,6 +17,7 @@ public class Parser
 
     public void AddToken(Token token)
     {
+        Debug.Print(token);
         switch (token.Type)
         {
             case TokenType.Keyword:
@@ -64,7 +64,7 @@ public class Parser
                 // end branch
                 BackToMasterBranch();
                 break;
-            case TokenType.None: // TODO: Rework this 
+            case TokenType.Name: // TODO: Rework this 
                 if (IsMasterBranch()) EnterNode(new InitializeNode() { Token = token });
                 else CreateNode(new NameNode() { Token = token });
                 break;
@@ -75,14 +75,10 @@ public class Parser
 
     #region NodeManagment
 
-    /// <summary>
-    /// Adds node to currentNode 
-    /// </summary>
-    /// <param name="node"></param>
     private void CreateNode(ASTNode node) => currentNode.AddNode(node);
 
     /// <summary>
-    /// Add node to currentNode and becomes currentNode
+    /// Add node to currentNode that becomes currentNode
     /// </summary>
     /// <param name="node"></param>
     private void EnterNode(ASTNode node)
@@ -111,7 +107,6 @@ public class Parser
     /// Removes peek of masterBranches
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    /// <exception cref="Exception"></exception>
     private void RemoveMasterBranch<T>() // TODO: Fix debug tree in this function
     {
         if (GetMasterBranch().GetType() != typeof(T)) return;

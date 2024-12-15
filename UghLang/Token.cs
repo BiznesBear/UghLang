@@ -1,10 +1,8 @@
-﻿using System.Globalization;
-
-namespace UghLang;
+﻿namespace UghLang;
 
 public enum TokenType
 {
-    None, // can be everything 
+    Name, // can be everything 
     Keyword, // keyword
 
     Operator, // op
@@ -18,7 +16,7 @@ public enum TokenType
     StringValue, // string 
     IntValue, // int
     BoolValue, // boolean
-    FloatValue, // boolean
+    FloatValue, // float
 }
 
 
@@ -28,7 +26,7 @@ public class Token
 
     public string StringValue { get; set; }
     public int IntValue => int.Parse(StringValue);
-    public float FloatValue => float.Parse(StringValue, CultureInfo.InvariantCulture);
+    public float FloatValue => float.Parse(StringValue, System.Globalization.CultureInfo.InvariantCulture);
     public bool BoolValue => bool.Parse(StringValue);
 
 
@@ -73,5 +71,5 @@ public class Token
     }
 
 
-    public override string ToString() => $"{nameof(Token)} {{ Value = {StringValue}, Type = {Type}, Keyword = {Keyword} }}";
+    public override string ToString() => $"{nameof(Token)} {{ Value = {StringValue} | Type = {Type} | Keyword = {Keyword} }}";
 }

@@ -5,77 +5,83 @@ namespace UghLang;
 
 public class Ugh
 {
-    private readonly List<Variable> variables = new();
-    private readonly List<Function> functions = new();
+    private readonly Dictionary<string, Name> names = new();
 
-    #region Variable
-    public void InitializeVariable(Variable var)
+    public void RegisterName(Name name)
     {
-        variables.Add(var);
-        Debug.Print("Initialized " + var); // For testing only
+        names.Add(name.Key, name);
     }
 
-    public bool TryGetVariable(Token token, out Variable var)
+    public bool TryGetName(string name, out Name value)
+    {    
+        names.TryGetValue(name, out var n);
+
+        value = n ?? Name.NULL; // assign NULL var if search failed
+        return n != null;
+    }
+
+    public Name GetName(string name)
     {
-        var = Variable.NULL;
-        if (token.Type != TokenType.None) return false; // check if token can even be variable
-
-        var v = variables.Find(x => x.Name == token.StringValue); // search for variable
-
-        var = v ?? Variable.NULL; // assign NULL var if search failed
-        return v != null;
+        if (TryGetName(name, out var v)) return v;
+        else throw new UghException($"Name {name} is not declared");
     }
-
-    public Variable GetVariable(Token token)
+    public void FreeName(Name name)
     {
-        if (TryGetVariable(token, out var v)) return v;
-        else throw new UghException("Cannot find function named " + token.StringValue);
+        names.Remove(name.Key);
+        name.Dispose();
     }
-    #endregion
 
-    #region Function
-    public void DeclareFunction(Function fun)
+    public void FreeAll()
     {
-        functions.Add(fun);
-        Debug.Print("Declared " + fun); // For testing only
+        foreach (var v in names.Values)
+            v.Dispose();
+        names.Clear();
     }
 
-    public bool TryGetFunction(string name, out Function func)
-    {       
-        var f = functions.Find(x => x.Name == name); // search for variable
-
-        func = f ?? Function.NULL; // assign NULL var if search failed
-        return f != null;
-    }
-
-    public Function GetFunction(string name)
-    {
-        if (TryGetFunction(name, out var v)) return v;
-        else throw new UghException("Cannot find function named " + name);
-    }
-
-    #endregion
-
-    #region Free
-    public void FreeVariable(Variable variable)
-    {
-        variables.Remove(variable);
-        variable.Dispose();
-    }
-    public void FreeVariable(Token token) => FreeVariable(GetVariable(token));
-    public void FreeAllVariables()
-    {
-        variables.ForEach(v => v.Dispose());
-        variables.Clear();
-    }
-    #endregion 
 }
-public record Function(string Name, TagNode Node)
+public abstract class Name(string name, object val) : IDisposable, IReturnAny
 {
-    public const Function NULL = default;
+    public const Name NULL = default;
+    public string Key { get; } = name;
 
-    public void Invoke() // TODO: Add invoking with arguments
+    public object Value { get; set; } = val;
+    public object AnyValue => Value;
+
+
+    public T Get<T>() where T : Name => this as T ?? throw new UghException($"Cannot convert {GetType()} to {typeof(T)}");
+
+    public void Dispose() => GC.SuppressFinalize(this);
+    public override string ToString() => $"{nameof(Name)}{{{nameof(Key)} = {Key}; {nameof(Value)} = {Value}}}";
+}
+
+public class Variable(string name, object value) : Name(name, value) { }
+public class Function(string name, TagNode node, ExpressionNode exprs) : Name(name, 0)
+{
+    private TagNode TagNode { get; set; } = node;
+    private ExpressionNode ExpressionNode { get; set; } = exprs;
+
+    private Ugh Ugh => TagNode.Ugh;
+
+    public void Invoke(IEnumerable<IReturnAny> args) 
     {
-        Node.BaseExecute();
+        List<Variable> localVariables = new();
+
+        var nodes = ExpressionNode.GetNodesWith<NameNode>();
+
+        int nodesCount = nodes.Count();
+        if (nodesCount != args.Count()) throw new UghException($"Tryed to call function {Key} with invalid argument count");
+
+        for (int i = 0; i < nodes.Count(); i++)
+        {
+            var nameNode = nodes.ElementAt(i);
+            Variable v = new(nameNode.Token.StringValue, args.ElementAt(i).AnyValue);
+            Ugh.RegisterName(v);
+            localVariables.Add(v);
+        }
+
+        TagNode.BaseExecute();
+
+        foreach (var v in localVariables)
+            Ugh.FreeName(v);
     }
 }

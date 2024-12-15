@@ -36,13 +36,14 @@ public class Lexer
                 // check if current part is not empty space
                 if(IsPartEmpty()) continue;
                 
-                AddPart(TokenType.None);
+                AddPart(TokenType.Name);
             }
             else if (c == ';' && !Ignore) AddSingle(TokenType.Separator);
             else if (c == '(' && !Ignore) AddSingle(TokenType.OpenExpression);
             else if (c == ')' && !Ignore) AddSingle(TokenType.CloseExpression);
             else if (c == '{' && !Ignore) AddSingle(TokenType.OpenBlock);
             else if (c == '}' && !Ignore) AddSingle(TokenType.CloseBlock);
+            else if (c == ',' && !Ignore) { /* Just do nothing there */ }
             else if ((char.IsDigit(c) || (c == '-' && char.IsDigit(CheckNext())) && !Ignore))
             {
                 AddChar(c);
@@ -112,7 +113,7 @@ public class Lexer
     private void StartNew()
     {
         if (!IsPartEmpty()) 
-            AddPart(TokenType.None);
+            AddPart(TokenType.Name);
     }
     private bool IsPartEmpty() => currentPart == string.Empty;
     private void AddChar(char c) => currentPart += c;
