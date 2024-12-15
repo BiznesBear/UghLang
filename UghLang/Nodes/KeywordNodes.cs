@@ -154,12 +154,13 @@ public class RepeatNode : ASTNode
         }
     }
 }
-public class InsertNode : ASTNode
+public class InsertNode : ASTNode 
 {
     public override void Load()
     {
         base.Load();
-        if (!TryGetNodeWith<ExpressionNode>(out var expr)) throw new UghException("Invalid spelling of insert keyword");
+        //return; // currently disabled couse... bugs
+        if (!TryGetNodeWith<StringValueNode>(out var expr)) throw new UghException("Invalid spelling of insert keyword");
         string path = (string)expr.AnyValue;
 
         if (File.Exists(path)) { }
@@ -171,6 +172,15 @@ public class InsertNode : ASTNode
 
         var parser = new Parser(Ugh);
         var lexer = new Lexer(file, parser);
+
         parser.Execute();
+    }
+}
+public class ReturnNode : ASTNode
+{
+    public override void Execute()
+    {
+        base.Execute();
+        throw new NotImplementedException("Return is not compleate function. Please remove it from your code.");
     }
 }

@@ -7,6 +7,8 @@ public class Ugh
 {
     private readonly Dictionary<string, Name> names = new();
 
+    public IReadOnlyDictionary<string, Name> Names => names;
+
     public void RegisterName(Name name)
     {
         names.Add(name.Key, name);

@@ -6,9 +6,10 @@ public abstract class ASTNode
 
     #region Properties
     public bool CanExecute { get; set; } = true;
-    public int CurrentIteration { get; private set; }
 
     private List<ASTNode> nodes = new();
+    public int CurrentIteration { get; private set; } = 0;
+
     public IReadOnlyList<ASTNode> Nodes => nodes.AsReadOnly();
 
     private Ugh? ugh;
@@ -37,6 +38,7 @@ public abstract class ASTNode
     public bool HasEmptyBranch() => Nodes.Count < 1;
 
     #region GettingNodes
+
 
     public T? GetNextBrother<T>() where T : ASTNode
     {
@@ -115,7 +117,10 @@ public abstract class ASTNode
     public virtual void Load()
     {
         for (int i = 0; i < Nodes.Count; i++)
+        {
+            CurrentIteration = i;
             Nodes[i].Load();
+        }
     }
 
     /// <summary>
@@ -125,11 +130,9 @@ public abstract class ASTNode
     {
         for (int i = 0; i < Nodes.Count; i++)
         {
+            CurrentIteration = i;
             if (CanExecute)
-            {
-                CurrentIteration = i;
                 Nodes[i].Execute();
-            }
         }
     }
 

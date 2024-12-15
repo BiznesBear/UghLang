@@ -17,6 +17,7 @@ This section is dedicated to the basic functions of the ugh language.
 - else
 - repeat
 - insert
+- return (under construction)
 
 
 ### Declaring variables

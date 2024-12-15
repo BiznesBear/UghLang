@@ -1,6 +1,7 @@
+
 # TODO
 
-return, return [object];
+return 
 
 dynamic tag node(allows to implement one node directly to if/else/fun)
 local (thing marked as local cannot be accesed by other script)
@@ -16,8 +17,6 @@ ADD ANY ERROR HANDLING as
 	invalid format,
 	expected X in Y
 
-
 use keyword (for dlls and libs): `use myLib "mylib.ugh";`
 usage: `myLib.Foo();` - assigning libraries (and other scripts) to variables is supposed to speed up runtime 
- #
-
+#
