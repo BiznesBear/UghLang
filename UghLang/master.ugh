@@ -1,9 +1,10 @@
-
 # TODO
 
-return 
+return (under construction)
 
-dynamic tag node(allows to implement one node directly to if/else/fun)
+good cleanup (and big optimalizations)
+
+
 local (thing marked as local cannot be accesed by other script)
 
 lists, stack, queue, dictionary

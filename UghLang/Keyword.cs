@@ -15,6 +15,7 @@ public enum Keyword
     Break,
     If,
     Else,
+    Elif,
     Repeat,
     Insert,
     Return
@@ -32,6 +33,7 @@ public static class KeywordExtension
         { "break", Keyword.Break },
         { "if", Keyword.If },
         { "else", Keyword.Else },
+        { "elif", Keyword.Elif },
         { "repeat", Keyword.Repeat },
         { "insert", Keyword.Insert },
         { "return", Keyword.Return },
@@ -65,6 +67,7 @@ public static class KeywordExtension
             Keyword.Break => new BreakNode(),
             Keyword.If => new IfNode(),
             Keyword.Else => new ElseNode(),
+            Keyword.Elif => new ElifNode(),
             Keyword.Repeat => new RepeatNode(),
             Keyword.Insert => new InsertNode(),
             Keyword.Return => new ReturnNode(),

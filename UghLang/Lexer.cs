@@ -128,6 +128,7 @@ public class Lexer
         // save last part and clear current 
         Token token = new(currentPart, type);
         Parser.AddToken(token);
+        Debug.Print(token);
         currentPart = string.Empty;
     }
 }

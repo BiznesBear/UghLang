@@ -51,6 +51,7 @@ public abstract class ASTNode
         }
         return null;
     }
+
     public bool TryGetNextBrother<T>(out T node) where T : ASTNode
     {
         var index = Parent.CurrentIteration + 1;
@@ -68,15 +69,15 @@ public abstract class ASTNode
         return false;
     }
 
-
-    public T? GetNodeWith<T>() where T : ASTNode
+    // TODO: Make cleanup here
+    public T? GetNodeWith<T>() 
     {
         foreach (var n in Nodes)
         {
-            if (CheckNodeType<T>(n))
-                return (T)n;
+            if (n is T t)
+                return t;
         }
-        return null;
+        return default;
     }
 
     public bool TryGetNodeWith<T>(out T node) where T : ASTNode
@@ -138,7 +139,6 @@ public abstract class ASTNode
 
 
     public override string ToString() => $"{GetType().Name}";
-    public static bool CheckNodeType<T>(ASTNode node) => node.GetType() == typeof(T);
 }
 
 

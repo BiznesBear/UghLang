@@ -1,4 +1,6 @@
-﻿namespace UghLang;
+﻿using UghLang.Nodes;
+
+namespace UghLang;
 
 // TODO: Better exceptions 
 
@@ -11,6 +13,15 @@ public class UghException : Exception
     }
 
     public UghException(string mess) : base(mess)
+    {
+
+    }
+}
+
+[Serializable]
+public class InvalidSpellingException : UghException
+{
+    public InvalidSpellingException(ASTNode node) : base($"Invalid spelling of {node.GetType()}")
     {
 
     }

@@ -5,10 +5,9 @@ public class PrintNode : ASTNode
     public override void Execute()
     {
         base.Execute();
-        if (!TryGetNodeWith<ExpressionNode>(out var expr)) 
-            throw new UghException("Invalid spelling of print keyword");
+        if (!TryGetNodeWith<ExpressionNode>(out var expr))
+            throw new InvalidSpellingException(this);
         Console.WriteLine(expr.AnyValue);
-
     }
 }
 public class InputNode : AnyValueNode<string>
@@ -19,7 +18,7 @@ public class InputNode : AnyValueNode<string>
     {
         base.Execute();
         if (!TryGetNodeWith<ExpressionNode>(out var expr))
-            throw new UghException("Invalid spelling of input keyword");
+            throw new InvalidSpellingException(this);
         Console.Write(expr.AnyValue);
         Value = Console.ReadLine() ?? string.Empty;
     }
@@ -45,7 +44,7 @@ public class FreeNode : ASTNode
             Ugh.FreeName(refNode.GetName());
         else if (TryGetNodeWith<AnyValueNode<string>>(out var modifier) && modifier.Value == "all")
             Ugh.FreeAll();
-        else throw new UghException("Invalid initialization of free keyword");
+        else throw new InvalidSpellingException(this);
     }
 
 }
@@ -65,7 +64,7 @@ public class DeclareFunctionNode : ASTNode
         name = GetNodeWith<NameNode>();
 
         if (exprs is null || tag is null || name is null) 
-            throw new UghException("Wrong implementation of fun");
+           throw new InvalidSpellingException(this);
 
 
         Function fun = new(name.Token.StringValue, tag, exprs);
@@ -88,7 +87,7 @@ public class IfNode : ASTNode
 {
     private ExpressionNode? exprs;
     private TagNode? tag;
-    private ElseNode? elseNode; // TODO: Add implementation for else node
+    private ASTNode? elseNode; // TODO: Add implementation for else node
 
     public override void Load()
     {
@@ -97,6 +96,7 @@ public class IfNode : ASTNode
         exprs = GetNodeWith<ExpressionNode>();
         tag = GetNodeWith<TagNode>();
         elseNode = GetNextBrother<ElseNode>();
+        elseNode ??= GetNextBrother<ElifNode>(); // if else node is null
     }
 
     public override void Execute()
@@ -105,24 +105,27 @@ public class IfNode : ASTNode
         if (exprs is not null)
         {
             if ((bool)exprs.AnyValue == true)
-            {
                 tag?.BaseExecute();
-                if (elseNode is not null) elseNode.CanExecute = false;
-            }
+            else if (elseNode is not null) elseNode.CanExecute = true;
         }
-        else throw new UghException("Cannot find expression in if statement");
+        else throw new InvalidSpellingException(this);
     }
 }
 
-
 public class ElseNode : ASTNode
 {
+    public ElseNode() => CanExecute = false;
+
     private TagNode? tag;
+
     public override void Load()
     {
         base.Load();
-        tag = GetNodeWith<TagNode>();
+        if (TryGetNodeWith<TagNode>(out var tn))
+            tag = tn;
+        else throw new InvalidSpellingException(this);
     }
+
     public override void Execute()
     {
         if (!CanExecute) return;
@@ -130,7 +133,10 @@ public class ElseNode : ASTNode
         tag?.BaseExecute();
     }
 }
-
+public class ElifNode : IfNode
+{
+    public ElifNode() => CanExecute = false;
+}
 
 public class RepeatNode : ASTNode
 {
@@ -159,9 +165,9 @@ public class InsertNode : ASTNode
     public override void Load()
     {
         base.Load();
-        //return; // currently disabled couse... bugs
-        if (!TryGetNodeWith<StringValueNode>(out var expr)) throw new UghException("Invalid spelling of insert keyword");
-        string path = (string)expr.AnyValue;
+        
+        if (!TryGetNodeWith<StringValueNode>(out var expr)) throw new InvalidSpellingException(this);
+        string path = expr.Value;
 
         if (File.Exists(path)) { }
         else if (Path.Exists(path))

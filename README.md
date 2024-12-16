@@ -15,6 +15,7 @@ This section is dedicated to the basic functions of the ugh language.
 - break
 - if
 - else
+- elif
 - repeat
 - insert
 - return (under construction)

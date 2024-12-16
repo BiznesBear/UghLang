@@ -63,7 +63,7 @@ public class Token
         StringValue = val;
         Type = type;
 
-        if (StringValue.TryGetKeyword(out Keyword kw, out TokenType t)) // check if none type can be keyword
+        if (StringValue.TryGetKeyword(out Keyword kw, out TokenType t) && Type == TokenType.Name) // check if none type can be keyword
         {
             Keyword = kw;
             Type = t;
