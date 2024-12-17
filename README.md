@@ -1,5 +1,5 @@
 # UghLang
-Created in C# interpreted programing language created for educational purpose and to show the power of simplicity.
+Written in C# interpreted programing language created for educational purpose and to show the power of simplicity.
 
 # Mini documentation
 This section is dedicated to the basic functions of the ugh language.
@@ -12,7 +12,7 @@ This section is dedicated to the basic functions of the ugh language.
 - false
 - fun
 - break
-- return (under construction)
+- return (not implemented yet)
 - if
 - else
 - elif
@@ -79,8 +79,8 @@ while(myVar < 10){
 ```
 ### Insert
 ```ugh
-insert("std"); # You can put any name of ugh file here (or directory which contains source.ugh)#
-cube(2,3,4); 
+insert "std"; # You can put any name of ugh file here (or directory which contains source.ugh)#
+helloworld(); 
 ```
 
 ### Local
@@ -89,7 +89,7 @@ local fun foo(){ # Nodes marked as local won't load when inserted from other fil
 	print("Hello, world!");
 } 
 
-local { # Nested local example #
+local { # Example of nested local #
 
 	for(100){
 		print("Hello, world!");

@@ -4,8 +4,6 @@ describe all functions and classes
 
 return (under construction)
 
-
-local (thing marked as local cannot be accesed by other script)
 lists (and stack, queue, dictionary)
 
 std
