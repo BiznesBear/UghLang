@@ -34,7 +34,7 @@ if (path == string.Empty) return;
 string file = File.ReadAllText(path);
 
 var ugh = new Ugh();
-var parser = new Parser(ugh);
+var parser = new Parser(ugh, false);
 var lexer = new Lexer(file, parser);
 
 Debug.PrintTree(parser.AST);

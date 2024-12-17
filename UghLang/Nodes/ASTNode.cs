@@ -152,7 +152,13 @@ public abstract class ASTNode
                 Nodes[i].Execute();
         }
     }
-
+    public void ForceExecute()
+    {
+        var startingState = Executable;
+        Executable = true;
+        Execute();
+        Executable = startingState;
+    }
     public override string ToString() => $"{GetType().Name}";
 }
 

@@ -83,7 +83,7 @@ insert("std"); # You can put any name of ugh file here (or directory which conta
 cube(2,3,4); 
 ```
 
-### Insert
+### Local
 ```ugh
 local fun foo(){ # Nodes marked as local won't load when inserted from other file # 
 	print("Hello, world!");

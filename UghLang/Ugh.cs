@@ -80,7 +80,9 @@ public class Function(string name, TagNode node, ExpressionNode exprs) : Name(na
             localVariables.Add(v);
         }
 
-        TagNode.BaseExecute();
+        TagNode.Executable = true;
+        TagNode.Execute();
+        TagNode.Executable = false;
 
         localVariables.ForEach(Ugh.FreeName);
     }

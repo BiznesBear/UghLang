@@ -7,12 +7,11 @@ public class OperatorNode : ASTNode
 }
 
 /// <summary>
-/// Does nothing on execution, but can be executed with BaseExecute
+/// Needs outside permision to execute. 
 /// </summary>
-public class TagNode : ASTNode
+public class TagNode : ASTNode 
 {
-    public void BaseExecute() => base.Execute();
-    public override void Execute() { return; }
+    public TagNode() => Executable = false;
 }
 #endregion
 

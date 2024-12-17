@@ -62,8 +62,7 @@ public class DeclareFunctionNode : NestedExpressionAndTagNode
 
         if (exprs is null || tag is null || name is null) 
            throw new InvalidSpellingException(this);
-
-
+        
         Function fun = new(name.Token.StringValue, tag, exprs);
         Ugh.RegisterName(fun);
     }
@@ -92,14 +91,14 @@ public class IfNode : NestedExpressionAndTagNode
 
     public override void Execute()
     {
+        if (!Executable) return;
         base.Execute();
-        if (exprs is not null)
-        {
-            if ((bool)exprs.AnyValue == true)
-                tag?.BaseExecute();
-            else if (elseNode is not null) elseNode.Executable = true;
-        }
-        else throw new InvalidSpellingException(this);
+
+        if (exprs is null) throw new InvalidSpellingException(this);
+
+        if ((bool)exprs.AnyValue == true)
+            tag?.ForceExecute();
+        else if(elseNode is not null) elseNode.Executable = true;
     }
 }
 
@@ -118,8 +117,9 @@ public class ElseNode : ASTNode
     public override void Execute()
     {
         if (!Executable) return;
+
         base.Execute();
-        tag?.BaseExecute();
+        tag?.ForceExecute();
     }
 }
 
@@ -133,13 +133,18 @@ public class ForNode : NestedExpressionAndTagNode
     public override void Execute()
     {
         base.Execute();
+
         if (exprs is null || tag is null) throw new InvalidSpellingException(this);
+        
+        tag.Executable = true;
 
         for (int i = 0; i < (int)exprs.AnyValue; i++)
         {
             if (!tag.Executable) break;
-            tag.BaseExecute();
+            tag.Execute();
         }
+        tag.Executable = false;
+
     }
 }
 
@@ -150,11 +155,14 @@ public class WhileNode : NestedExpressionAndTagNode
         base.Execute();
         if (exprs is null || tag is null) throw new InvalidSpellingException(this);
 
+        tag.Executable = (bool)exprs.AnyValue;
+
         while ((bool)exprs.AnyValue)
         {
             if (!tag.Executable) break;
-            tag.BaseExecute();
+            tag.Execute();
         }
+        tag.Executable = false;
     }
 }
 
@@ -188,6 +196,7 @@ public class ReturnNode : ASTNode // breaks master branch and/or returns somthin
         throw new NotImplementedException("Please 'return' to README.md and read it");
     }
 }
+
 public class LocalNode : ASTNode
 {
     public override void Load()
@@ -197,7 +206,10 @@ public class LocalNode : ASTNode
             Executable = false;
             return;
         }
-
+        if (TryGetNode<TagNode>(0, out var tag))
+        {
+            tag.Executable = true;
+        }
         base.Load();
     }
 }
