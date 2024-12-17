@@ -4,14 +4,11 @@ describe all functions and classes
 
 return (under construction)
 
-add class (node) which automaticly assign tag and expression node
 
 local (thing marked as local cannot be accesed by other script)
 lists (and stack, queue, dictionary)
 
-std {
-	simple file managment,
-}
+std
 
 ?? OOP ??
 

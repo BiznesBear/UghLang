@@ -5,14 +5,16 @@ namespace UghLang;
 public class Parser
 {
     public readonly AST AST;
+    public bool Inserted { get; }
 
     private ASTNode currentNode;
     private Stack<ASTNode> masterBranches = new();
 
-    public Parser(Ugh ugh)
+    public Parser(Ugh ugh, bool inserted = false)
     {
-        AST = new(ugh);
+        AST = new(ugh, this);
         currentNode = AST;
+        Inserted = inserted;
     }
 
     public void AddToken(Token token)

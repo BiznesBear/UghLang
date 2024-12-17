@@ -23,6 +23,7 @@ public enum Keyword : byte
     While,
 
     Insert,
+    Local,
 }
 public static class KeywordExtension
 {
@@ -48,6 +49,7 @@ public static class KeywordExtension
         { "while", Keyword.While },
 
         { "insert", Keyword.Insert },
+        { "local", Keyword.Local },
     };
 
     public static bool TryGetKeyword(this string word, out Keyword keyword, out TokenType type)
@@ -89,6 +91,7 @@ public static class KeywordExtension
             Keyword.While => new WhileNode(),
 
             Keyword.Insert => new InsertNode(),
+            Keyword.Local => new LocalNode(),
             _ => new UndefinedNode(),
         };
     }

@@ -1,6 +1,5 @@
 # UghLang
-Created in C# for educational purpose interpeted programing language.
-The side-purpose of this project is to show the real power of simplicity.
+Created in C# interpreted programing language created for educational purpose and to show the power of simplicity.
 
 # Mini documentation
 This section is dedicated to the basic functions of the ugh language.
@@ -13,13 +12,14 @@ This section is dedicated to the basic functions of the ugh language.
 - false
 - fun
 - break
+- return (under construction)
 - if
 - else
 - elif
 - for
 - while
 - insert
-- return (under construction)
+- local
 
 
 ### Declaring variables
@@ -81,4 +81,18 @@ while(myVar < 10){
 ```ugh
 insert("std"); # You can put any name of ugh file here (or directory which contains source.ugh)#
 cube(2,3,4); 
+```
+
+### Insert
+```ugh
+local fun foo(){ # Nodes marked as local won't load when inserted from other file # 
+	print("Hello, world!");
+} 
+
+local { # Nested local example #
+
+	for(100){
+		print("Hello, world!");
+	}
+}
 ```

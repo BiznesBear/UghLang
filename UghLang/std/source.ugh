@@ -1,3 +1,0 @@
-fun cube(x, y, z){
-	print(x * y * z);
-}

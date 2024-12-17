@@ -5,18 +5,25 @@ public abstract class ASTNode
     public const ASTNode NULL = default;
 
     #region Properties
-    public bool CanExecute { get; set; } = true;
+
+    public bool Executable { get; set; } = true;
 
     public IReadOnlyList<ASTNode> Nodes => nodes;
     public int CurrentIteration { get; private set; } = 0;
 
     private readonly List<ASTNode> nodes = new();
 
+    private Parser? parser;
+    public Parser Parser
+    {
+        get => parser ?? throw new UghException("No Parser assigned in node");
+        set => parser = value;
+    }
 
     private Ugh? ugh;
     public Ugh Ugh
     {
-        get => ugh ?? throw new UghException("No Ugh in node");
+        get => ugh ?? throw new UghException("No Ugh assigned in node");
         set => ugh = value;
     }
 
@@ -33,6 +40,7 @@ public abstract class ASTNode
     {
         node.Parent = this;
         node.Ugh = Ugh;
+        node.Parser = Parser;
         nodes.Add(node);
     }
 
@@ -140,7 +148,7 @@ public abstract class ASTNode
         for (int i = 0; i < Nodes.Count; i++)
         {
             CurrentIteration = i;
-            if (CanExecute)
+            if (Executable)
                 Nodes[i].Execute();
         }
     }
@@ -151,10 +159,11 @@ public abstract class ASTNode
 
 public class AST : ASTNode
 {
-    public AST(Ugh ugh)
+    public AST(Ugh ugh, Parser parser)
     {
         Parent = this;
         Ugh = ugh;
+        Parser = parser;
     }
 }
 

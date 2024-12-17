@@ -57,6 +57,7 @@ public class DeclareFunctionNode : NestedExpressionAndTagNode
     public override void Load()
     {
         base.Load();
+
         name = GetNode<NameNode>(0);
 
         if (exprs is null || tag is null || name is null) 
@@ -68,10 +69,12 @@ public class DeclareFunctionNode : NestedExpressionAndTagNode
     }
 }
 
-
+/// <summary>
+/// Breaks parent execution
+/// </summary>
 public class BreakNode : ASTNode
 {
-    public override void Execute() => Parent.CanExecute = false;
+    public override void Execute() => Parent.Executable = false;
 }
 
 
@@ -94,7 +97,7 @@ public class IfNode : NestedExpressionAndTagNode
         {
             if ((bool)exprs.AnyValue == true)
                 tag?.BaseExecute();
-            else if (elseNode is not null) elseNode.CanExecute = true;
+            else if (elseNode is not null) elseNode.Executable = true;
         }
         else throw new InvalidSpellingException(this);
     }
@@ -102,7 +105,7 @@ public class IfNode : NestedExpressionAndTagNode
 
 public class ElseNode : ASTNode
 {
-    public ElseNode() => CanExecute = false;
+    public ElseNode() => Executable = false;
 
     private TagNode? tag;
 
@@ -114,7 +117,7 @@ public class ElseNode : ASTNode
 
     public override void Execute()
     {
-        if (!CanExecute) return;
+        if (!Executable) return;
         base.Execute();
         tag?.BaseExecute();
     }
@@ -122,7 +125,7 @@ public class ElseNode : ASTNode
 
 public class ElifNode : IfNode
 {
-    public ElifNode() => CanExecute = false;
+    public ElifNode() => Executable = false;
 }
 
 public class ForNode : NestedExpressionAndTagNode
@@ -130,9 +133,13 @@ public class ForNode : NestedExpressionAndTagNode
     public override void Execute()
     {
         base.Execute();
-        if (exprs is null) throw new InvalidSpellingException(this);
+        if (exprs is null || tag is null) throw new InvalidSpellingException(this);
 
-        for (int i = 0; i < (int)exprs.AnyValue; i++) tag?.BaseExecute();
+        for (int i = 0; i < (int)exprs.AnyValue; i++)
+        {
+            if (!tag.Executable) break;
+            tag.BaseExecute();
+        }
     }
 }
 
@@ -141,10 +148,13 @@ public class WhileNode : NestedExpressionAndTagNode
     public override void Execute()
     {
         base.Execute();
-        if (exprs is null) throw new InvalidSpellingException(this);
+        if (exprs is null || tag is null) throw new InvalidSpellingException(this);
 
         while ((bool)exprs.AnyValue)
-            tag?.BaseExecute();
+        {
+            if (!tag.Executable) break;
+            tag.BaseExecute();
+        }
     }
 }
 
@@ -163,18 +173,31 @@ public class InsertNode : ASTNode
 
         var file = File.ReadAllText(path);
 
-        var parser = new Parser(Ugh);
+        var parser = new Parser(Ugh, true);
         var lexer = new Lexer(file, parser);
         
         parser.Execute();
     }
 }
 
-public class ReturnNode : ASTNode
+public class ReturnNode : ASTNode // breaks master branch and/or returns somthing
 {
     public override void Execute()
     {
         base.Execute();
         throw new NotImplementedException("Please 'return' to README.md and read it");
+    }
+}
+public class LocalNode : ASTNode
+{
+    public override void Load()
+    {
+        if (Parser.Inserted)
+        {
+            Executable = false;
+            return;
+        }
+
+        base.Load();
     }
 }
