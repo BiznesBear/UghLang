@@ -1,6 +1,6 @@
 ﻿namespace UghLang;
 
-public enum TokenType
+public enum TokenType : byte
 {
     Name, // can be everything 
     Keyword, // keyword
@@ -34,30 +34,6 @@ public class Token
     public Operator Operator => Operation.GetOperator(StringValue);
 
 
-    /// <summary>
-    /// Return value.
-    /// </summary>
-    public object Value // TODO: Remove this
-    {
-        get
-        {
-            return Type switch
-            {
-                TokenType.StringValue => StringValue,
-                TokenType.IntValue => IntValue,
-                TokenType.BoolValue => BoolValue,
-                TokenType.FloatValue => FloatValue,
-                _ => StringValue,
-            };
-        }
-
-    }
-
-    /// <summary>
-    /// Assign, and check values.
-    /// </summary>
-    /// <param name="val">Input for token</param>
-    /// <param name="type">Interpretation of value</param>
     public Token(string val, TokenType type) 
     {
         StringValue = val;

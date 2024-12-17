@@ -1,29 +1,28 @@
 ﻿namespace UghLang.Nodes;
-#region IO
-public class PrintNode : ASTNode
+
+
+public class PrintNode : NestedExpressionNode
 {
     public override void Execute()
     {
         base.Execute();
-        if (!TryGetNodeWith<ExpressionNode>(out var expr))
-            throw new InvalidSpellingException(this);
-        Console.WriteLine(expr.AnyValue);
+        Console.WriteLine(exprs?.AnyValue);
     }
 }
-public class InputNode : AnyValueNode<string>
+
+public class InputNode : NestedExpressionNode, IReturn<string>
 {
-    public InputNode() : base(string.Empty) { }
+    public string Value { get; set; } = string.Empty;
+    public object AnyValue => Value;
 
     public override void Execute()
     {
         base.Execute();
-        if (!TryGetNodeWith<ExpressionNode>(out var expr))
-            throw new InvalidSpellingException(this);
-        Console.Write(expr.AnyValue);
+        Console.Write(exprs?.AnyValue);
         Value = Console.ReadLine() ?? string.Empty;
     }
 }
-#endregion
+
 
 public class FreeNode : ASTNode
 {
@@ -33,7 +32,7 @@ public class FreeNode : ASTNode
     public override void Load()
     {
         base.Load();
-        isRef = TryGetNodeWith(out NameNode refr);
+        isRef = TryGetNode(0, out NameNode refr);
         refNode = refr;
     }
 
@@ -42,26 +41,23 @@ public class FreeNode : ASTNode
         base.Execute();
         if (isRef && refNode is not null)
             Ugh.FreeName(refNode.GetName());
-        else if (TryGetNodeWith<AnyValueNode<string>>(out var modifier) && modifier.Value == "all")
+        else if (TryGetNode<ConstStringValueNode>(0,out var modifier) && modifier.Value == "all")
             Ugh.FreeAll();
         else throw new InvalidSpellingException(this);
     }
 
 }
-public class DeclareFunctionNode : ASTNode
-{
-    private ExpressionNode? exprs;
-    private TagNode? tag;
-    private NameNode? name;
 
+public class DeclareFunctionNode : NestedExpressionAndTagNode
+{
+    public DeclareFunctionNode() : base(1, 2) { }
+
+    private NameNode? name;
 
     public override void Load()
     {
         base.Load();
-
-        exprs = GetNodeWith<ExpressionNode>();
-        tag = GetNodeWith<TagNode>();
-        name = GetNodeWith<NameNode>();
+        name = GetNode<NameNode>(0);
 
         if (exprs is null || tag is null || name is null) 
            throw new InvalidSpellingException(this);
@@ -75,28 +71,20 @@ public class DeclareFunctionNode : ASTNode
 
 public class BreakNode : ASTNode
 {
-    public override void Execute()
-    {
-        base.Execute();
-        Parent.CanExecute = false;
-    }
+    public override void Execute() => Parent.CanExecute = false;
 }
 
 
-public class IfNode : ASTNode
+public class IfNode : NestedExpressionAndTagNode
 {
-    private ExpressionNode? exprs;
-    private TagNode? tag;
     private ASTNode? elseNode; // TODO: Add implementation for else node
 
     public override void Load()
     {
         base.Load();
 
-        exprs = GetNodeWith<ExpressionNode>();
-        tag = GetNodeWith<TagNode>();
         elseNode = GetNextBrother<ElseNode>();
-        elseNode ??= GetNextBrother<ElifNode>(); // if else node is null
+        elseNode ??= GetNextBrother<ElifNode>(); // if 'else' node is null
     }
 
     public override void Execute()
@@ -121,9 +109,7 @@ public class ElseNode : ASTNode
     public override void Load()
     {
         base.Load();
-        if (TryGetNodeWith<TagNode>(out var tn))
-            tag = tn;
-        else throw new InvalidSpellingException(this);
+        tag = GetNode<TagNode>(0);
     }
 
     public override void Execute()
@@ -133,41 +119,42 @@ public class ElseNode : ASTNode
         tag?.BaseExecute();
     }
 }
+
 public class ElifNode : IfNode
 {
     public ElifNode() => CanExecute = false;
 }
 
-public class RepeatNode : ASTNode
+public class ForNode : NestedExpressionAndTagNode
 {
-    private ExpressionNode? exprs;
-    private TagNode? tag;
-
-    public override void Load()
-    {
-        base.Load();
-        exprs = GetNodeWith<ExpressionNode>();
-        tag = GetNodeWith<TagNode>();
-    }
-
     public override void Execute()
     {
         base.Execute();
-        if (exprs is not null)
-        {
-            for (int i = 0; i < (int)exprs.AnyValue; i++)
-                tag?.BaseExecute();
-        }
+        if (exprs is null) throw new InvalidSpellingException(this);
+
+        for (int i = 0; i < (int)exprs.AnyValue; i++) tag?.BaseExecute();
     }
 }
+
+public class WhileNode : NestedExpressionAndTagNode
+{
+    public override void Execute()
+    {
+        base.Execute();
+        if (exprs is null) throw new InvalidSpellingException(this);
+
+        while ((bool)exprs.AnyValue)
+            tag?.BaseExecute();
+    }
+}
+
 public class InsertNode : ASTNode 
 {
     public override void Load()
     {
         base.Load();
         
-        if (!TryGetNodeWith<StringValueNode>(out var expr)) throw new InvalidSpellingException(this);
-        string path = expr.Value;
+        string path = GetNode<ConstStringValueNode>(0).Value;
 
         if (File.Exists(path)) { }
         else if (Path.Exists(path))
@@ -178,15 +165,16 @@ public class InsertNode : ASTNode
 
         var parser = new Parser(Ugh);
         var lexer = new Lexer(file, parser);
-
+        
         parser.Execute();
     }
 }
+
 public class ReturnNode : ASTNode
 {
     public override void Execute()
     {
         base.Execute();
-        throw new NotImplementedException("Return is not compleate function. Please remove it from your code.");
+        throw new NotImplementedException("Please 'return' to README.md and read it");
     }
 }

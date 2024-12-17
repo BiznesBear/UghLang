@@ -1,23 +1,30 @@
 # TODO
 
+describe all functions and classes
+
 return (under construction)
 
-good cleanup (and big optimalizations)
-
+add class (node) which automaticly assign tag and expression node
 
 local (thing marked as local cannot be accesed by other script)
+lists (and stack, queue, dictionary)
 
-lists, stack, queue, dictionary
+std {
+	simple file managment,
+}
 
-open/close file
+?? OOP ??
 
 ??? recurrency (couse now doesnt work for... reasons...) ???
 
+inheritance
+
 ADD ANY ERROR HANDLING as 
 	unrecognizable (variable, function) names,
-	invalid format,
-	expected X in Y
+	invalid format (e. g. placing insert keyword outside of AST node),
+	expected X in Y,
 
-use keyword (for dlls and libs): `use myLib "mylib.ugh";`
-usage: `myLib.Foo();` - assigning libraries (and other scripts) to variables is supposed to speed up runtime 
+
+'use' keyword (for dlls and libs): "use myLib "mylib.ugh";"
+usage: `myLib.Foo();` - assigning libraries (and other scripts) to variables is supposed to speed up runtime and performance
 #

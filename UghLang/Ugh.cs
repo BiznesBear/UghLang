@@ -9,10 +9,7 @@ public class Ugh
 
     public IReadOnlyDictionary<string, Name> Names => names;
 
-    public void RegisterName(Name name)
-    {
-        names.Add(name.Key, name);
-    }
+    public void RegisterName(Name name) => names.Add(name.Key, name);
 
     public bool TryGetName(string name, out Name value)
     {    
@@ -27,6 +24,7 @@ public class Ugh
         if (TryGetName(name, out var v)) return v;
         else throw new UghException($"Name {name} is not declared");
     }
+
     public void FreeName(Name name)
     {
         names.Remove(name.Key);
@@ -68,22 +66,22 @@ public class Function(string name, TagNode node, ExpressionNode exprs) : Name(na
     {
         List<Variable> localVariables = new();
 
-        var nodes = ExpressionNode.GetNodesWith<NameNode>();
+        var nodes = ExpressionNode.GetNodes<NameNode>();
 
         int nodesCount = nodes.Count();
-        if (nodesCount != args.Count()) throw new UghException($"Tryed to call function {Key} with invalid argument count");
+        if (nodesCount != args.Count()) throw new IncorrectAmountOfArgumentException(this);
 
-        for (int i = 0; i < nodes.Count(); i++)
+        for (int i = 0; i < nodesCount; i++)
         {
             var nameNode = nodes.ElementAt(i);
             Variable v = new(nameNode.Token.StringValue, args.ElementAt(i).AnyValue);
+            
             Ugh.RegisterName(v);
             localVariables.Add(v);
         }
 
         TagNode.BaseExecute();
 
-        foreach (var v in localVariables)
-            Ugh.FreeName(v);
+        localVariables.ForEach(Ugh.FreeName);
     }
 }

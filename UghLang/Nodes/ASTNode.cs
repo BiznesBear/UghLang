@@ -7,10 +7,11 @@ public abstract class ASTNode
     #region Properties
     public bool CanExecute { get; set; } = true;
 
-    private List<ASTNode> nodes = new();
+    public IReadOnlyList<ASTNode> Nodes => nodes;
     public int CurrentIteration { get; private set; } = 0;
 
-    public IReadOnlyList<ASTNode> Nodes => nodes.AsReadOnly();
+    private readonly List<ASTNode> nodes = new();
+
 
     private Ugh? ugh;
     public Ugh Ugh
@@ -35,9 +36,9 @@ public abstract class ASTNode
         nodes.Add(node);
     }
 
-    public bool HasEmptyBranch() => Nodes.Count < 1;
 
     #region GettingNodes
+    public bool HasEmptyBranch() => Nodes.Count < 1;
 
 
     public T? GetNextBrother<T>() where T : ASTNode
@@ -69,20 +70,26 @@ public abstract class ASTNode
         return false;
     }
 
-    // TODO: Make cleanup here
-    public T? GetNodeWith<T>() 
+
+    public T GetNode<T>(int index)
     {
-        foreach (var n in Nodes)
-        {
-            if (n is T t)
-                return t;
-        }
+        var node = GetNodeOrDefalut<T>(index);
+        if(node?.GetType() == typeof(T))
+            return node;
+        throw new InvalidSpellingException(this);
+    }
+
+    public T? GetNodeOrDefalut<T>(int index)
+    {
+        if (index < Nodes.Count && Nodes[index] is T t)
+            return t;
         return default;
     }
 
-    public bool TryGetNodeWith<T>(out T node) where T : ASTNode
+
+    public bool TryGetNode<T>(int index, out T node) where T : ASTNode
     {
-        var n = GetNodeWith<T>();
+        var n = GetNodeOrDefalut<T>(index);
 
         if (n is null)
         {
@@ -94,26 +101,27 @@ public abstract class ASTNode
         return true;
     }
 
-    public IEnumerable<T> GetNodesWith<T>()
+    public IEnumerable<T> GetNodes<T>()
     {
         foreach (var n in Nodes)
             if (n is T t) yield return t;
     }
 
-    public IEnumerable<T> GetAllNodesWith<T>()
+    public IEnumerable<T> GetAllNodes<T>()
     {
         foreach (var n in Nodes)
         {
             if (n is T t) yield return t;
-            foreach (var dyn in n.GetAllNodesWith<T>())
+            foreach (var dyn in n.GetAllNodes<T>())
                 yield return dyn;
         }
     }
+
     #endregion
 
-
+    
     /// <summary>
-    /// Used for preloading nodes (to avoid it in execution)
+    /// Used for preloading nodes for faster execution time
     /// </summary>
     public virtual void Load()
     {
@@ -125,7 +133,7 @@ public abstract class ASTNode
     }
 
     /// <summary>
-    /// Execute all assigned nodes.
+    /// Executes all assigned nodes.
     /// </summary>
     public virtual void Execute()
     {
@@ -136,7 +144,6 @@ public abstract class ASTNode
                 Nodes[i].Execute();
         }
     }
-
 
     public override string ToString() => $"{GetType().Name}";
 }
@@ -153,9 +160,6 @@ public class AST : ASTNode
 
 public class UndefinedNode : ASTNode
 {
-    public override void Execute()
-    {
-        base.Execute();
-        throw new NotImplementedException("Undefined instructions");
-    }
+    public override void Load() 
+        => throw new NotImplementedException("Undefined instructions");
 }

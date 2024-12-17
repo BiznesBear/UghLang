@@ -22,13 +22,15 @@ public class ExpressionNode : ASTNode, IReturnAny
 
     public object Express()
     {
-        if (HasEmptyBranch()) return Variable.NULL.Value;
+        if (HasEmptyBranch()) return Name.NULL.Value;
 
         Stack<dynamic> vals = new();
         Stack<Operator> operators = new();
 
-        foreach (var node in Nodes)
+        for (int i = 0; i < Nodes.Count; i++)
         {
+            var node = Nodes[i];
+
             if (node is IReturnAny d)
                 vals.Push(d.AnyValue);
             else if (node is OperatorNode opNode)
@@ -79,14 +81,15 @@ public class InitializeNode : ASTNode
     public override void Load()
     {
         base.Load();
-        if (TryGetNodeWith<OperatorNode>(out var opr))
+        if (TryGetNode<OperatorNode>(0, out var opr))
         {
             oprNode = opr;
             isOperation = true;
+            value = GetNodes<IReturnAny>().First();
             return;
         }
 
-        if (TryGetNodeWith<ExpressionNode>(out var arg))
+        if (TryGetNode<ExpressionNode>(0, out var arg)) // TODO: Add recurrency here
         {
             exprs = arg;
             if (Ugh.TryGetName(Token.StringValue, out Name fun))
@@ -98,18 +101,13 @@ public class InitializeNode : ASTNode
     {
         base.Execute();
 
-
-        if (isOperation)
+        if (isOperation && value is not null)
         {
-            value = GetNodesWith<IReturnAny>().First();
-
-            if (value is null) return; // TODO: Throw here exception
-
-            if (Ugh.TryGetName(Token.StringValue, out var variable) && oprNode is not null && isOperation)
+            if (Ugh.TryGetName(Token.StringValue, out var variable) && oprNode is not null)
                 variable.Value = Operation.Operate(variable.Value, value.AnyValue, oprNode.Operator);
             else Ugh.RegisterName(new Variable(Token.StringValue, value.AnyValue));
         }
-        else if (fun is not null && exprs is not null) fun.Invoke(exprs.GetNodesWith<IReturnAny>());
+        else if (fun is not null && exprs is not null) fun.Invoke(exprs.GetNodes<IReturnAny>());
         else throw new UghException("Invalid initialize of object");
     }
 }

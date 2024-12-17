@@ -16,7 +16,8 @@ This section is dedicated to the basic functions of the ugh language.
 - if
 - else
 - elif
-- repeat
+- for
+- while
 - insert
 - return (under construction)
 
@@ -47,20 +48,31 @@ myVar // 2; # Square root #
 ```
 
 
-### If and else
+### If and else and elif
 ```ugh
 if(5 > 3){
 	print("5 is higher than 3");
+}
+elif(5 == 3){
+	print("5 equals 3");
 }
 else {
 	print("5 is lower than 3");
 }
 ```
 
-### Repeat
+### For
 ```ugh
 myVar = 0;
-repeat(10){
+for(10){
+	myVar + 1;
+	print(myVar);
+}
+```
+### While
+```ugh
+myVar = 0;
+while(myVar < 10){
 	myVar + 1;
 	print(myVar);
 }

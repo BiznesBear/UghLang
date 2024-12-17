@@ -1,7 +1,7 @@
 ﻿using UghLang.Nodes;
 
 namespace UghLang;
-public enum Keyword
+public enum Keyword : byte
 {
     Print,
     Input,
@@ -13,12 +13,16 @@ public enum Keyword
 
     Fun,
     Break,
+    Return,
+
     If,
     Else,
     Elif,
-    Repeat,
+
+    For,
+    While,
+
     Insert,
-    Return
 }
 public static class KeywordExtension
 {
@@ -26,17 +30,24 @@ public static class KeywordExtension
     {
         { "print", Keyword.Print },
         { "input", Keyword.Input },
+
         { "free", Keyword.Free },
+
         { "true", Keyword.True },
         { "false", Keyword.False },
+
         { "fun", Keyword.Fun },
         { "break", Keyword.Break },
+        { "return", Keyword.Return },
+
         { "if", Keyword.If },
         { "else", Keyword.Else },
         { "elif", Keyword.Elif },
-        { "repeat", Keyword.Repeat },
+
+        { "for", Keyword.For },
+        { "while", Keyword.While },
+
         { "insert", Keyword.Insert },
-        { "return", Keyword.Return },
     };
 
     public static bool TryGetKeyword(this string word, out Keyword keyword, out TokenType type)
@@ -60,17 +71,24 @@ public static class KeywordExtension
         {
             Keyword.Print => new PrintNode(),
             Keyword.Input => new InputNode(),
+
             Keyword.Free => new FreeNode(),
-            Keyword.True => new BoolValueNode() { Value = true },
-            Keyword.False => new BoolValueNode() { Value = false },
+
+            Keyword.True => new ConstBoolValueNode() { Value = true },
+            Keyword.False => new ConstBoolValueNode() { Value = false },
+
             Keyword.Fun => new DeclareFunctionNode(),
             Keyword.Break => new BreakNode(),
+            Keyword.Return => new ReturnNode(),
+
             Keyword.If => new IfNode(),
             Keyword.Else => new ElseNode(),
             Keyword.Elif => new ElifNode(),
-            Keyword.Repeat => new RepeatNode(),
+
+            Keyword.For => new ForNode(),
+            Keyword.While => new WhileNode(),
+
             Keyword.Insert => new InsertNode(),
-            Keyword.Return => new ReturnNode(),
             _ => new UndefinedNode(),
         };
     }

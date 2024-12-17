@@ -5,24 +5,19 @@ namespace UghLang;
 // TODO: Better exceptions 
 
 [Serializable]
-public class UghException : Exception
+public class UghException(string mess) : Exception(mess)
 {
-    public UghException() 
-    {
-        
-    }
 
-    public UghException(string mess) : base(mess)
-    {
-
-    }
 }
 
 [Serializable]
-public class InvalidSpellingException : UghException
+public class InvalidSpellingException(ASTNode node) : UghException($"Invalid spelling of {node}")
 {
-    public InvalidSpellingException(ASTNode node) : base($"Invalid spelling of {node.GetType()}")
-    {
 
-    }
+}
+
+[Serializable]
+public class IncorrectAmountOfArgumentException(Name name) : UghException($"Incorrect count of arguments called for {name.Key}")
+{
+
 }

@@ -23,11 +23,12 @@ foreach(var arg in args)
             case "--debug": // Enables debug
                 Debug.Enabled = true; // TODO: Add error handling when is nothing to execute
                 break;
-            default: throw new UghException(); // ADD HERE UNDEFINED ARGUMENT EXCEPTION
+            default: throw new UghException($"Cannot find argument '{arg}'"); // ADD HERE UNDEFINED ARGUMENT EXCEPTION
         }
     }
     else path = arg;
 }
+
 if (path == string.Empty) return;
 
 string file = File.ReadAllText(path);
@@ -37,7 +38,5 @@ var parser = new Parser(ugh);
 var lexer = new Lexer(file, parser);
 
 
-
 parser.Execute();
 Debug.PrintTree(parser.AST);
-

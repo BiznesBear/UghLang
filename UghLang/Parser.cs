@@ -43,22 +43,20 @@ public class Parser
                 QuitNode<TagNode>();
                 RemoveMasterBranch<TagNode>();
                 break;
+
             case TokenType.StringValue:
-                // add new value to expression
-                CreateNode(new StringValueNode() { Value = token.StringValue });
+                CreateNode(new ConstStringValueNode() { Value = token.StringValue });
                 break;
             case TokenType.IntValue:
-                // add new value to expression
-                CreateNode(new IntValueNode() { Value = token.IntValue });
+                CreateNode(new ConstIntValueNode() { Value = token.IntValue });
                 break;
             case TokenType.BoolValue:
-                // add new value to expression
-                CreateNode(new BoolValueNode() { Value = token.BoolValue });
+                CreateNode(new ConstBoolValueNode() { Value = token.BoolValue });
                 break;
             case TokenType.FloatValue:
-                // add new value to expression
-                CreateNode(new FloatValueNode() { Value = token.FloatValue });
+                CreateNode(new ConstFloatValueNode() { Value = token.FloatValue });
                 break;
+
             case TokenType.Separator:
                 // end branch
                 BackToMasterBranch();
