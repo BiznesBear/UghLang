@@ -29,7 +29,7 @@ public class InputNode : NestedExpressionNode, IReturn<string>
 }
 
 /// <summary>
-/// Deletes variable 
+/// Releases name from ugh
 /// </summary>
 public class FreeNode : ASTNode
 {
@@ -94,10 +94,6 @@ public class ReturnNode : NestedExpressionNode
     public override void Execute()
     {
         base.Execute();
-
-        // break master branch (not the parent like in break keyword)
-        // set value from exprs to current executed function
-
         if(Ugh.Function is null)
             throw new InvalidSpellingException(this);
 
@@ -118,7 +114,7 @@ public class IfNode : NestedExpressionAndTagNode
         base.Load();
 
         elseNode = GetNextBrother<ElseNode>();
-        elseNode ??= GetNextBrother<ElifNode>(); // if 'else' node is null
+        elseNode ??= GetNextBrother<ElifNode>(); // check of elif node
     }
 
     public override void Execute()
@@ -132,7 +128,6 @@ public class IfNode : NestedExpressionAndTagNode
         else if(elseNode is not null) elseNode.Executable = true;
     }
 }
-
 
 public class ElseNode : ASTNode
 {
@@ -243,3 +238,4 @@ public class LocalNode : ASTNode
         base.Load();
     }
 }
+

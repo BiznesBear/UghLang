@@ -74,10 +74,14 @@ public class Parser
 
     #region NodeManagment
 
+    /// <summary>
+    /// Adds node to current node
+    /// </summary>
+    /// <param name="node"></param>
     private void CreateNode(ASTNode node) => currentNode.AddNode(node);
 
     /// <summary>
-    /// Add node to currentNode that becomes currentNode
+    /// Add node to currentNode and sets it as new current node
     /// </summary>
     /// <param name="node"></param>
     private void EnterNode(ASTNode node)
@@ -87,9 +91,9 @@ public class Parser
     }
 
     /// <summary>
-    /// If the same type as currentNode then quits to parent of currentNode
+    /// Quits from node T
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">Type of node</typeparam>
     private void QuitNode<T>()
     {
         if (CurrentNodeIs<T>())
@@ -134,11 +138,18 @@ public class Parser
 
     #endregion
 
+    /// <summary>
+    /// Loads AST 
+    /// </summary>
     public void Load() => AST.Load();
+
+    /// <summary>
+    /// Executes AST
+    /// </summary>
     public void Execute() => AST.Execute();
 
     /// <summary>
-    /// Loads and executes every node
+    /// Loads and executes AST
     /// </summary>
     public void LoadAndExecute()
     {

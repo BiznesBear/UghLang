@@ -30,7 +30,7 @@ print("myVar equals " + myVar);
 
 ### Releasing resources
 ```ugh
-# TIP: You can replace variable name with string "all" to release all variables. #
+# TIP: You can replace name with string "all" to release all names. #
 
 myVar = 5;
 free myVar;

@@ -1,15 +1,14 @@
 # TODO
-
-??? add executing functions in NameNode ???
-
-better command prompt 
-
-lists
+add executing functions in NameNode 
 
 ADD ANY ERROR HANDLING as 
 	unrecognizable (variable, function) names,
 	invalid format (e. g. placing insert keyword outside of AST node),
 	expected X in Y,
+
+better command prompt 
+
+lists
 
 std (file, range, time, random)
 

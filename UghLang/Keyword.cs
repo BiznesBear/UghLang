@@ -92,6 +92,7 @@ public static class KeywordExtension
 
             Keyword.Insert => new InsertNode(),
             Keyword.Local => new LocalNode(),
+
             _ => new UndefinedNode(),
         };
     }

@@ -3,7 +3,7 @@
 namespace UghLang;
 
 /// <summary>
-/// Master of execution which contains list of reserved runtime names
+/// Contains list of reserved runtime names
 /// </summary>
 public class Ugh
 {
@@ -46,6 +46,7 @@ public class Ugh
     }
 
 }
+
 
 public abstract class Name(string name, object val) : IDisposable, IReturnAny
 {
