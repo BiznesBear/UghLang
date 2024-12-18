@@ -122,7 +122,7 @@ public class Parser
     /// <summary>
     /// Returns current master branch
     /// </summary>
-    private ASTNode GetMasterBranch() => masterBranches.Count < 1? AST : masterBranches.Peek();
+    public ASTNode GetMasterBranch() => masterBranches.Count < 1? AST : masterBranches.Peek();
 
     /// <summary>
     /// Checks if current node is current masterBranch

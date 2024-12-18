@@ -1,25 +1,23 @@
 # TODO
 
-describe all functions and classes
-
 return (under construction)
+add executing functions in NameNode
 
+mini clean up
+
+describe all functions and classes
 lists (and stack, queue, dictionary)
-
-std
-
-?? OOP ??
-
-??? recurrency (couse now doesnt work for... reasons...) ???
-
-inheritance
 
 ADD ANY ERROR HANDLING as 
 	unrecognizable (variable, function) names,
 	invalid format (e. g. placing insert keyword outside of AST node),
 	expected X in Y,
 
+std
 
-'use' keyword (for dlls and libs): "use myLib "mylib.ugh";"
-usage: `myLib.Foo();` - assigning libraries (and other scripts) to variables is supposed to speed up runtime and performance
+<IDEAS>
+??? recurrency ???
+??? inheritance (for strong typing) ???
+??? `using` keyword for importing dlls and librarys. Example: `using myLib = "myLibPath"` ???
+??? namespaces for insert keyword (as optimalization aka. multi-ugh) ??? 
 #

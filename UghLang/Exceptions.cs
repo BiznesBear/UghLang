@@ -2,7 +2,7 @@
 
 namespace UghLang;
 
-// TODO: Better exceptions 
+// TODO: Better exceptions (and change their names)
 
 [Serializable]
 public class UghException(string mess) : Exception(mess)

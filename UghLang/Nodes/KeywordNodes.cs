@@ -60,7 +60,7 @@ public class DeclareFunctionNode : NestedExpressionAndTagNode
 
         name = GetNode<NameNode>(0);
 
-        if (exprs is null || tag is null || name is null) 
+        if (exprs is null || tag is null || name is null) // TODO: Remove this from everywere
            throw new InvalidSpellingException(this);
         
         Function fun = new(name.Token.StringValue, tag, exprs);
@@ -75,7 +75,22 @@ public class BreakNode : ASTNode
 {
     public override void Execute() => Parent.Executable = false;
 }
+public class ReturnNode : NestedExpressionNode 
+{
+    public override void Execute()
+    {
+        base.Execute();
 
+        // break master branch (not the parent like in break keyword)
+        // set value from exprs to current executed function
+
+        if(Ugh.Function is null || exprs is null)
+            throw new InvalidSpellingException(this);
+
+        Ugh.Function.Value = exprs.AnyValue;
+        Ugh.Function.TagNode.Executable = false;
+    }
+}
 
 public class IfNode : NestedExpressionAndTagNode
 {
@@ -188,14 +203,7 @@ public class InsertNode : ASTNode
     }
 }
 
-public class ReturnNode : ASTNode // breaks master branch and/or returns somthing
-{
-    public override void Execute()
-    {
-        base.Execute();
-        throw new NotImplementedException("Please 'return' to README.md and read it");
-    }
-}
+
 
 public class LocalNode : ASTNode
 {
@@ -206,10 +214,10 @@ public class LocalNode : ASTNode
             Executable = false;
             return;
         }
-        if (TryGetNode<TagNode>(0, out var tag))
-        {
+
+        if (TryGetNode<TagNode>(0, out var tag)) // Nested local
             tag.Executable = true;
-        }
+
         base.Load();
     }
 }

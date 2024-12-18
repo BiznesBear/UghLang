@@ -9,6 +9,11 @@ public class Ugh
 
     public IReadOnlyDictionary<string, Name> Names => names;
 
+    /// <summary>
+    /// Gets execution of current function if exist
+    /// </summary>
+    public Function? Function { get; set; }
+
     public void RegisterName(Name name) => names.Add(name.Key, name);
 
     public bool TryGetName(string name, out Name value)
@@ -57,13 +62,14 @@ public abstract class Name(string name, object val) : IDisposable, IReturnAny
 public class Variable(string name, object value) : Name(name, value) { }
 public class Function(string name, TagNode node, ExpressionNode exprs) : Name(name, 0)
 {
-    private TagNode TagNode { get; set; } = node;
-    private ExpressionNode ExpressionNode { get; set; } = exprs;
+    public TagNode TagNode { get; private set; } = node;
+    public ExpressionNode ExpressionNode { get; private set; } = exprs;
 
     private Ugh Ugh => TagNode.Ugh;
 
     public void Invoke(IEnumerable<IReturnAny> args) 
     {
+        Ugh.Function = this;
         List<Variable> localVariables = new();
 
         var nodes = ExpressionNode.GetNodes<NameNode>();
@@ -74,16 +80,16 @@ public class Function(string name, TagNode node, ExpressionNode exprs) : Name(na
         for (int i = 0; i < nodesCount; i++)
         {
             var nameNode = nodes.ElementAt(i);
+
             Variable v = new(nameNode.Token.StringValue, args.ElementAt(i).AnyValue);
             
             Ugh.RegisterName(v);
             localVariables.Add(v);
         }
 
-        TagNode.Executable = true;
-        TagNode.Execute();
-        TagNode.Executable = false;
+        TagNode.ForceExecute();
 
         localVariables.ForEach(Ugh.FreeName);
+        Ugh.Function = null;
     }
 }

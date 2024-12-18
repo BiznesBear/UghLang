@@ -1,19 +1,16 @@
 ﻿namespace UghLang.Nodes;
 
-#region BasicNodes
+
 public class OperatorNode : ASTNode
 {
     public required Operator Operator { get; set; }
 }
 
-/// <summary>
-/// Needs outside permision to execute. 
-/// </summary>
 public class TagNode : ASTNode 
 {
     public TagNode() => Executable = false;
 }
-#endregion
+
 
 public class ExpressionNode : ASTNode, IReturnAny
 {

@@ -77,6 +77,16 @@ while(myVar < 10){
 	print(myVar);
 }
 ```
+### Fun and return
+```ugh
+fun hello(){
+	return("Hello, world!");
+}
+
+hello();
+print(hello); 
+```
+
 ### Insert
 ```ugh
 insert "std"; # You can put any name of ugh file here (or directory which contains source.ugh)#
