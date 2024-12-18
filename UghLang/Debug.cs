@@ -39,4 +39,5 @@ public static class Debug
             sb.Append(GenerateTreeString(node.Nodes[i], indent, i == node.Nodes.Count - 1));
         return sb.ToString();
     }
+
 }

@@ -78,6 +78,8 @@ public abstract class ASTNode
         return false;
     }
 
+    public T? GetNodeOrDefalut<T>(int index)
+        => index < Nodes.Count && Nodes[index] is T t ? t : default;
 
     public T GetNode<T>(int index)
     {
@@ -86,14 +88,6 @@ public abstract class ASTNode
             return node;
         throw new InvalidSpellingException(this);
     }
-
-    public T? GetNodeOrDefalut<T>(int index)
-    {
-        if (index < Nodes.Count && Nodes[index] is T t)
-            return t;
-        return default;
-    }
-
 
     public bool TryGetNode<T>(int index, out T node) where T : ASTNode
     {
@@ -152,6 +146,7 @@ public abstract class ASTNode
                 Nodes[i].Execute();
         }
     }
+
     public void ForceExecute()
     {
         var startingState = Executable;
@@ -159,6 +154,7 @@ public abstract class ASTNode
         Execute();
         Executable = startingState;
     }
+
     public override string ToString() => $"{GetType().Name}";
 }
 

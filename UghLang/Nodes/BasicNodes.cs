@@ -20,7 +20,7 @@ public class ExpressionNode : ASTNode, IReturnAny
     {
         if (HasEmptyBranch()) return Name.NULL.Value;
 
-        Stack<dynamic> vals = new();
+        Stack<object> vals = new();
         Stack<Operator> operators = new();
 
         for (int i = 0; i < Nodes.Count; i++)
@@ -58,8 +58,6 @@ public class ExpressionNode : ASTNode, IReturnAny
 }
 
 
-
-
 /// <summary>
 /// Used to declare and set variables
 /// </summary>
@@ -77,6 +75,7 @@ public class InitializeNode : ASTNode
     public override void Load()
     {
         base.Load();
+
         if (TryGetNode<OperatorNode>(0, out var opr))
         {
             oprNode = opr;

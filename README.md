@@ -12,7 +12,7 @@ This section is dedicated to the basic functions of the ugh language.
 - false
 - fun
 - break
-- return (not implemented yet)
+- return 
 - if
 - else
 - elif
@@ -84,7 +84,7 @@ fun hello(){
 }
 
 hello();
-print(hello); 
+print(hello); # Get value from last hello execution #
 ```
 
 ### Insert

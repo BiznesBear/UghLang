@@ -17,7 +17,7 @@ public class InvalidSpellingException(ASTNode node) : UghException($"Invalid spe
 }
 
 [Serializable]
-public class IncorrectAmountOfArgumentException(Name name) : UghException($"Incorrect count of arguments called for {name.Key}")
+public class IncorrectArgumentsException(Name name) : UghException($"Incorrect arguments or their count called for {name.Key}")
 {
 
 }

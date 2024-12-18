@@ -2,7 +2,9 @@
 
 namespace UghLang;
 
-
+/// <summary>
+/// Master of execution which contains list of reserved runtime names
+/// </summary>
 public class Ugh
 {
     private readonly Dictionary<string, Name> names = new();
@@ -44,6 +46,7 @@ public class Ugh
     }
 
 }
+
 public abstract class Name(string name, object val) : IDisposable, IReturnAny
 {
     public const Name NULL = default;
@@ -62,8 +65,8 @@ public abstract class Name(string name, object val) : IDisposable, IReturnAny
 public class Variable(string name, object value) : Name(name, value) { }
 public class Function(string name, TagNode node, ExpressionNode exprs) : Name(name, 0)
 {
-    public TagNode TagNode { get; private set; } = node;
-    public ExpressionNode ExpressionNode { get; private set; } = exprs;
+    public TagNode TagNode { get; init; } = node;
+    public ExpressionNode ExpressionNode { get; init; } = exprs;
 
     private Ugh Ugh => TagNode.Ugh;
 
@@ -75,7 +78,7 @@ public class Function(string name, TagNode node, ExpressionNode exprs) : Name(na
         var nodes = ExpressionNode.GetNodes<NameNode>();
 
         int nodesCount = nodes.Count();
-        if (nodesCount != args.Count()) throw new IncorrectAmountOfArgumentException(this);
+        if (nodesCount != args.Count()) throw new IncorrectArgumentsException(this);
 
         for (int i = 0; i < nodesCount; i++)
         {

@@ -10,6 +10,7 @@ public enum TokenType : byte
 
     OpenExpression, // opens expression
     CloseExpression, // closes expression
+
     OpenBlock, // opens block of code
     CloseBlock, // closes block of code
 
@@ -23,6 +24,7 @@ public enum TokenType : byte
 public class Token 
 {
     public TokenType Type { get; set; }
+
 
     public string StringValue { get; set; }
     public int IntValue => int.Parse(StringValue);
@@ -45,7 +47,6 @@ public class Token
             Type = t;
         }
     }
-
 
     public override string ToString() => $"{nameof(Token)} {{ Value = {StringValue} | Type = {Type} | Keyword = {Keyword} }}";
 }

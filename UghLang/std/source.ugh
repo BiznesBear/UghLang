@@ -1,3 +1,7 @@
 fun helloworld(){
 	print("Hello world!");
 }
+
+fun pow(x, y){
+	return(x ** y);
+}

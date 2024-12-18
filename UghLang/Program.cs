@@ -39,4 +39,4 @@ var lexer = new Lexer(file, parser);
 
 Debug.PrintTree(parser.AST);
 
-parser.Execute();
+parser.LoadAndExecute();

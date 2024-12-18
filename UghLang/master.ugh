@@ -1,19 +1,17 @@
 # TODO
 
-return (under construction)
-add executing functions in NameNode
+??? add executing functions in NameNode ???
 
-mini clean up
+better command prompt 
 
-describe all functions and classes
-lists (and stack, queue, dictionary)
+lists
 
 ADD ANY ERROR HANDLING as 
 	unrecognizable (variable, function) names,
 	invalid format (e. g. placing insert keyword outside of AST node),
 	expected X in Y,
 
-std
+std (file, range, time, random)
 
 <IDEAS>
 ??? recurrency ???

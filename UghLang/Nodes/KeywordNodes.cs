@@ -1,15 +1,20 @@
 ﻿namespace UghLang.Nodes;
 
-
+/// <summary>
+/// Writes line with expression in console
+/// </summary>
 public class PrintNode : NestedExpressionNode
 {
     public override void Execute()
     {
         base.Execute();
-        Console.WriteLine(exprs?.AnyValue);
+        Console.WriteLine(Expression.AnyValue);
     }
 }
 
+/// <summary>
+/// Creates input field and writes expression in console
+/// </summary>
 public class InputNode : NestedExpressionNode, IReturn<string>
 {
     public string Value { get; set; } = string.Empty;
@@ -18,12 +23,14 @@ public class InputNode : NestedExpressionNode, IReturn<string>
     public override void Execute()
     {
         base.Execute();
-        Console.Write(exprs?.AnyValue);
+        Console.Write(Expression.AnyValue);
         Value = Console.ReadLine() ?? string.Empty;
     }
 }
 
-
+/// <summary>
+/// Deletes variable 
+/// </summary>
 public class FreeNode : ASTNode
 {
     private bool isRef;
@@ -48,6 +55,9 @@ public class FreeNode : ASTNode
 
 }
 
+/// <summary>
+/// Declares new function 
+/// </summary>
 public class DeclareFunctionNode : NestedExpressionAndTagNode
 {
     public DeclareFunctionNode() : base(1, 2) { }
@@ -60,10 +70,10 @@ public class DeclareFunctionNode : NestedExpressionAndTagNode
 
         name = GetNode<NameNode>(0);
 
-        if (exprs is null || tag is null || name is null) // TODO: Remove this from everywere
+        if (name is null) 
            throw new InvalidSpellingException(this);
         
-        Function fun = new(name.Token.StringValue, tag, exprs);
+        Function fun = new(name.Token.StringValue, Tag, Expression);
         Ugh.RegisterName(fun);
     }
 }
@@ -75,6 +85,10 @@ public class BreakNode : ASTNode
 {
     public override void Execute() => Parent.Executable = false;
 }
+
+/// <summary>
+/// Sets current executed function value and breaks it execution
+/// </summary>
 public class ReturnNode : NestedExpressionNode 
 {
     public override void Execute()
@@ -84,17 +98,20 @@ public class ReturnNode : NestedExpressionNode
         // break master branch (not the parent like in break keyword)
         // set value from exprs to current executed function
 
-        if(Ugh.Function is null || exprs is null)
+        if(Ugh.Function is null)
             throw new InvalidSpellingException(this);
 
-        Ugh.Function.Value = exprs.AnyValue;
+        Ugh.Function.Value = Expression.AnyValue;
         Ugh.Function.TagNode.Executable = false;
     }
 }
 
+/// <summary>
+/// Checks if expression equals true
+/// </summary>
 public class IfNode : NestedExpressionAndTagNode
 {
-    private ASTNode? elseNode; // TODO: Add implementation for else node
+    private ASTNode? elseNode; 
 
     public override void Load()
     {
@@ -109,13 +126,13 @@ public class IfNode : NestedExpressionAndTagNode
         if (!Executable) return;
         base.Execute();
 
-        if (exprs is null) throw new InvalidSpellingException(this);
 
-        if ((bool)exprs.AnyValue == true)
-            tag?.ForceExecute();
+        if ((bool)Expression.AnyValue == true)
+            Tag?.ForceExecute();
         else if(elseNode is not null) elseNode.Executable = true;
     }
 }
+
 
 public class ElseNode : ASTNode
 {
@@ -143,44 +160,48 @@ public class ElifNode : IfNode
     public ElifNode() => Executable = false;
 }
 
+/// <summary>
+/// Creates for loop from 0 to (value)
+/// </summary>
 public class ForNode : NestedExpressionAndTagNode
 {
     public override void Execute()
     {
         base.Execute();
 
-        if (exprs is null || tag is null) throw new InvalidSpellingException(this);
-        
-        tag.Executable = true;
-
-        for (int i = 0; i < (int)exprs.AnyValue; i++)
+        Tag.Executable = true;
+        for (int i = 0; i < (int)Expression.AnyValue; i++)
         {
-            if (!tag.Executable) break;
-            tag.Execute();
+            if (!Tag.Executable) break;
+            Tag.Execute();
         }
-        tag.Executable = false;
+        Tag.Executable = false;
 
     }
 }
 
+/// <summary>
+/// Creates new while loop
+/// </summary>
 public class WhileNode : NestedExpressionAndTagNode
 {
     public override void Execute()
     {
         base.Execute();
-        if (exprs is null || tag is null) throw new InvalidSpellingException(this);
 
-        tag.Executable = (bool)exprs.AnyValue;
-
-        while ((bool)exprs.AnyValue)
+        Tag.Executable = (bool)Expression.AnyValue;
+        while ((bool)Expression.AnyValue)
         {
-            if (!tag.Executable) break;
-            tag.Execute();
+            if (!Tag.Executable) break;
+            Tag.Execute();
         }
-        tag.Executable = false;
+        Tag.Executable = false;
     }
 }
 
+/// <summary>
+/// Imports other ugh files and mark them as Inserted
+/// </summary>
 public class InsertNode : ASTNode 
 {
     public override void Load()
@@ -199,12 +220,13 @@ public class InsertNode : ASTNode
         var parser = new Parser(Ugh, true);
         var lexer = new Lexer(file, parser);
         
-        parser.Execute();
+        parser.LoadAndExecute();
     }
 }
 
-
-
+/// <summary>
+/// Marks node as local. Local nodes will not be imported
+/// </summary>
 public class LocalNode : ASTNode
 {
     public override void Load()

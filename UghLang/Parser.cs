@@ -5,7 +5,7 @@ namespace UghLang;
 public class Parser
 {
     public readonly AST AST;
-    public bool Inserted { get; }
+    public bool Inserted { get; init; }
 
     private ASTNode currentNode;
     private Stack<ASTNode> masterBranches = new();
@@ -134,12 +134,15 @@ public class Parser
 
     #endregion
 
+    public void Load() => AST.Load();
+    public void Execute() => AST.Execute();
+
     /// <summary>
     /// Loads and executes every node
     /// </summary>
-    public void Execute()
+    public void LoadAndExecute()
     {
-        AST.Load();
-        AST.Execute();
+        Load();
+        Execute();
     }
 }
