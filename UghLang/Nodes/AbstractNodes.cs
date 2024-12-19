@@ -12,7 +12,7 @@ public abstract class NestedExpressionNode(int expressionIndex = 0) : ASTNode
     public override void Load()
     {
         base.Load();
-        exprs = GetNode<ExpressionNode>(expressionIndex);
+        exprs = GetNodeOrDefalut<ExpressionNode>(expressionIndex);
     }
 }
 
@@ -30,6 +30,6 @@ public abstract class NestedExpressionAndTagNode(int expressionIndex = 0, int ta
     public override void Load()
     {
         base.Load();
-        tag = GetNode<TagNode>(tagIndex);
+        tag = GetNodeOrDefalut<TagNode>(tagIndex);
     }
 }

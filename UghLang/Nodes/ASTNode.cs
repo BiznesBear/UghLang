@@ -46,6 +46,8 @@ public abstract class ASTNode
 
 
     #region GettingNodes
+
+    public bool CheckType<T>() => this is T;
     public bool HasEmptyBranch() => Nodes.Count < 1;
 
 
@@ -78,7 +80,7 @@ public abstract class ASTNode
         return false;
     }
 
-    public T? GetNodeOrDefalut<T>(int index)
+    public T? GetNodeOrDefalut<T>(int index) 
         => index < Nodes.Count && Nodes[index] is T t ? t : default;
 
     public T GetNode<T>(int index)

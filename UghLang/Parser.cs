@@ -24,6 +24,7 @@ public class Parser
             case TokenType.Keyword:
                 EnterNode((token.Keyword ?? default).GetNode());
                 break;
+
             case TokenType.OpenExpression:
                 // add new expression
                 EnterNode(new ExpressionNode() ); // { AnyValue = token.Value }
@@ -46,6 +47,11 @@ public class Parser
                 RemoveMasterBranch<TagNode>();
                 break;
 
+            case TokenType.Name: // TODO: Rework this 
+                if (IsMasterBranch()) EnterNode(new InitializeNode() { Token = token });
+                else CreateNode(new NameNode() { Token = token });
+                break;
+
             case TokenType.StringValue:
                 CreateNode(new ConstStringValueNode() { Value = token.StringValue });
                 break;
@@ -60,12 +66,9 @@ public class Parser
                 break;
 
             case TokenType.Separator:
-                // end branch
-                BackToMasterBranch();
-                break;
-            case TokenType.Name: // TODO: Rework this 
-                if (IsMasterBranch()) EnterNode(new InitializeNode() { Token = token });
-                else CreateNode(new NameNode() { Token = token });
+                if (currentNode.CheckType<IExpressable>())
+                    QuitNode();
+                else BackToMasterBranch();
                 break;
             default: throw new Exception($"Unhandled token type: {token.Type}");
         }
@@ -90,14 +93,16 @@ public class Parser
         currentNode = node;
     }
 
+    private void QuitNode() => currentNode = currentNode.Parent;
+
     /// <summary>
     /// Quits from node T
     /// </summary>
     /// <typeparam name="T">Type of node</typeparam>
     private void QuitNode<T>()
     {
-        if (CurrentNodeIs<T>())
-            currentNode = currentNode.Parent;
+        if (currentNode.CheckType<T>())
+            QuitNode();
     }
 
     /// <summary>
@@ -133,7 +138,6 @@ public class Parser
     /// </summary>
     /// <returns></returns>
     private bool IsMasterBranch() => currentNode == GetMasterBranch();
-    private bool CurrentNodeIs<T>() => currentNode.GetType() == typeof(T);
 
 
     #endregion

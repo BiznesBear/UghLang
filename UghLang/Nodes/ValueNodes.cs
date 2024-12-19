@@ -3,7 +3,7 @@
 
 public interface IReturnAny
 {
-    public object AnyValue { get; }
+    public object AnyValue { get; } 
 }
 
 public interface IReturn<T> : IReturnAny

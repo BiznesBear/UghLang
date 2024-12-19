@@ -77,7 +77,7 @@ while(myVar < 10){
 	print(myVar);
 }
 ```
-### Fun and return
+### Fun, return, call
 ```ugh
 fun hello(){
 	return("Hello, world!");
@@ -85,6 +85,14 @@ fun hello(){
 
 hello();
 print(hello); # Get value from last hello execution #
+
+# You can use call to assign function value to variables #
+
+myVar = call hello();
+print(myVar);
+
+# The fastest way to do all above #
+print(call hello()); # If you want to add any operations you need to add semicolin after calling function #
 ```
 
 ### Insert

@@ -14,7 +14,8 @@ public class TagNode : ASTNode
 
 public class ExpressionNode : ASTNode, IReturnAny
 {
-    public object AnyValue => Express();
+    public bool Blocked { get; set; } = false;
+    public object AnyValue => Blocked ? 0 : Express();
 
     public object Express()
     {
@@ -71,24 +72,26 @@ public class InitializeNode : ASTNode
 
     private bool isOperation;
     private Function? fun;
+    private IEnumerable<IReturnAny> args = [];
 
     public override void Load()
     {
         base.Load();
 
-        if (TryGetNode<OperatorNode>(0, out var opr))
+        if (TryGetNode<OperatorNode>(0, out oprNode))
         {
-            oprNode = opr;
             isOperation = true;
             value = GetNodes<IReturnAny>().First();
             return;
         }
 
-        if (TryGetNode<ExpressionNode>(0, out var arg)) // TODO: Add recurrency here
+        if (TryGetNode<ExpressionNode>(0, out exprs)) // TODO: Add recurrency here
         {
-            exprs = arg;
-            if (Ugh.TryGetName(Token.StringValue, out Name fun))
-                this.fun = fun.Get<Function>();
+            if (Ugh.TryGetName(Token.StringValue, out Name n))
+            {
+                fun = n.Get<Function>();
+                exprs.GetNodes<IReturnAny>();
+            }
         }
     }
 
@@ -99,10 +102,12 @@ public class InitializeNode : ASTNode
         if (isOperation && value is not null)
         {
             if (Ugh.TryGetName(Token.StringValue, out var variable) && oprNode is not null)
+            {
                 variable.Value = Operation.Operate(variable.Value, value.AnyValue, oprNode.Operator);
+            }
             else Ugh.RegisterName(new Variable(Token.StringValue, value.AnyValue));
         }
-        else if (fun is not null && exprs is not null) fun.Invoke(exprs.GetNodes<IReturnAny>());
+        else if (fun is not null && exprs is not null) fun.Invoke(args);
         else throw new UghException("Invalid initialize of object");
     }
 }

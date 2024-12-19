@@ -57,7 +57,22 @@ public abstract class Name(string name, object val) : IDisposable, IReturnAny
     public object AnyValue => Value;
 
 
-    public T Get<T>() where T : Name => this as T ?? throw new UghException($"Cannot convert {GetType()} to {typeof(T)}");
+    public T? GetOrNull<T>() where T : Name => this as T ?? null;
+    public T Get<T>() where T : Name => GetOrNull<T>() ?? throw new UghException($"Cannot convert {GetType()} to {typeof(T)}");
+
+    public bool TryGet<T>(out T node) where T : Name
+    {
+        var n = GetOrNull<T>();
+
+        if (n is null)
+        {
+            node = (T)NULL;
+            return false;
+        }
+
+        node = n;
+        return true;
+    }
 
     public void Dispose() => GC.SuppressFinalize(this);
     public override string ToString() => $"{nameof(Name)}{{{nameof(Key)} = {Key}; {nameof(Value)} = {Value}}}";

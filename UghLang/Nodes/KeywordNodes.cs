@@ -1,5 +1,7 @@
 ﻿namespace UghLang.Nodes;
 
+public interface IExpressable { }
+
 /// <summary>
 /// Writes line with expression in console
 /// </summary>
@@ -33,20 +35,19 @@ public class InputNode : NestedExpressionNode, IReturn<string>
 /// </summary>
 public class FreeNode : ASTNode
 {
-    private bool isRef;
     private NameNode? refNode;
 
     public override void Load()
     {
         base.Load();
-        isRef = TryGetNode(0, out NameNode refr);
-        refNode = refr;
+        
+        refNode = GetNodeOrDefalut<NameNode>(0);
     }
 
     public override void Execute()
     {
         base.Execute();
-        if (isRef && refNode is not null)
+        if (refNode is not null)
             Ugh.FreeName(refNode.GetName());
         else if (TryGetNode<ConstStringValueNode>(0,out var modifier) && modifier.Value == "all")
             Ugh.FreeAll();
@@ -89,16 +90,41 @@ public class BreakNode : ASTNode
 /// <summary>
 /// Sets current executed function value and breaks it execution
 /// </summary>
-public class ReturnNode : NestedExpressionNode 
+public class ReturnNode : NestedExpressionNode, IReturnAny
 {
+    public Function Function => Ugh.Function ?? throw new InvalidSpellingException(this);
+    public object AnyValue => Function.AnyValue;
+
     public override void Execute()
     {
         base.Execute();
-        if(Ugh.Function is null)
-            throw new InvalidSpellingException(this);
+            
+        if(exprs is not null) 
+            Function.Value = exprs.AnyValue;
 
-        Ugh.Function.Value = Expression.AnyValue;
-        Ugh.Function.TagNode.Executable = false;
+        Function.TagNode.Executable = false;
+    }
+}
+
+public class CallNode() : NestedExpressionNode(1), IReturnAny, IExpressable
+{
+    public object AnyValue => Function.AnyValue;
+    public Function Function => fun ?? throw new InvalidSpellingException(this);
+
+    private Function? fun;
+    private IEnumerable<IReturnAny> args = [];
+
+    public override void Load()
+    {
+        base.Load();
+        fun = GetNode<NameNode>(0).GetName().Get<Function>();
+        args = Expression.GetNodes<IReturnAny>();
+    }
+
+    public override void Execute()
+    {
+        base.Execute();
+        Function.Invoke(args);
     }
 }
 
