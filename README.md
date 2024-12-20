@@ -16,7 +16,7 @@ This section is dedicated to the basic functions of the ugh language.
 - if
 - else
 - elif
-- for
+- count
 - while
 - insert
 - local
@@ -61,10 +61,10 @@ else {
 }
 ```
 
-### For
+### Count
 ```ugh
 myVar = 0;
-for(10){
+count(10){
 	myVar + 1;
 	print(myVar);
 }

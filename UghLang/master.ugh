@@ -1,8 +1,3 @@
-insert "std";
-
-print(call fib(10));
-
-
 # TODO
 
 

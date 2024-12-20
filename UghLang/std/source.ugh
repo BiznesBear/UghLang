@@ -15,7 +15,7 @@ fun fib(len){
     a = 0; 
     b = 1;  
 
-    for(len){ 
+    count(len){ 
         c = (a + b); 
         r += (c + " "); 
 

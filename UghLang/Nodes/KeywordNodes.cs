@@ -181,7 +181,7 @@ public class ElifNode : IfNode
 /// <summary>
 /// Creates for loop from 0 to (value)
 /// </summary>
-public class ForNode : NestedExpressionAndTagNode
+public class CountNode : NestedExpressionAndTagNode
 {
     public override void Execute()
     {

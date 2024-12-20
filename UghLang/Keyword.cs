@@ -20,7 +20,7 @@ public enum Keyword : byte
     Else,
     Elif,
 
-    For,
+    Count,
     While,
 
     Insert,
@@ -47,7 +47,7 @@ public static class KeywordExtension
         { "else", Keyword.Else },
         { "elif", Keyword.Elif },
 
-        { "for", Keyword.For },
+        { "count", Keyword.Count },
         { "while", Keyword.While },
 
         { "insert", Keyword.Insert },
@@ -90,7 +90,7 @@ public static class KeywordExtension
             Keyword.Else => new ElseNode(),
             Keyword.Elif => new ElifNode(),
 
-            Keyword.For => new ForNode(),
+            Keyword.Count => new CountNode(),
             Keyword.While => new WhileNode(),
 
             Keyword.Insert => new InsertNode(),
