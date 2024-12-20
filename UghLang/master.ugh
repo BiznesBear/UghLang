@@ -1,18 +1,20 @@
+insert "std";
+
+print(call fib(10));
+
+
 # TODO
+
+
 ADD AS MUCH AS POSSIBLE ERROR HANDLING as 
 	unrecognizable (variable, function) names,
 	invalid format (e. g. placing insert keyword outside of AST node),
 	expected X in Y,
 
-better command prompt 
 
 lists
 
 std (file, range, time, random)
 
-<IDEAS>
-??? recurrency ???
-??? inheritance (for strong typing) ???
-??? `using` keyword for importing dlls and librarys. Example: `using myLib = "myLibPath"` ???
-??? namespaces for insert keyword (as optimalization aka. multi-ugh) ??? 
+`using` keyword for importing dlls and librarys. Example: `using myLib = "myLibPath"`
 #

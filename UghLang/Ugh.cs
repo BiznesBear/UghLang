@@ -94,6 +94,7 @@ public class Function(string name, TagNode node, ExpressionNode exprs) : Name(na
         var nodes = ExpressionNode.GetNodes<NameNode>();
 
         int nodesCount = nodes.Count();
+ 
         if (nodesCount != args.Count()) throw new IncorrectArgumentsException(this);
 
         for (int i = 0; i < nodesCount; i++)

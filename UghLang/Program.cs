@@ -1,8 +1,11 @@
 ﻿using UghLang;
 
+
+const string VERSION = "v0.0.0.0.1";
+
 if (args.Length < 1) 
 {
-    Console.WriteLine("Ugh");
+    Console.WriteLine("Ugh " + VERSION);
     return;
 }
 
@@ -18,6 +21,7 @@ foreach(var arg in args)
         switch (arg)
         {
             case "--version" or "--info" or "--help":
+                Console.WriteLine("Welcome to Ugh language " + VERSION);
                 // print version and general info
                 break;
             case "--debug": // Enables debug
@@ -37,6 +41,6 @@ var ugh = new Ugh();
 var parser = new Parser(ugh, false);
 var lexer = new Lexer(file, parser);
 
-Debug.PrintTree(parser.AST);
+Debug.PrintTree(parser.AST, path);
 
 parser.LoadAndExecute();

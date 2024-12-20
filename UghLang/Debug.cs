@@ -11,9 +11,9 @@ public static class Debug
         if (!Enabled) return;
         Console.WriteLine(message);
     }
-    public static void PrintTree(ASTNode node) 
+    public static void PrintTree(ASTNode node, string title = "DEBUG TREE") 
     { 
-        Print("\nDEBUG TREE"); 
+        Print($"\n{title}"); 
         Print(GenerateTreeString(node)); 
     }
 

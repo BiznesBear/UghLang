@@ -43,7 +43,6 @@ public class Lexer
             else if (c == ')' && !Ignore) AddSingle(TokenType.CloseExpression);
             else if (c == '{' && !Ignore) AddSingle(TokenType.OpenBlock);
             else if (c == '}' && !Ignore) AddSingle(TokenType.CloseBlock);
-            else if (c == ',' && !Ignore) { /* Just do nothing there */ }
             else if ((char.IsDigit(c) || c == '-' && char.IsDigit(CheckNext())) && !Ignore)
             {
                 AddChar(c);

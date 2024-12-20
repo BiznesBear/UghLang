@@ -1,7 +1,27 @@
+# Testing function#
 fun helloworld(){
 	print("Hello world!");
 }
 
+# Powers X by Y #
 fun pow(x, y){
 	return(x ** y);
+}
+
+# Returns string of fibbonaci sequance separeted with spaces #
+fun fib(len){
+    r = "";
+
+    a = 0; 
+    b = 1;  
+
+    for(len){ 
+        c = (a + b); 
+        r += (c + " "); 
+
+        a = b;     
+        b = c;
+    }
+
+    return(r);
 }

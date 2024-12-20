@@ -71,9 +71,6 @@ public class DeclareFunctionNode : NestedExpressionAndTagNode
 
         name = GetNode<NameNode>(0);
 
-        if (name is null) 
-           throw new InvalidSpellingException(this);
-        
         Function fun = new(name.Token.StringValue, Tag, Expression);
         Ugh.RegisterName(fun);
     }
@@ -231,10 +228,9 @@ public class InsertNode : ASTNode
         
         string path = GetNode<ConstStringValueNode>(0).Value;
 
-        if (File.Exists(path)) { }
-        else if (Path.Exists(path))
-            path += "/source.ugh";
-        else throw new UghException("Cannot find ugh named " + path);
+        if(File.Exists(path)) { }
+        else if (Path.Exists(path)) { path += "/source.ugh"; }
+        else path = Path.GetDirectoryName(Environment.ProcessPath) ?? "" + $"/{path}/source.ugh";
 
         var file = File.ReadAllText(path);
 

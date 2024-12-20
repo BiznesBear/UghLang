@@ -114,3 +114,19 @@ local { # Example of nested local #
 	}
 }
 ```
+# Examples
+## Fibonacci
+```ugh
+# Fibonacci sequence example #
+
+n = 10; # Lenght #
+a = 0; 
+b = 1;  
+
+for(n){ 
+    c = (a + b); 
+    print(c);  
+    a = b;     
+    b = c;     
+}
+```

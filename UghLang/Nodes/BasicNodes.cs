@@ -82,17 +82,13 @@ public class InitializeNode : ASTNode
         {
             isOperation = true;
             value = GetNodes<IReturnAny>().First();
-            return;
         }
-
-        if (TryGetNode<ExpressionNode>(0, out exprs)) // TODO: Add recurrency here
+        else if (TryGetNode<ExpressionNode>(0, out exprs) && Ugh.TryGetName(Token.StringValue, out Name n)) // TODO: Add recurrency here
         {
-            if (Ugh.TryGetName(Token.StringValue, out Name n))
-            {
-                fun = n.Get<Function>();
-                exprs.GetNodes<IReturnAny>();
-            }
+            fun = n.Get<Function>();
+            args = exprs.GetNodes<IReturnAny>();
         }
+        else throw new InvalidSpellingException(this);
     }
 
     public override void Execute()
@@ -102,15 +98,15 @@ public class InitializeNode : ASTNode
         if (isOperation && value is not null)
         {
             if (Ugh.TryGetName(Token.StringValue, out var variable) && oprNode is not null)
-            {
                 variable.Value = Operation.Operate(variable.Value, value.AnyValue, oprNode.Operator);
-            }
             else Ugh.RegisterName(new Variable(Token.StringValue, value.AnyValue));
+            return;
         }
-        else if (fun is not null && exprs is not null) fun.Invoke(args);
-        else throw new UghException("Invalid initialize of object");
+
+        fun?.Invoke(args);
     }
 }
+
 
 
 public class NameNode : ASTNode, IReturnAny 
