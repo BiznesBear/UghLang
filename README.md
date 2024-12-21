@@ -24,11 +24,12 @@ This section is dedicated to the basic functions of the ugh language.
 
 ## How brackets work in UghLang
 () creates new expression which returns somthing.
-Wrong:
+
+Don't do:
 ```
 print "Hello " + "world!"; # This won't work, becouse ugh doesn't know how to read it #
 ```
-Correct:
+Do:
 ```
 print("Hello " + "world!"); # print keyword prints one single value, not a list of them # 
 ```
@@ -81,13 +82,13 @@ myVar // 2; # Square root #
 ### If and else and elif
 ```ugh
 if(5 > 3){
-	print("5 is higher than 3");
+	print "5 is higher than 3";
 }
 elif(5 == 3){
-	print("5 equals 3");
+	print "5 equals 3";
 }
 else {
-	print("5 is lower than 3");
+	print "5 is lower than 3";
 }
 ```
 
@@ -96,7 +97,7 @@ else {
 myVar = 0;
 count(10){
 	myVar + 1;
-	print(myVar);
+	print myVar;
 }
 ```
 ### While
@@ -104,13 +105,13 @@ count(10){
 myVar = 0;
 while(myVar < 10){
 	myVar + 1;
-	print(myVar);
+	print myVar;
 }
 ```
 ### Fun, return, call
 ```ugh
 fun hello(){
-	return("Hello");
+	return "Hello";
 }
 
 hello();
@@ -134,13 +135,13 @@ helloworld();
 ### Local
 ```ugh
 local fun foo(){ # Nodes marked as local won't load when inserted from other file # 
-	print("Hello, world!");
+	print "Hello, world!";
 } 
 
 local { # Example of nested local #
 
 	for(100){
-		print("Hello, world!");
+		print "Hello, world!";
 	}
 }
 ```
@@ -155,7 +156,7 @@ b = 1;
 
 count(n){ 
     c = (a + b); 
-    print(c);  
+    print c;  
     a = b;     
     b = c;     
 }
