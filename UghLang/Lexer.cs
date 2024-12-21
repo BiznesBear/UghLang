@@ -97,6 +97,7 @@ public class Lexer
                 if (i + skips < contents.Length)
                     i += skips;
             }
+
             char CheckNext(int next = 1)
             {
                 int realIndex = i + next;
@@ -108,6 +109,7 @@ public class Lexer
                 }
                 return '\0';
             }
+
             void AddSingle(TokenType type)
             {
                 StartNew();
@@ -116,11 +118,13 @@ public class Lexer
             }
         }
     }
+
     private void StartNew()
     {
         if (!IsPartEmpty()) 
             AddPart(TokenType.Name);
     }
+
     private bool IsPartEmpty() => currentPart == string.Empty;
     private void AddChar(char c) => currentPart += c;
 

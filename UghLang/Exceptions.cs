@@ -2,6 +2,7 @@
 
 namespace UghLang;
 
+
 [Serializable]
 public class UghException(string mess) : Exception(mess) { }
 

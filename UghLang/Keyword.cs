@@ -25,6 +25,11 @@ public enum Keyword : byte
 
     Insert,
     Local,
+
+    Str,
+    Int,
+    Float,
+    Bool,
 }
 public static class KeywordExtension
 {
@@ -52,6 +57,11 @@ public static class KeywordExtension
 
         { "insert", Keyword.Insert },
         { "local", Keyword.Local },
+
+        { "str", Keyword.Str },
+        { "int", Keyword.Int },
+        { "bool", Keyword.Bool },
+        { "float", Keyword.Float },
     };
 
     public static bool TryGetKeyword(this string word, out Keyword keyword, out TokenType type)
@@ -95,6 +105,11 @@ public static class KeywordExtension
 
             Keyword.Insert => new InsertNode(),
             Keyword.Local => new LocalNode(),
+
+            Keyword.Str => new StrNode(),
+            Keyword.Int => new IntNode(),
+            Keyword.Bool => new BoolNode(),
+            Keyword.Float => new FloatNode(),
 
             _ => new UndefinedNode(),
         };

@@ -74,7 +74,6 @@ public class ListNode : ASTNode, IReturn<IReadOnlyList<object>> // WARRING: Not 
         base.Load();
         Value = GetObjects().ToList();
         throw new NotImplementedException("Lists are not currently supported function");
-       
     }
 
     private IEnumerable<object> GetObjects()
@@ -111,7 +110,7 @@ public class InitializeNode : ASTNode
             isOperation = true;
             value = GetNodes<IReturnAny>().First();
         }
-        else if (TryGetNode<ExpressionNode>(0, out exprs) && Ugh.TryGetName(Token.StringValue, out Name n)) // TODO: Add recurrency here
+        else if (TryGetNode<ExpressionNode>(0, out exprs) && Ugh.TryGetName(Token.StringValue, out Name n)) 
         {
             fun = n.Get<Function>();
             args = exprs.GetNodes<IReturnAny>();
@@ -134,7 +133,6 @@ public class InitializeNode : ASTNode
 
                 if(Parent is TagNode tgn) // deregister variable after end of tag node execution
                     tgn.EndedExecution += () => { Ugh.FreeName(v); };
-                
             } 
             return;
         }

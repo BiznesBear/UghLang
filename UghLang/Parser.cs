@@ -55,7 +55,7 @@ public class Parser
                 QuitNode<ListNode>();
                 break;
 
-            case TokenType.Name: // TODO: Rework this 
+            case TokenType.Name: 
                 if (IsMasterBranch()) EnterNode(new InitializeNode() { Token = token });
                 else CreateNode(new NameNode() { Token = token });
                 break;
@@ -128,7 +128,7 @@ public class Parser
     /// Removes peek of masterBranches
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    private void RemoveMasterBranch<T>() // TODO: Fix debug tree in this function
+    private void RemoveMasterBranch<T>() 
     {
         if (GetMasterBranch().GetType() != typeof(T)) return;
         masterBranches.Pop();

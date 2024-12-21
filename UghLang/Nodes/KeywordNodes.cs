@@ -259,3 +259,20 @@ public class LocalNode : ASTNode
         base.Load();
     }
 }
+
+public abstract class ConvertNode<T>(T defalutValue) : AssignedIReturnAnyNode, IReturn<T>, IQuitable
+{
+    public T Value { get; set; } = defalutValue;
+    public object AnyValue => Value ?? throw new();
+
+    public override void Execute()
+    {
+        base.Execute();
+        Value = (T)Convert.ChangeType(Any.AnyValue, typeof(T));
+    }
+} 
+
+public class StrNode() : ConvertNode<string>(string.Empty);
+public class IntNode() : ConvertNode<int>(0);
+public class BoolNode() : ConvertNode<bool>(false);
+public class FloatNode() : ConvertNode<float>(0f);

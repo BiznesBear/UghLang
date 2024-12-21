@@ -8,6 +8,7 @@
 public abstract class AssignedIReturnAnyNode(int index = 0) : ASTNode
 {
     protected IReturnAny? any;
+    public IReturnAny Any => any ?? throw new InvalidSpellingException(this);
 
     public override void Load()
     {

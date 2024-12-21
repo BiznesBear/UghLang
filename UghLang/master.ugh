@@ -1,11 +1,4 @@
 # TODO
-
-make public types of variables 
-
-make variables declared inside of function aviable only in that fun
-better error handling
-
 lists, enumerating them and indexes
-len & converts like str(myVar)
-
+len 
 #
