@@ -1,6 +1,11 @@
 # TODO
+
 make public types of variables 
 
-lists and for
-??? optimize how bool is init... (keywords) ???
+make variables declared inside of function aviable only in that fun
+better error handling
+
+lists, enumerating them and indexes
+len & converts like str(myVar)
+
 #

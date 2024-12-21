@@ -22,6 +22,18 @@ ughlang master.ugh
 # Mini documentation
 This section is dedicated to the basic functions of the ugh language.
 
+## How brackets work in UghLang
+() creates new expression which returns somthing.
+Wrong:
+```
+print "Hello " + "world!"; # This won't work, becouse ugh doesn't know how to read it #
+```
+Correct:
+```
+print("Hello " + "world!"); # print keyword prints one single value, not a list of them # 
+```
+Remeber that empty expression (not arguments list) throws you an exception.
+
 ## Keywords list
 - print
 - input
@@ -141,7 +153,7 @@ n = 10; # Lenght #
 a = 0; 
 b = 1;  
 
-for(n){ 
+count(n){ 
     c = (a + b); 
     print(c);  
     a = b;     

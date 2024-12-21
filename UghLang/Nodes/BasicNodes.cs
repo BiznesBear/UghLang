@@ -8,7 +8,13 @@ public class OperatorNode : ASTNode
 
 public class TagNode : ASTNode 
 {
+    public event Action? EndedExecution;
     public TagNode() => Executable = false;
+    public override void Execute()
+    {
+        base.Execute();
+        EndedExecution?.Invoke();
+    }
 }
 
 
@@ -57,7 +63,7 @@ public class ExpressionNode : ASTNode, IReturnAny, IStopable
         return vals.First();
     }
 }
-public class ListNode : ASTNode, IReturn<IReadOnlyList<object>> // TODO: Add geting from index
+public class ListNode : ASTNode, IReturn<IReadOnlyList<object>> // WARRING: Not implemented yet
 {
     public IReadOnlyList<object> Value { get; set; } = [];
     public object AnyValue => Value;
@@ -67,6 +73,8 @@ public class ListNode : ASTNode, IReturn<IReadOnlyList<object>> // TODO: Add get
     {
         base.Load();
         Value = GetObjects().ToList();
+        throw new NotImplementedException("Lists are not currently supported function");
+       
     }
 
     private IEnumerable<object> GetObjects()
@@ -77,6 +85,7 @@ public class ListNode : ASTNode, IReturn<IReadOnlyList<object>> // TODO: Add get
 
     public override string ToString() => string.Join(';', Value);
 }
+
 
 /// <summary>
 /// Used to declare and set variables
@@ -118,7 +127,15 @@ public class InitializeNode : ASTNode
         {
             if (Ugh.TryGetName(Token.StringValue, out var variable) && oprNode is not null)
                 variable.Value = Operation.Operate(variable.Value, value.AnyValue, oprNode.Operator);
-            else Ugh.RegisterName(new Variable(Token.StringValue, value.AnyValue));
+            else
+            {
+                var v = new Variable(Token.StringValue, value.AnyValue);
+                Ugh.RegisterName(v);
+
+                if(Parent is TagNode tgn) // deregister variable after end of tag node execution
+                    tgn.EndedExecution += () => { Ugh.FreeName(v); };
+                
+            } 
             return;
         }
 

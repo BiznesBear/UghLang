@@ -1,23 +1,21 @@
 ﻿namespace UghLang.Nodes;
 
-
-
 /// <summary>
-/// Writes line with expression in console
+/// Writes value 
 /// </summary>
-public class PrintNode : NestedExpressionNode
+public class PrintNode : AssignedIReturnAnyNode 
 {
     public override void Execute()
     {
         base.Execute();
-        Console.WriteLine(Expression.AnyValue);
+        Console.WriteLine(any?.AnyValue);
     }
 }
 
 /// <summary>
-/// Creates input field and writes expression in console
+/// Creates input field and writes value 
 /// </summary>
-public class InputNode : NestedExpressionNode, IReturn<string>
+public class InputNode : AssignedIReturnAnyNode, IReturn<string>
 {
     public string Value { get; set; } = string.Empty;
     public object AnyValue => Value;
@@ -25,13 +23,13 @@ public class InputNode : NestedExpressionNode, IReturn<string>
     public override void Execute()
     {
         base.Execute();
-        Console.Write(Expression.AnyValue);
+        Console.Write(any?.AnyValue);
         Value = Console.ReadLine() ?? string.Empty;
     }
 }
 
 /// <summary>
-/// Releases name from ugh
+/// Disposes Name from Ugh
 /// </summary>
 public class FreeNode : ASTNode
 {
@@ -57,9 +55,9 @@ public class FreeNode : ASTNode
 }
 
 /// <summary>
-/// Declares new function 
+/// Declares new function for Ugh
 /// </summary>
-public class DeclareFunctionNode : NestedExpressionAndTagNode
+public class DeclareFunctionNode : AssignedExpressionAndTagNode
 {
     public DeclareFunctionNode() : base(1, 2) { }
 
@@ -85,9 +83,9 @@ public class BreakNode : ASTNode
 }
 
 /// <summary>
-/// Sets current executed function value and breaks it execution
+/// Sets current executed function value and breaks it whole execution
 /// </summary>
-public class ReturnNode : NestedExpressionNode, IReturnAny
+public class ReturnNode : AssignedIReturnAnyNode, IReturnAny
 {
     public Function Function => Ugh.Function ?? throw new InvalidSpellingException(this);
     public object AnyValue => Function.AnyValue;
@@ -96,14 +94,17 @@ public class ReturnNode : NestedExpressionNode, IReturnAny
     {
         base.Execute();
             
-        if(exprs is not null) 
-            Function.Value = exprs.AnyValue;
+        if(any is not null) 
+            Function.Value = any.AnyValue;
 
         Function.TagNode.Executable = false;
     }
 }
 
-public class CallNode() : NestedExpressionNode(1), IReturnAny, IQuitable
+/// <summary>
+/// Calls function and returns its value
+/// </summary>
+public class CallNode() : AssignedExpressionNode(1), IReturnAny, IQuitable
 {
     public object AnyValue => Function.AnyValue;
     public Function Function => fun ?? throw new InvalidSpellingException(this);
@@ -125,10 +126,7 @@ public class CallNode() : NestedExpressionNode(1), IReturnAny, IQuitable
     }
 }
 
-/// <summary>
-/// Checks if expression equals true
-/// </summary>
-public class IfNode : NestedExpressionAndTagNode
+public class IfNode : AssignedExpressionAndTagNode
 {
     private ASTNode? elseNode; 
 
@@ -181,7 +179,7 @@ public class ElifNode : IfNode
 /// <summary>
 /// Creates for loop from 0 to (value)
 /// </summary>
-public class CountNode : NestedExpressionAndTagNode
+public class CountNode : AssignedExpressionAndTagNode
 {
     public override void Execute()
     {
@@ -201,7 +199,7 @@ public class CountNode : NestedExpressionAndTagNode
 /// <summary>
 /// Creates new while loop
 /// </summary>
-public class WhileNode : NestedExpressionAndTagNode
+public class WhileNode : AssignedExpressionAndTagNode
 {
     public override void Execute()
     {
@@ -216,6 +214,7 @@ public class WhileNode : NestedExpressionAndTagNode
         Tag.Executable = false;
     }
 }
+
 
 /// <summary>
 /// Imports other ugh files and mark them as Inserted
@@ -242,7 +241,7 @@ public class InsertNode : ASTNode
 }
 
 /// <summary>
-/// Marks node as local. Local nodes will not be imported
+/// Marks node as local. Local nodes can't be inserted to other file
 /// </summary>
 public class LocalNode : ASTNode
 {

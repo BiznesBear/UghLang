@@ -77,10 +77,9 @@ public class Parser
                 QuitNode<IQuitable>();
                 if (!currentNode.CheckType<IStopable>())
                     BackToMasterBranch();
-
                 break;
 
-            default: throw new Exception($"Unhandled token type: {token.Type}");
+            default: throw new UghException($"Unhandled token type: {token.Type}");
         }
     }
 
