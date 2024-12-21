@@ -1,6 +1,6 @@
 ﻿namespace UghLang.Nodes;
 
-public interface IQuitable;
+
 
 /// <summary>
 /// Writes line with expression in console
@@ -226,7 +226,7 @@ public class InsertNode : ASTNode
     {
         base.Load();
         
-        string path = GetNode<IReturn<string>>(0).Value;
+        string path = GetNode<ConstStringValueNode>(0).Value;
 
         if(File.Exists(path)) { }
         else if (Path.Exists(path)) { path += "/source.ugh"; }

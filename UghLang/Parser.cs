@@ -32,6 +32,7 @@ public class Parser
             case TokenType.CloseExpression:
                 // exit and calculate current expression
                 QuitNode<ExpressionNode>();
+
                 break;
 
             case TokenType.Operator:
@@ -73,10 +74,12 @@ public class Parser
                 break;
 
             case TokenType.Separator:
-                if (currentNode.CheckType<IQuitable>())
-                    QuitNode();
-                else BackToMasterBranch();
+                QuitNode<IQuitable>();
+                if (!currentNode.CheckType<IStopable>())
+                    BackToMasterBranch();
+
                 break;
+
             default: throw new Exception($"Unhandled token type: {token.Type}");
         }
     }
@@ -106,10 +109,14 @@ public class Parser
     /// Quits from node T
     /// </summary>
     /// <typeparam name="T">Type of node</typeparam>
-    private void QuitNode<T>()
+    private bool QuitNode<T>()
     {
         if (currentNode.CheckType<T>())
+        {
             QuitNode();
+            return true;
+        }
+        return false;
     }
 
     /// <summary>

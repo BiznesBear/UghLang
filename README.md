@@ -98,19 +98,19 @@ while(myVar < 10){
 ### Fun, return, call
 ```ugh
 fun hello(){
-	return("Hello, world!");
+	return("Hello");
 }
 
 hello();
-print(hello); # Get value from last hello execution #
+print(hello + " world!"); # Get value from last hello execution #
 
 # You can use call to assign function value to variables #
 
-myVar = call hello();;
-print(myVar);
+myVar = call hello();
+print(myVar + " world!");
 
 # The fastest way to do all above #
-print(call hello();); # If you want to add any operations you need to add semicolin after calling function #
+print(call hello(); + " world!"); # If you want to add any operations you need to add semicolin after calling function #
 ```
 
 ### Insert

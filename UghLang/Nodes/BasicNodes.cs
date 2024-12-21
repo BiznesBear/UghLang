@@ -12,7 +12,7 @@ public class TagNode : ASTNode
 }
 
 
-public class ExpressionNode : ASTNode, IReturnAny
+public class ExpressionNode : ASTNode, IReturnAny, IStopable
 {
     public object AnyValue => Express();
 

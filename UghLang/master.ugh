@@ -1,8 +1,6 @@
 # TODO
-lists
+make public types of variables 
 
-`using` keyword for importing dlls and librarys. Example: `using myLib = "myLibPath"`
-std (file, range, time, random)
-
-??? optimize bool init (keywords) ???
+lists and for
+??? optimize how bool is init... (keywords) ???
 #

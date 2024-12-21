@@ -113,3 +113,6 @@ public class Function(string name, TagNode node, ExpressionNode exprs) : Name(na
         Ugh.Function = null;
     }
 }
+
+// TODO: Lists
+public class List(string name, object value) : Name(name, value) { }
