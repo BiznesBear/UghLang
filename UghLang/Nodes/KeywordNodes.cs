@@ -1,6 +1,6 @@
 ﻿namespace UghLang.Nodes;
 
-public interface IExpressable { }
+public interface IQuitable;
 
 /// <summary>
 /// Writes line with expression in console
@@ -103,7 +103,7 @@ public class ReturnNode : NestedExpressionNode, IReturnAny
     }
 }
 
-public class CallNode() : NestedExpressionNode(1), IReturnAny, IExpressable
+public class CallNode() : NestedExpressionNode(1), IReturnAny, IQuitable
 {
     public object AnyValue => Function.AnyValue;
     public Function Function => fun ?? throw new InvalidSpellingException(this);
@@ -226,7 +226,7 @@ public class InsertNode : ASTNode
     {
         base.Load();
         
-        string path = GetNode<ConstStringValueNode>(0).Value;
+        string path = GetNode<IReturn<string>>(0).Value;
 
         if(File.Exists(path)) { }
         else if (Path.Exists(path)) { path += "/source.ugh"; }
@@ -260,4 +260,3 @@ public class LocalNode : ASTNode
         base.Load();
     }
 }
-

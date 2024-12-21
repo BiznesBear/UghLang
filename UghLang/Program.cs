@@ -1,7 +1,7 @@
 ﻿using UghLang;
 
 
-const string VERSION = "v0.0.0.0.1";
+const string VERSION = "v0.2";
 
 if (args.Length < 1) 
 {
@@ -9,9 +9,6 @@ if (args.Length < 1)
     return;
 }
 
-#if DEBUG
-Debug.Enabled = true;
-#endif
 
 string path = string.Empty;
 foreach(var arg in args)
@@ -20,12 +17,14 @@ foreach(var arg in args)
     {
         switch (arg)
         {
-            case "--version" or "--info" or "--help":
-                Console.WriteLine("Welcome to Ugh language " + VERSION);
-                // print version and general info
+            case "--version":
+                Console.WriteLine($"UghLang {VERSION}");
                 break;
-            case "--debug": // Enables debug
-                Debug.Enabled = true; // TODO: Add error handling when is nothing to execute
+            case "--info" or "--help":
+                Console.WriteLine($"Welcome to Ugh language! Arguments list: --debug; --version; --help; --info");
+                break;
+            case "--debug": 
+                Debug.Enabled = true; 
                 break;
             default: throw new UghException($"Cannot find argument '{arg}'"); // ADD HERE UNDEFINED ARGUMENT EXCEPTION
         }

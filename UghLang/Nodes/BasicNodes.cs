@@ -14,12 +14,12 @@ public class TagNode : ASTNode
 
 public class ExpressionNode : ASTNode, IReturnAny
 {
-    public bool Blocked { get; set; } = false;
-    public object AnyValue => Blocked ? 0 : Express();
+    public object AnyValue => Express();
 
     public object Express()
     {
-        if (HasEmptyBranch()) return Name.NULL.Value;
+        if (HasEmptyBranch()) throw new EmptyExpressionException(this);
+
 
         Stack<object> vals = new();
         Stack<Operator> operators = new();
@@ -57,7 +57,26 @@ public class ExpressionNode : ASTNode, IReturnAny
         return vals.First();
     }
 }
+public class ListNode : ASTNode, IReturn<IReadOnlyList<object>> // TODO: Add geting from index
+{
+    public IReadOnlyList<object> Value { get; set; } = [];
+    public object AnyValue => Value;
 
+
+    public override void Load()
+    {
+        base.Load();
+        Value = GetObjects().ToList();
+    }
+
+    private IEnumerable<object> GetObjects()
+    {
+        foreach(var node in GetNodes<IReturnAny>())
+            yield return node.AnyValue;
+    }
+
+    public override string ToString() => string.Join(';', Value);
+}
 
 /// <summary>
 /// Used to declare and set variables

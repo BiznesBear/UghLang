@@ -7,7 +7,7 @@
 public abstract class NestedExpressionNode(int expressionIndex = 0) : ASTNode
 {
     protected ExpressionNode? exprs;
-    public ExpressionNode Expression => exprs ?? throw new NullReferenceException("Null expression");
+    public ExpressionNode Expression => exprs ?? throw new MissingThingException("()", this);
 
 
     public override void Load()
@@ -27,7 +27,7 @@ public abstract class NestedExpressionNode(int expressionIndex = 0) : ASTNode
 public abstract class NestedExpressionAndTagNode(int expressionIndex = 0, int tagIndex = 1) : NestedExpressionNode(expressionIndex)
 {
     protected TagNode? tag;
-    public TagNode Tag => tag ?? throw new NullReferenceException("Null expression");
+    public TagNode Tag => tag ?? throw new MissingThingException("{}",this);
 
     public override void Load()
     {

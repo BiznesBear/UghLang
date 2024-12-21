@@ -14,6 +14,9 @@ public enum TokenType : byte
     OpenBlock, // opens block of code
     CloseBlock, // closes block of code
 
+    OpenList, // opens list
+    CloseList, // closes list
+
     StringValue, // string 
     IntValue, // int
     BoolValue, // boolean
@@ -25,15 +28,13 @@ public class Token
 {
     public TokenType Type { get; set; }
 
-
     public string StringValue { get; set; }
     public int IntValue => int.Parse(StringValue);
     public float FloatValue => float.Parse(StringValue, System.Globalization.CultureInfo.InvariantCulture);
     public bool BoolValue => bool.Parse(StringValue);
-
+    public Operator Operator => Operation.GetOperator(StringValue);
 
     public Keyword? Keyword { get; set; }
-    public Operator Operator => Operation.GetOperator(StringValue);
 
 
     public Token(string val, TokenType type) 

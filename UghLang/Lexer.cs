@@ -1,6 +1,5 @@
 ﻿namespace UghLang;
 
-
 public class Lexer
 {
     public Parser Parser { get; }
@@ -39,10 +38,18 @@ public class Lexer
                 AddPart(TokenType.Name);
             }
             else if (c == ';' && !Ignore) AddSingle(TokenType.Separator);
+            
             else if (c == '(' && !Ignore) AddSingle(TokenType.OpenExpression);
             else if (c == ')' && !Ignore) AddSingle(TokenType.CloseExpression);
+            
             else if (c == '{' && !Ignore) AddSingle(TokenType.OpenBlock);
             else if (c == '}' && !Ignore) AddSingle(TokenType.CloseBlock);
+
+            else if (c == '[' && !Ignore) AddSingle(TokenType.OpenList);
+            else if (c == ']' && !Ignore) AddSingle(TokenType.CloseList);
+            
+            else if (c == ',' && !Ignore) { /* Just do nothing here */ }
+
             else if ((char.IsDigit(c) || c == '-' && char.IsDigit(CheckNext())) && !Ignore)
             {
                 AddChar(c);

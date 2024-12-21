@@ -27,7 +27,7 @@ public class Parser
 
             case TokenType.OpenExpression:
                 // add new expression
-                EnterNode(new ExpressionNode() ); // { AnyValue = token.Value }
+                EnterNode(new ExpressionNode()); 
                 break;
             case TokenType.CloseExpression:
                 // exit and calculate current expression
@@ -45,6 +45,13 @@ public class Parser
             case TokenType.CloseBlock:
                 QuitNode<TagNode>();
                 RemoveMasterBranch<TagNode>();
+                break;
+
+            case TokenType.OpenList:
+                EnterNode(new ListNode());
+                break;
+            case TokenType.CloseList:
+                QuitNode<ListNode>();
                 break;
 
             case TokenType.Name: // TODO: Rework this 
@@ -66,7 +73,7 @@ public class Parser
                 break;
 
             case TokenType.Separator:
-                if (currentNode.CheckType<IExpressable>())
+                if (currentNode.CheckType<IQuitable>())
                     QuitNode();
                 else BackToMasterBranch();
                 break;

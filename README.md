@@ -1,6 +1,24 @@
 # UghLang
 Written in C# interpreted programing language created for educational purpose and to show the power of simplicity.
 
+# Building
+Make sure you have .net 9 installed
+```
+git clone https://github.com/BiznesBear/UghLang
+cd UghLang
+dotnet build
+```
+
+# Running script
+```
+ughlang master.ugh
+```
+### Console arguments
+- `--debug` (prints debug tree)
+- `--version`
+- `--info`
+- `--help`
+
 # Mini documentation
 This section is dedicated to the basic functions of the ugh language.
 
