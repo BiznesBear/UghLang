@@ -55,6 +55,7 @@ Remeber that empty expression (not arguments list) throws you an exception.
 - int
 - bool
 - float
+- extern (working on)
 
 ### Declaring variables
 ```ugh
@@ -95,10 +96,10 @@ else {
 }
 ```
 
-### Count
+### Repeat
 ```ugh
 myVar = 0;
-repeat(10){
+repeat 10{
 	myVar + 1;
 	print myVar;
 }
@@ -111,7 +112,7 @@ while(myVar < 10){
 	print myVar;
 }
 ```
-### Fun, return, call
+### Fun, return
 ```ugh
 fun hello(){
 	return "Hello";
@@ -122,11 +123,11 @@ print(hello + " world!"); # Get value from last hello execution #
 
 # You can use call to assign function value to variables #
 
-myVar = call hello();
+myVar = hello();
 print(myVar + " world!");
 
 # The fastest way to do all above #
-print(call hello(); + " world!"); # If you want to add any operations you need to add semicolin after calling function #
+print(hello(); + " world!"); 
 ```
 
 ### Insert
@@ -148,10 +149,10 @@ local { # Example of nested local #
 	}
 }
 ```
-### Converts
+### Converting types
 ```ugh
 myVar = "10";
-print(int myVar; + 5); # Works with any type (string, int, bool, float) #
+print(int myVar + 5); # Types: string, int, bool, float #
 ```
 
 

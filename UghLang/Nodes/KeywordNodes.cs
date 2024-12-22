@@ -16,7 +16,7 @@ public class PrintNode : AssignedIReturnAnyNode
 /// <summary>
 /// Creates input field and writes value 
 /// </summary>
-public class InputNode : AssignedIReturnAnyNode, IReturn<string>
+public class InputNode : AssignedIReturnAnyNode, IReturn<string>, IOperatable
 {
     public string Value { get; set; } = string.Empty;
     public object AnyValue => Value;
@@ -58,10 +58,8 @@ public class FreeNode : ASTNode
 /// <summary>
 /// Declares new function for Ugh
 /// </summary>
-public class DeclareFunctionNode : AssignedExpressionAndTagNode
+public class DeclareFunctionNode : ASTNode
 {
-    public DeclareFunctionNode() : base(1, 2) { }
-
     private NameNode? name;
 
     public override void Load()
@@ -70,7 +68,7 @@ public class DeclareFunctionNode : AssignedExpressionAndTagNode
 
         name = GetNode<NameNode>(0);
 
-        Function fun = new(name.Token.StringValue, Tag, Expression);
+        Function fun = new(name.Token.StringValue, name.TagNode, name.Expression);
         Ugh.RegisterName(fun);
     }
 }
@@ -102,32 +100,7 @@ public class ReturnNode : AssignedIReturnAnyNode, IReturnAny
     }
 }
 
-/// <summary>
-/// Calls function and returns its value
-/// </summary>
-public class CallNode() : AssignedExpressionNode(1), IReturnAny, IQuitable
-{
-    public object AnyValue => Function.AnyValue;
-    public Function Function => fun ?? throw new InvalidSpellingException(this);
-
-    private Function? fun;
-    private IEnumerable<IReturnAny> args = [];
-
-    public override void Load()
-    {
-        base.Load();
-        fun = GetNode<NameNode>(0).GetName().Get<Function>();
-        args = Expression.GetNodes<IReturnAny>();
-    }
-
-    public override void Execute()
-    {
-        base.Execute();
-        Function.Invoke(args);
-    }
-}
-
-public class IfNode : AssignedExpressionAndTagNode
+public class IfNode : AssignedIReturnAnyAndTagNode
 {
     private ASTNode? elseNode; 
 
@@ -145,7 +118,7 @@ public class IfNode : AssignedExpressionAndTagNode
         base.Execute();
 
 
-        if ((bool)Expression.AnyValue == true)
+        if ((bool)Any.AnyValue == true)
             Tag?.ForceExecute();
         else if(elseNode is not null) elseNode.Executable = true;
     }
@@ -180,14 +153,14 @@ public class ElifNode : IfNode
 /// <summary>
 /// Creates for loop from 0 to (value)
 /// </summary>
-public class RepeatNode : AssignedExpressionAndTagNode
+public class RepeatNode : AssignedIReturnAnyAndTagNode
 {
     public override void Execute()
     {
         base.Execute();
 
         Tag.Executable = true;
-        for (int i = 0; i < (int)Expression.AnyValue; i++)
+        for (int i = 0; i < (int)Any.AnyValue; i++)
         {
             if (!Tag.Executable) break;
             Tag.Execute();
@@ -200,14 +173,14 @@ public class RepeatNode : AssignedExpressionAndTagNode
 /// <summary>
 /// Creates new while loop
 /// </summary>
-public class WhileNode : AssignedExpressionAndTagNode
+public class WhileNode : AssignedIReturnAnyAndTagNode
 {
     public override void Execute()
     {
         base.Execute();
 
-        Tag.Executable = (bool)Expression.AnyValue;
-        while ((bool)Expression.AnyValue)
+        Tag.Executable = (bool)Any.AnyValue;
+        while ((bool)Any.AnyValue)
         {
             if (!Tag.Executable) break;
             Tag.Execute();
@@ -261,7 +234,7 @@ public class LocalNode : ASTNode
     }
 }
 
-public abstract class ConvertNode<T>(T defalutValue) : AssignedIReturnAnyNode, IReturn<T>, IQuitable
+public abstract class ConvertNode<T>(T defalutValue) : AssignedIReturnAnyNode, IReturn<T>, IOperatable
 {
     public T Value { get; set; } = defalutValue;
     public object AnyValue => Value ?? throw new();
@@ -278,19 +251,23 @@ public class IntNode() : ConvertNode<int>(0);
 public class BoolNode() : ConvertNode<bool>(false);
 public class FloatNode() : ConvertNode<float>(0f);
 
+
+// TODO: Externs from lua files
+// NOTE: This is experimetnal future
 public class ExternNode : ASTNode
 {
-    private ConstStringValueNode? script;
+    private string script = string.Empty;
     public override void Load()
     {
         base.Load();
-        script = GetNode<ConstStringValueNode>(0);
+        script = File.ReadAllText(GetNode<ConstStringValueNode>(0).Value);
     }
 
     public override void Execute()
     {
         base.Execute();
         using var lua = new Lua();
-        lua.DoString(File.ReadAllText(script?.Value ?? ""));
+
+        lua.DoString(script);
     }
 }

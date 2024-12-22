@@ -14,7 +14,6 @@ public enum Keyword : byte
     Fun,
     Break,
     Return,
-    Call,
 
     If,
     Else,
@@ -48,7 +47,6 @@ public static class KeywordExtension
         { "fun", Keyword.Fun },
         { "break", Keyword.Break },
         { "return", Keyword.Return },
-        { "call", Keyword.Call },
 
         { "if", Keyword.If },
         { "else", Keyword.Else },
@@ -98,7 +96,6 @@ public static class KeywordExtension
             Keyword.Fun => new DeclareFunctionNode(),
             Keyword.Break => new BreakNode(),
             Keyword.Return => new ReturnNode(),
-            Keyword.Call => new CallNode(),
 
             Keyword.If => new IfNode(),
             Keyword.Else => new ElseNode(),

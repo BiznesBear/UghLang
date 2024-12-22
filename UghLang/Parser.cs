@@ -26,16 +26,14 @@ public class Parser
                 break;
 
             case TokenType.OpenExpression:
-                // add new expression
                 EnterNode(new ExpressionNode()); 
                 break;
             case TokenType.CloseExpression:
-                // exit and calculate current expression
                 QuitNode<ExpressionNode>();
-
                 break;
 
             case TokenType.Operator:
+                while (QuitNode<IOperatable>());
                 CreateNode(new OperatorNode() { Operator = token.Operator });
                 break;
 
@@ -55,9 +53,9 @@ public class Parser
                 QuitNode<ListNode>();
                 break;
 
-            case TokenType.Name: 
-                if (IsMasterBranch()) EnterNode(new InitializeNode() { Token = token });
-                else CreateNode(new NameNode() { Token = token });
+            case TokenType.Name:
+                ASTNode nameNode = IsMasterBranch() ? new InitializeNode() { Token = token } : new NameNode() { Token = token };
+                EnterNode(nameNode);
                 break;
 
             case TokenType.StringValue:
@@ -74,9 +72,7 @@ public class Parser
                 break;
 
             case TokenType.Separator:
-                QuitNode<IQuitable>();
-                if (!currentNode.CheckType<IStopable>())
-                    BackToMasterBranch();
+                BackToMasterBranch();
                 break;
 
             default: throw new UghException($"Unhandled token type: {token.Type}");
@@ -174,3 +170,4 @@ public class Parser
         Execute();
     }
 }
+

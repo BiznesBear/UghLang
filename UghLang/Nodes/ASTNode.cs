@@ -160,8 +160,11 @@ public abstract class ASTNode
     public override string ToString() => $"{GetType().Name}";
 }
 
-public interface IQuitable; // allows to quit from node with separator that is not master branch
-public interface IStopable; // If separator placed inside then dont goes to master branch
+
+/// <summary>
+/// Operator token quits from this node when called
+/// </summary>
+public interface IOperatable; 
 
 public class AST : ASTNode
 {

@@ -1,4 +1,6 @@
-﻿namespace UghLang.Nodes;
+﻿using System.Linq.Expressions;
+
+namespace UghLang.Nodes;
 
 
 public class OperatorNode : ASTNode
@@ -18,7 +20,7 @@ public class TagNode : ASTNode
 }
 
 
-public class ExpressionNode : ASTNode, IReturnAny, IStopable
+public class ExpressionNode : ASTNode, IReturnAny
 {
     public object AnyValue => Express();
 
@@ -53,17 +55,17 @@ public class ExpressionNode : ASTNode, IReturnAny, IStopable
         {
             if (operators.Count < 1) break;
 
-            var left = vals.Pop();
             var right = vals.Pop();
+            var left = vals.Pop();
             var op = operators.Pop();
 
-            vals.Push(Operation.Operate(right, left, op)); // DONT ASK WHY right IS LEFT AND left IS RIGHT 
+            vals.Push(Operation.Operate(left, right, op));
         }
 
         return vals.First();
     }
 }
-public class ListNode : ASTNode, IReturn<IReadOnlyList<object>> // WARRING: Not implemented yet
+public class ListNode : ASTNode, IReturn<IReadOnlyList<object>> // TODO: Not implemented yet
 {
     public IReadOnlyList<object> Value { get; set; } = [];
     public object AnyValue => Value;
@@ -143,9 +145,31 @@ public class InitializeNode : ASTNode
 
 
 
-public class NameNode : ASTNode, IReturnAny 
+public class NameNode : AssignedExpressionNode, IReturnAny , IOperatable
 {
     public required Token Token { get; init; }
     public object AnyValue => GetName().AnyValue;
+    public TagNode TagNode => tag ?? throw new NullReferenceException("No assigne TagNode in NameNode");
     public Name GetName() => Ugh.GetName(Token.StringValue);
+
+
+    private TagNode? tag;
+    private Function? fun;
+    private IEnumerable<IReturnAny> args = [];
+       
+    public override void Load()
+    {
+        base.Load();
+
+        if(exprs is not null && !TryGetNode<TagNode>(1, out tag)) 
+        {
+            fun = GetName().Get<Function>();
+            args = exprs.GetNodes<IReturnAny>();
+        }
+    }
+    public override void Execute()
+    {
+        base.Execute();
+        fun?.Invoke(args);
+    }
 }
