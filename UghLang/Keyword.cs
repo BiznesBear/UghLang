@@ -20,16 +20,18 @@ public enum Keyword : byte
     Else,
     Elif,
 
-    Count,
+    Repeat,
     While,
 
     Insert,
     Local,
 
-    Str,
+    String,
     Int,
     Float,
     Bool,
+
+    Extern,
 }
 public static class KeywordExtension
 {
@@ -52,16 +54,18 @@ public static class KeywordExtension
         { "else", Keyword.Else },
         { "elif", Keyword.Elif },
 
-        { "count", Keyword.Count },
+        { "repeat", Keyword.Repeat },
         { "while", Keyword.While },
 
         { "insert", Keyword.Insert },
         { "local", Keyword.Local },
 
-        { "str", Keyword.Str },
+        { "string", Keyword.String },
         { "int", Keyword.Int },
         { "bool", Keyword.Bool },
         { "float", Keyword.Float },
+
+        { "extern", Keyword.Extern },
     };
 
     public static bool TryGetKeyword(this string word, out Keyword keyword, out TokenType type)
@@ -100,16 +104,18 @@ public static class KeywordExtension
             Keyword.Else => new ElseNode(),
             Keyword.Elif => new ElifNode(),
 
-            Keyword.Count => new CountNode(),
+            Keyword.Repeat => new RepeatNode(),
             Keyword.While => new WhileNode(),
 
             Keyword.Insert => new InsertNode(),
             Keyword.Local => new LocalNode(),
 
-            Keyword.Str => new StrNode(),
+            Keyword.String => new StringNode(),
             Keyword.Int => new IntNode(),
             Keyword.Bool => new BoolNode(),
             Keyword.Float => new FloatNode(),
+
+            Keyword.Extern => new ExternNode(),
 
             _ => new UndefinedNode(),
         };

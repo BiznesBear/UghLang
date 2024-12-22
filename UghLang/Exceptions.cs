@@ -1,5 +1,4 @@
 ﻿using UghLang.Nodes;
-
 namespace UghLang;
 
 

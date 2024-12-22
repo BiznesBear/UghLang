@@ -1,4 +1,16 @@
+extern "std/main.lua";
+
+
 # TODO
-lists, enumerating them and indexes
-len 
+@ which allows us to put "  inside of string
+
+?? CLEANUP ?? {
+	external language (extern keyword),
+	remove call,
+	more error handling,
+	better projet structure,
+	len keyword,
+	lists, enumerating them (for loop) and indexing
+}
+
 #

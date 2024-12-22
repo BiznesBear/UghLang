@@ -1,4 +1,5 @@
-﻿namespace UghLang.Nodes;
+﻿using NLua;
+namespace UghLang.Nodes;
 
 /// <summary>
 /// Writes value 
@@ -179,7 +180,7 @@ public class ElifNode : IfNode
 /// <summary>
 /// Creates for loop from 0 to (value)
 /// </summary>
-public class CountNode : AssignedExpressionAndTagNode
+public class RepeatNode : AssignedExpressionAndTagNode
 {
     public override void Execute()
     {
@@ -272,7 +273,24 @@ public abstract class ConvertNode<T>(T defalutValue) : AssignedIReturnAnyNode, I
     }
 } 
 
-public class StrNode() : ConvertNode<string>(string.Empty);
+public class StringNode() : ConvertNode<string>(string.Empty);
 public class IntNode() : ConvertNode<int>(0);
 public class BoolNode() : ConvertNode<bool>(false);
 public class FloatNode() : ConvertNode<float>(0f);
+
+public class ExternNode : ASTNode
+{
+    private ConstStringValueNode? script;
+    public override void Load()
+    {
+        base.Load();
+        script = GetNode<ConstStringValueNode>(0);
+    }
+
+    public override void Execute()
+    {
+        base.Execute();
+        using var lua = new Lua();
+        lua.DoString(File.ReadAllText(script?.Value ?? ""));
+    }
+}

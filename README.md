@@ -47,11 +47,14 @@ Remeber that empty expression (not arguments list) throws you an exception.
 - if
 - else
 - elif
-- count
+- repeat
 - while
 - insert
 - local
-
+- string
+- int
+- bool
+- float
 
 ### Declaring variables
 ```ugh
@@ -95,7 +98,7 @@ else {
 ### Count
 ```ugh
 myVar = 0;
-count(10){
+repeat(10){
 	myVar + 1;
 	print myVar;
 }
@@ -140,11 +143,19 @@ local fun foo(){ # Nodes marked as local won't load when inserted from other fil
 
 local { # Example of nested local #
 
-	for(100){
+	repeat(100){
 		print "Hello, world!";
 	}
 }
 ```
+### Converts
+```ugh
+myVar = "10";
+print(int myVar; + 5); # Works with any type (string, int, bool, float) #
+```
+
+
+
 # Examples
 ## Fibonacci
 ```ugh
@@ -154,7 +165,7 @@ n = 10; # Lenght #
 a = 0; 
 b = 1;  
 
-count(n){ 
+repeat(n){ 
     c = (a + b); 
     print c;  
     a = b;     

@@ -1,6 +1,6 @@
-# Testing function#
+# Testing function #
 fun helloworld(){
-	print("Hello world!");
+	print "Hello world!";
 }
 
 # Powers X by Y #
@@ -15,7 +15,7 @@ fun fib(len){
     a = 0; 
     b = 1;  
 
-    count(len){ 
+    repeat(len){ 
         c = (a + b); 
         r += (c + " "); 
 
@@ -23,5 +23,5 @@ fun fib(len){
         b = c;
     }
 
-    return(r);
+    return r;
 }

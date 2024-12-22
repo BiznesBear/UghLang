@@ -24,7 +24,7 @@ public class Lexer
             }
             if (insideComment) continue;
 
-
+            
             if (c == '"')
             {
                 insideString = !insideString;
