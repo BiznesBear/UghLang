@@ -1,7 +1,7 @@
 ﻿using UghLang;
 
 
-const string VERSION = "v0.2.1";
+const string VERSION = "v0.2.2";
 
 if (args.Length < 1) 
 {

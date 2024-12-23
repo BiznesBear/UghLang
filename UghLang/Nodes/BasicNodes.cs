@@ -65,26 +65,9 @@ public class ExpressionNode : ASTNode, IReturnAny
         return vals.First();
     }
 }
-public class ListNode : ASTNode, IReturn<IReadOnlyList<object>> // TODO: Not implemented yet
+public class ListNode : ASTNode
 {
-    public IReadOnlyList<object> Value { get; set; } = [];
-    public object AnyValue => Value;
-
-
-    public override void Load()
-    {
-        base.Load();
-        Value = GetObjects().ToList();
-        throw new NotImplementedException("Lists are not currently supported function");
-    }
-
-    private IEnumerable<object> GetObjects()
-    {
-        foreach(var node in GetNodes<IReturnAny>())
-            yield return node.AnyValue;
-    }
-
-    public override string ToString() => string.Join(';', Value);
+    // TODO: Implement lists
 }
 
 
@@ -100,7 +83,7 @@ public class InitializeNode : ASTNode
     private ExpressionNode? exprs;
 
     private bool isOperation;
-    private Function? fun;
+    private BaseFunction? fun;
     private IEnumerable<IReturnAny> args = [];
 
     public override void Load()
@@ -114,7 +97,7 @@ public class InitializeNode : ASTNode
         }
         else if (TryGetNode<ExpressionNode>(0, out exprs) && Ugh.TryGetName(Token.StringValue, out Name n)) 
         {
-            fun = n.Get<Function>();
+            fun = n.Get<BaseFunction>();
             args = exprs.GetNodes<IReturnAny>();
         }
         else throw new InvalidSpellingException(this);
@@ -151,7 +134,7 @@ public class NameNode : AssignedExpressionNode, IReturnAny , IOperatable
     public Name GetName() => Ugh.GetName(Token.StringValue);
 
 
-    private Function? fun;
+    private BaseFunction? fun;
     private IEnumerable<IReturnAny> args = [];
 
     public override void Load()
@@ -162,7 +145,7 @@ public class NameNode : AssignedExpressionNode, IReturnAny , IOperatable
 
         if (exprs is not null)
         {
-            fun = GetName().Get<Function>();
+            fun = GetName().Get<BaseFunction>();
             args = exprs.GetNodes<IReturnAny>();
         }
     }

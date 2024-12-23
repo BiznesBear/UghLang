@@ -30,7 +30,7 @@ This section is dedicated to the basic functions of the ugh language.
 
 Don't do:
 ```
-print "Hello " + "world!"; # This won't work, because ugh doesn't know how to read it #
+print "Hello " + "world!"; # This won't work, because ugh (currently) doesn't know how to read it #
 ```
 Do:
 ```
@@ -54,11 +54,7 @@ Remeber that empty expression (not arguments list) throws you an exception. This
 - while
 - insert
 - local
-- string
-- int
-- bool
-- float
-- extern (working on)
+- module (experimental)
 
 ### Declaring variables
 ```ugh
@@ -151,13 +147,23 @@ local { # Example of nested local #
 	}
 }
 ```
-### Converting types
+
+### Modules 
+> [!NOTE]
+> Modules are experimental future.
+
 ```ugh
-myVar = "10";
-print(int myVar + 5); # Types: string, int, bool, float #
+module "File";
+myVar = File.Read("myFile.txt");
+print myVar;
 ```
 
-
+### Converting types
+```ugh
+module "Convert";
+myVar = "10";
+print(Convert.Int(myVar) + 5); # Types: string, int, bool, float #
+```
 
 # Examples
 ## Fibonacci

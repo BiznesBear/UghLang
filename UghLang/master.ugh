@@ -1,9 +1,10 @@
 # TODO
-better insert keyword!!
+better insert keyword 
 possibility to add " inside of a string (string modifier)
-extern keyword,
-fix pow (** and //)
-lists, enumerating them (for loop) and indexing
-len keyword,
+
+from, as (keywords)
+
+lists, arrays etc.
+for loop
 lambda expression 
 #

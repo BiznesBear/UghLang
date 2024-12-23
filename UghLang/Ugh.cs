@@ -1,4 +1,5 @@
-﻿using UghLang.Nodes;
+﻿using System.Reflection;
+using UghLang.Nodes;
 
 namespace UghLang;
 
@@ -14,7 +15,7 @@ public class Ugh
     /// <summary>
     /// Gets execution of current function if exist
     /// </summary>
-    public Function? Function { get; set; }
+    public BaseFunction? Function { get; set; }
 
     public void RegisterName(Name name) => names.Add(name.Key, name);
 
@@ -79,22 +80,34 @@ public abstract class Name(string name, object val) : IDisposable, IReturnAny
 }
 
 public class Variable(string name, object value) : Name(name, value) { }
-public class Function(string name, TagNode node, ExpressionNode exprs) : Name(name, 0)
+
+public abstract class BaseFunction(string name, Ugh ugh) : Name(name, 0)
+{
+    public Ugh Ugh => ugh;
+    public void Invoke(IEnumerable<IReturnAny> args)
+    {
+        Ugh.Function = this;
+        OnInvoke(args);
+        Ugh.Function = null;
+    }
+
+    protected abstract void OnInvoke(IEnumerable<IReturnAny> args);
+}
+
+public class Function(string name, TagNode node, ExpressionNode exprs) : BaseFunction(name, node.Ugh)
 {
     public TagNode TagNode { get; init; } = node;
     public ExpressionNode ExpressionNode { get; init; } = exprs;
 
-    private Ugh Ugh => TagNode.Ugh;
 
-    public void Invoke(IEnumerable<IReturnAny> args) 
+    protected override void OnInvoke(IEnumerable<IReturnAny> args)
     {
-        Ugh.Function = this;
         List<Variable> localVariables = new();
 
         var nodes = ExpressionNode.GetNodes<NameNode>();
 
         int nodesCount = nodes.Count();
- 
+
         if (nodesCount != args.Count()) throw new IncorrectArgumentsException(this);
 
         for (int i = 0; i < nodesCount; i++)
@@ -102,7 +115,7 @@ public class Function(string name, TagNode node, ExpressionNode exprs) : Name(na
             var nameNode = nodes.ElementAt(i);
 
             Variable v = new(nameNode.Token.StringValue, args.ElementAt(i).AnyValue);
-            
+
             Ugh.RegisterName(v);
             localVariables.Add(v);
         }
@@ -110,8 +123,18 @@ public class Function(string name, TagNode node, ExpressionNode exprs) : Name(na
         TagNode.ForceExecute();
 
         localVariables.ForEach(Ugh.FreeName);
-        Ugh.Function = null;
     }
 }
 
-public class List(string name, object value) : Name(name, value) { }
+public class ModuleFunction(string name, Ugh ugh, MethodInfo method) : BaseFunction(name, ugh)
+{
+    protected override void OnInvoke(IEnumerable<IReturnAny> args)
+    {
+        int len = method.GetParameters().Length;
+
+        if (len != args.Count()) throw new IncorrectArgumentsException(this);
+
+        Value = method.Invoke(null, args.Select(item => item.AnyValue).ToArray()) ?? 0;
+    }
+}
+

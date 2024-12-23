@@ -19,7 +19,6 @@ public class Parser
 
     public void AddToken(Token token)
     {
-
         switch (token.Type)
         {
             case TokenType.Keyword:
@@ -31,16 +30,19 @@ public class Parser
                 break;
             case TokenType.CloseExpression:
                 QuitNode<IOperatable>();
+
                 QuitNode<ExpressionNode>();
                 break;
 
             case TokenType.Operator:
                 QuitAll<IOperatable>();
+
                 CreateNode(new OperatorNode() { Operator = token.Operator });
                 break;
 
             case TokenType.OpenBlock:
                 QuitAll<IOperatable>();
+
                 EnterNode(new TagNode());
                 CreateMasterBranch();
                 break;
@@ -61,8 +63,6 @@ public class Parser
                 bool isInit = IsMasterBranch();
                 ASTNode nameNode =  isInit ? new InitializeNode() { Token = token } : new NameNode() { Token = token };
                 EnterNode(nameNode);
-                //if (isInit) EnterNode(nameNode);
-                //else CreateNode(nameNode);
                 break;
 
             case TokenType.StringValue:
@@ -180,4 +180,3 @@ public class Parser
         Execute();
     }
 }
-

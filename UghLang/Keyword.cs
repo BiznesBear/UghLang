@@ -25,13 +25,9 @@ public enum Keyword : byte
     Insert,
     Local,
 
-    String,
-    Int,
-    Float,
-    Bool,
-
-    Extern,
+    Module,
 }
+
 public static class KeywordExtension
 {
     private readonly static Dictionary<string, Keyword> keywords = new()
@@ -58,12 +54,7 @@ public static class KeywordExtension
         { "insert", Keyword.Insert },
         { "local", Keyword.Local },
 
-        { "string", Keyword.String },
-        { "int", Keyword.Int },
-        { "bool", Keyword.Bool },
-        { "float", Keyword.Float },
-
-        { "extern", Keyword.Extern },
+        { "module", Keyword.Module },
     };
 
     public static bool TryGetKeyword(this string word, out Keyword keyword, out TokenType type)
@@ -107,12 +98,7 @@ public static class KeywordExtension
             Keyword.Insert => new InsertNode(),
             Keyword.Local => new LocalNode(),
 
-            Keyword.String => new StringNode(),
-            Keyword.Int => new IntNode(),
-            Keyword.Bool => new BoolNode(),
-            Keyword.Float => new FloatNode(),
-
-            Keyword.Extern => new ExternNode(),
+            Keyword.Module => new ModuleNode(),
 
             _ => new UndefinedNode(),
         };

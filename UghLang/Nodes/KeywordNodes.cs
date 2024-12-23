@@ -1,4 +1,4 @@
-﻿using NLua;
+﻿using UghLang.Modules;
 namespace UghLang.Nodes;
 
 /// <summary>
@@ -87,7 +87,7 @@ public class BreakNode : ASTNode
 /// </summary>
 public class ReturnNode : AssignedIReturnAnyNode, IReturnAny
 {
-    public Function Function => Ugh.Function ?? throw new InvalidSpellingException(this);
+    public Function Function => Ugh.Function as Function ?? throw new InvalidSpellingException(this);
     public object AnyValue => Function.AnyValue;
 
     public override void Execute()
@@ -235,40 +235,17 @@ public class LocalNode : ASTNode
     }
 }
 
-public abstract class ConvertNode<T>(T defalutValue) : AssignedIReturnAnyNode, IReturn<T>, IOperatable
+public class ModuleNode : ASTNode
 {
-    public T Value { get; set; } = defalutValue;
-    public object AnyValue => Value ?? throw new NullReferenceException("Null value in ConvertNode");
-
-    public override void Execute()
-    {
-        base.Execute();
-        Value = (T)Convert.ChangeType(Any.AnyValue, typeof(T));
-    }
-}
-
-public class StringNode() : ConvertNode<string>(string.Empty);
-public class IntNode() : ConvertNode<int>(0);
-public class BoolNode() : ConvertNode<bool>(false);
-public class FloatNode() : ConvertNode<float>(0f);
-
-
-// TODO: Externs from lua files
-// NOTE: This is experimental future
-public class ExternNode : ASTNode
-{
-    private string script = string.Empty;
     public override void Load()
     {
         base.Load();
-        script = File.ReadAllText(GetNode<ConstStringValueNode>(0).Value);
-    }
+        var strNode = GetNode<ConstStringValueNode>(0);
 
-    public override void Execute()
-    {
-        base.Execute();
-        using var lua = new Lua();
-
-        lua.DoString(script);
+        foreach (var method in ModuleLoader.LoadModuleMethods(strNode.Value))
+        {
+            ModuleFunction function = new($"{strNode.Value}.{method.Key}",Ugh, method.Value);
+            Ugh.RegisterName(function);
+        }
     }
 }
