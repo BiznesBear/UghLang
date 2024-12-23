@@ -127,7 +127,7 @@ public class InitializeNode : ASTNode
 }
 
 
-public class NameNode : AssignedExpressionNode, IReturnAny , IOperatable
+public class NameNode : AssignedNode<ExpressionNode>, IReturnAny , IOperatable
 {
     public required Token Token { get; init; }
     public object AnyValue => GetName().AnyValue;
@@ -143,10 +143,10 @@ public class NameNode : AssignedExpressionNode, IReturnAny , IOperatable
 
         if (Parent.CheckType<INamed>()) return;
 
-        if (exprs is not null)
+        if (assigned is not null)
         {
             fun = GetName().Get<BaseFunction>();
-            args = exprs.GetNodes<IReturnAny>();
+            args = assigned.GetNodes<IReturnAny>();
         }
     }
 

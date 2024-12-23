@@ -5,9 +5,8 @@ public class Lexer
     public Parser Parser { get; }
 
     private string currentPart = string.Empty;
-    private bool insideString = false;
-    private bool insideComment = false;
-    private bool Ignore => insideString || insideComment;
+    private bool InsideString { get; } = false;
+    private bool InsideComment { get; } = false;
 
     public Lexer(string contents, Parser parser)
     {
@@ -18,41 +17,45 @@ public class Lexer
             char c = contents[i];
 
             // comments
-            if (c == '#' && !insideString) {
-                insideComment = !insideComment;
+            if (c == '#' && !InsideString) {
+                InsideComment = !InsideComment;
                 continue;
             }
-            if (insideComment) continue;
+            if (InsideComment) continue;
 
-            
             if (c == '"')
             {
-                if(!IsPartEmpty() && !Ignore) AddPart(TokenType.Name);
+                if(!IsPartEmpty() && !InsideString) AddPart(TokenType.Name);
 
-                insideString = !insideString;
-                if (!insideString) AddPart(TokenType.StringValue);
+                InsideString = !InsideString;
+                if (!InsideString) AddPart(TokenType.StringValue);
             }
-            else if (char.IsWhiteSpace(c) && !Ignore)
+            else if (InsideString)
+            {
+                AddChar(c);
+                continue;
+            }
+            else if (char.IsWhiteSpace(c))
             {
                 // check if current part is not empty space
-                if(IsPartEmpty()) continue;
-                
+                if (IsPartEmpty()) continue;
+
                 AddPart(TokenType.Name);
             }
-            else if (c == ';' && !Ignore) AddSingle(TokenType.Separator);
-            
-            else if (c == '(' && !Ignore) AddSingle(TokenType.OpenExpression);
-            else if (c == ')' && !Ignore) AddSingle(TokenType.CloseExpression);
-            
-            else if (c == '{' && !Ignore) AddSingle(TokenType.OpenBlock);
-            else if (c == '}' && !Ignore) AddSingle(TokenType.CloseBlock);
+            else if (c == ';' ) AddSingle(TokenType.Separator);
 
-            else if (c == '[' && !Ignore) AddSingle(TokenType.OpenList);
-            else if (c == ']' && !Ignore) AddSingle(TokenType.CloseList);
-            
-            else if (c == ',' && !Ignore) { /* Just do nothing here */ }
+            else if (c == '(' ) AddSingle(TokenType.OpenExpression);
+            else if (c == ')' ) AddSingle(TokenType.CloseExpression);
 
-            else if ((char.IsDigit(c) || c == '-' && char.IsDigit(CheckNext())) && !Ignore)
+            else if (c == '{' ) AddSingle(TokenType.OpenBlock);
+            else if (c == '}' ) AddSingle(TokenType.CloseBlock);
+
+            else if (c == '[' ) AddSingle(TokenType.OpenList);
+            else if (c == ']' ) AddSingle(TokenType.CloseList);
+
+            else if (c == ',' ) AddSingle(TokenType.Comma);
+
+            else if (char.IsDigit(c) || c == '-' && char.IsDigit(CheckNext()))
             {
                 AddChar(c);
                 var digitType = TokenType.IntValue;
@@ -65,7 +68,7 @@ public class Lexer
                         Skip();
                         continue;
                     }
-                    else if(ch == '.')
+                    else if (ch == '.')
                     {
                         AddChar(ch);
                         Skip();
@@ -77,11 +80,11 @@ public class Lexer
                         Skip();
                         continue;
                     }
-                    else break; 
+                    else break;
                 }
                 AddPart(digitType);
             }
-            else if (c.IsOperator() && !Ignore)
+            else if (c.IsOperator())
             {
                 StartNew();
 
@@ -93,6 +96,7 @@ public class Lexer
                 AddPart(TokenType.Operator);
             }
             else AddChar(c);
+
 
             void Skip(int skips = 1)
             {
@@ -132,14 +136,13 @@ public class Lexer
 
 
     /// <summary>
-    /// Saves last part, and makes space for new one.
+    /// Saves last part and makes space for new one.
     /// </summary>
     /// <param name="type">Type of last token to seal</param>
     private void AddPart(TokenType type)
     {
         Token token = new(currentPart, type);
         currentPart = string.Empty;
-
         Parser.AddToken(token);
     }
 }

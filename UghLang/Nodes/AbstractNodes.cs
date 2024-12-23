@@ -1,37 +1,20 @@
 ﻿namespace UghLang.Nodes;
 
-
 /// <summary>
-/// Creates faster implementation for IReturnAny node 
+/// Assignes node by index 
 /// </summary>
-/// <param name="index">Expression node index</param>
-public abstract class AssignedIReturnAnyNode(int index = 0) : ASTNode
+/// <typeparam name="T"></typeparam>
+/// <param name="index"></param>
+public abstract class AssignedNode<T>(int index = 0) : ASTNode 
 {
-    protected IReturnAny? any;
-    public IReturnAny Any => any ?? throw new InvalidSpellingException(this);
+    protected T? assigned;
+    public T Assigned => assigned ?? throw new InvalidSpellingException(this);
 
     public override void Load()
     {
         base.Load();
-        any = GetNodeOrDefalut<IReturnAny>(index);
+        assigned = GetNodeOrDefalut<T>(index);
     }
-}
-
-/// <summary>
-/// Creates faster implementation for expression node 
-/// </summary>
-/// <param name="expressionIndex">Expression node index</param>
-public abstract class AssignedExpressionNode(int expressionIndex = 0) : ASTNode
-{
-    protected ExpressionNode? exprs;
-    public ExpressionNode Expression => exprs ?? throw new MissingThingException("()", this);
-
-    public override void Load()
-    {
-        base.Load();
-        exprs = GetNodeOrDefalut<ExpressionNode>(expressionIndex);
-    }
-
 }
 
 /// <summary>
@@ -39,7 +22,7 @@ public abstract class AssignedExpressionNode(int expressionIndex = 0) : ASTNode
 /// </summary>
 /// <param name="anyIndex">Expression node index</param>
 /// <param name="tagIndex">Tag node index</param>
-public abstract class AssignedIReturnAnyAndTagNode(int anyIndex = 0, int tagIndex = 1) : AssignedIReturnAnyNode(anyIndex)
+public abstract class AssignedIReturnAnyAndTagNode(int anyIndex = 0, int tagIndex = 1) : AssignedNode<IReturnAny>(anyIndex)
 {
     protected TagNode? tag;
     public TagNode Tag => tag ?? throw new MissingThingException("{}", this);

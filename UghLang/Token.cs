@@ -21,6 +21,8 @@ public enum TokenType : byte
     IntValue, // int
     BoolValue, // boolean
     FloatValue, // float
+
+    Comma
 }
 
 

@@ -4,19 +4,19 @@ namespace UghLang.Nodes;
 /// <summary>
 /// Writes value 
 /// </summary>
-public class PrintNode : AssignedIReturnAnyNode 
+public class PrintNode : AssignedNode<IReturnAny>
 {
     public override void Execute()
     {
         base.Execute();
-        Console.WriteLine(any?.AnyValue);
+        Console.WriteLine(assigned?.AnyValue);
     }
 }
 
 /// <summary>
 /// Creates input field and writes value 
 /// </summary>
-public class InputNode : AssignedIReturnAnyNode, IReturn<string>, IOperatable
+public class InputNode : AssignedNode<IReturnAny>, IReturn<string>, IOperatable
 {
     public string Value { get; set; } = string.Empty;
     public object AnyValue => Value;
@@ -24,7 +24,7 @@ public class InputNode : AssignedIReturnAnyNode, IReturn<string>, IOperatable
     public override void Execute()
     {
         base.Execute();
-        Console.Write(any?.AnyValue);
+        Console.Write(assigned?.AnyValue);
         Value = Console.ReadLine() ?? string.Empty;
     }
 }
@@ -35,11 +35,9 @@ public class InputNode : AssignedIReturnAnyNode, IReturn<string>, IOperatable
 public class FreeNode : ASTNode
 {
     private NameNode? refNode;
-
     public override void Load()
     {
         base.Load();
-        
         refNode = GetNodeOrDefalut<NameNode>(0);
     }
 
@@ -85,7 +83,7 @@ public class BreakNode : ASTNode
 /// <summary>
 /// Sets current executed function value and breaks it whole execution
 /// </summary>
-public class ReturnNode : AssignedIReturnAnyNode, IReturnAny
+public class ReturnNode : AssignedNode<IReturnAny>, IReturnAny
 {
     public Function Function => Ugh.Function as Function ?? throw new InvalidSpellingException(this);
     public object AnyValue => Function.AnyValue;
@@ -94,8 +92,8 @@ public class ReturnNode : AssignedIReturnAnyNode, IReturnAny
     {
         base.Execute();
             
-        if(any is not null) 
-            Function.Value = any.AnyValue;
+        if(assigned is not null) 
+            Function.Value = assigned.AnyValue;
 
         Function.TagNode.Executable = false;
     }
@@ -119,16 +117,15 @@ public class IfNode : AssignedIReturnAnyAndTagNode
         base.Execute();
 
 
-        if ((bool)Any.AnyValue == true)
+        if ((bool)Assigned.AnyValue == true)
             Tag?.ForceExecute();
-        else if(elseNode is not null) elseNode.Executable = true;
+        else if (elseNode is not null) elseNode.Executable = true;
     }
 }
 
 public class ElseNode : ASTNode
 {
     public ElseNode() => Executable = false;
-
     private TagNode? tag;
 
     public override void Load()
@@ -161,7 +158,7 @@ public class RepeatNode : AssignedIReturnAnyAndTagNode
         base.Execute();
 
         Tag.Executable = true;
-        for (int i = 0; i < (int)Any.AnyValue; i++)
+        for (int i = 0; i < (int)Assigned.AnyValue; i++)
         {
             if (!Tag.Executable) break;
             Tag.Execute();
@@ -180,8 +177,8 @@ public class WhileNode : AssignedIReturnAnyAndTagNode
     {
         base.Execute();
 
-        Tag.Executable = (bool)Any.AnyValue;
-        while ((bool)Any.AnyValue)
+        Tag.Executable = (bool)Assigned.AnyValue;
+        while ((bool)Assigned.AnyValue)
         {
             if (!Tag.Executable) break;
             Tag.Execute();
@@ -241,11 +238,16 @@ public class ModuleNode : ASTNode
     {
         base.Load();
         var strNode = GetNode<ConstStringValueNode>(0);
+        var asNode = GetNodeOrDefalut<AsNode>(1);
+
+        var name = asNode is null? strNode.Value : asNode.Assigned.Value;
 
         foreach (var method in ModuleLoader.LoadModuleMethods(strNode.Value))
         {
-            ModuleFunction function = new($"{strNode.Value}.{method.Key}",Ugh, method.Value);
+            ModuleFunction function = new($"{name}.{method.Key}",Ugh, method.Value);
             Ugh.RegisterName(function);
         }
     }
 }
+
+public class AsNode : AssignedNode<ConstStringValueNode>;

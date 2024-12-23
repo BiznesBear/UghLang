@@ -81,6 +81,9 @@ public class Parser
             case TokenType.Separator:
                 BackToMasterBranch();
                 break;
+            case TokenType.Comma:
+                QuitAll<IOperatable>();
+                break;
 
             default: throw new UghException($"Unhandled token type: {token.Type}");
         }

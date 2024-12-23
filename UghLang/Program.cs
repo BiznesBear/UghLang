@@ -9,7 +9,7 @@ if (args.Length < 1)
     return;
 }
 
-
+bool exe = true;
 string path = string.Empty;
 foreach(var arg in args)
 {
@@ -25,6 +25,9 @@ foreach(var arg in args)
                 break;
             case "--debug": 
                 Debug.Enabled = true; 
+                break;
+            case "--noexe":
+                exe = false;
                 break;
             default: throw new UghException($"Cannot find argument '{arg}'"); // ADD HERE UNDEFINED ARGUMENT EXCEPTION
         }
@@ -42,4 +45,4 @@ var lexer = new Lexer(file, parser);
 
 Debug.PrintTree(parser.AST, path);
 
-parser.LoadAndExecute();
+if(exe) parser.LoadAndExecute();

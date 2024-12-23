@@ -13,11 +13,13 @@ dotnet build
 ```
 ughlang master.ugh
 ```
+
 ### Console arguments
 - `--debug` (prints debug tree)
 - `--version`
 - `--info`
 - `--help`
+- `--noexe` (prevents file from being executed)
 
 # Mini documentation
 This section is dedicated to the basic functions of the ugh language.
@@ -148,13 +150,13 @@ local { # Example of nested local #
 }
 ```
 
-### Modules 
+### Modules and As keyword
 > [!NOTE]
 > Modules are experimental future.
 
 ```ugh
-module "File";
-myVar = File.Read("myFile.txt");
+module "File" as "f";
+myVar = f.Read("myFile.txt");
 print myVar;
 ```
 
