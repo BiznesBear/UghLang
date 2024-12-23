@@ -1,10 +1,9 @@
 # TODO
-?? CLEANUP ?? {
-	better insert keyword!!
-	possibility to add " inside of a string (string modifier)
-	extern keyword,
-
-	len keyword,
-	lists, enumerating them (for loop) and indexing
-	?? lambda expression ??
-} #
+better insert keyword!!
+possibility to add " inside of a string (string modifier)
+extern keyword,
+fix pow (** and //)
+lists, enumerating them (for loop) and indexing
+len keyword,
+lambda expression 
+#

@@ -161,11 +161,6 @@ public abstract class ASTNode
 }
 
 
-/// <summary>
-/// Operator token quits from this node when called
-/// </summary>
-public interface IOperatable; 
-
 public class AST : ASTNode
 {
     public AST(Ugh ugh, Parser parser)
@@ -181,3 +176,13 @@ public class UndefinedNode : ASTNode
     public override void Load() 
         => throw new NotImplementedException("Undefined instructions");
 }
+
+/// <summary>
+/// Tags node as operatable (can be placed anywere)
+/// </summary>
+public interface IOperatable;
+
+/// <summary>
+/// Prevents NameNode from being executed as function 
+/// </summary>
+public interface INamed;

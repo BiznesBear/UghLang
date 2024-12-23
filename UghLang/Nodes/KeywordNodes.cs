@@ -56,9 +56,9 @@ public class FreeNode : ASTNode
 }
 
 /// <summary>
-/// Declares new function for Ugh
+/// Declares new function 
 /// </summary>
-public class DeclareFunctionNode : ASTNode
+public class DeclareFunctionNode : ASTNode, INamed
 {
     private NameNode? name;
 
@@ -68,7 +68,8 @@ public class DeclareFunctionNode : ASTNode
 
         name = GetNode<NameNode>(0);
 
-        Function fun = new(name.Token.StringValue, name.TagNode, name.Expression);
+
+        Function fun = new(name.Token.StringValue, GetNode<TagNode>(1), name.GetNode<ExpressionNode>(0));
         Ugh.RegisterName(fun);
     }
 }
@@ -237,14 +238,14 @@ public class LocalNode : ASTNode
 public abstract class ConvertNode<T>(T defalutValue) : AssignedIReturnAnyNode, IReturn<T>, IOperatable
 {
     public T Value { get; set; } = defalutValue;
-    public object AnyValue => Value ?? throw new();
+    public object AnyValue => Value ?? throw new NullReferenceException("Null value in ConvertNode");
 
     public override void Execute()
     {
         base.Execute();
         Value = (T)Convert.ChangeType(Any.AnyValue, typeof(T));
     }
-} 
+}
 
 public class StringNode() : ConvertNode<string>(string.Empty);
 public class IntNode() : ConvertNode<int>(0);
@@ -253,7 +254,7 @@ public class FloatNode() : ConvertNode<float>(0f);
 
 
 // TODO: Externs from lua files
-// NOTE: This is experimetnal future
+// NOTE: This is experimental future
 public class ExternNode : ASTNode
 {
     private string script = string.Empty;

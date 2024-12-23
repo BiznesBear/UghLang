@@ -27,6 +27,8 @@ public class Lexer
             
             if (c == '"')
             {
+                if(!IsPartEmpty() && !Ignore) AddPart(TokenType.Name);
+
                 insideString = !insideString;
                 if (!insideString) AddPart(TokenType.StringValue);
             }

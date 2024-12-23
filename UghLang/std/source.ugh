@@ -3,11 +3,6 @@ fun helloworld(){
 	print "Hello world!";
 }
 
-# Powers X by Y #
-fun pow(x, y){
-	return(x ** y);
-}
-
 # Returns string of fibbonaci sequance separeted with spaces #
 fun fib(len){
     r = "";

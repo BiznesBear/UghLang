@@ -23,17 +23,20 @@ ughlang master.ugh
 This section is dedicated to the basic functions of the ugh language.
 
 ## How brackets work in UghLang
+> [!NOTE]
+> This inconvenience may be removed in the future
+
 () creates new expression which returns somthing.
 
 Don't do:
 ```
-print "Hello " + "world!"; # This won't work, becouse ugh doesn't know how to read it #
+print "Hello " + "world!"; # This won't work, because ugh doesn't know how to read it #
 ```
 Do:
 ```
 print("Hello " + "world!"); # print keyword prints one single value, not a list of them # 
 ```
-Remeber that empty expression (not arguments list) throws you an exception.
+Remeber that empty expression (not arguments list) throws you an exception. This may change in the future.
 
 ## Keywords list
 - print
@@ -65,7 +68,7 @@ print("myVar equals " + myVar);
 
 ### Releasing resources
 ```ugh
-# TIP: You can replace name with string "all" to release all names. #
+# TIP: You can replace name with "all" to release all names. #
 
 myVar = 5;
 free myVar;
@@ -121,18 +124,17 @@ fun hello(){
 hello();
 print(hello + " world!"); # Get value from last hello execution #
 
-# You can use call to assign function value to variables #
 
 myVar = hello();
 print(myVar + " world!");
 
 # The fastest way to do all above #
-print(hello(); + " world!"); 
+print(hello() + " world!"); 
 ```
 
 ### Insert
 ```ugh
-insert "std"; # You can put any name of ugh file here (or directory which contains source.ugh)#
+insert "std"; # You can put any name of ugh file here (or directory which contains source.ugh) #
 helloworld(); 
 ```
 

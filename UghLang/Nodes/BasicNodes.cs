@@ -144,29 +144,29 @@ public class InitializeNode : ASTNode
 }
 
 
-
 public class NameNode : AssignedExpressionNode, IReturnAny , IOperatable
 {
     public required Token Token { get; init; }
     public object AnyValue => GetName().AnyValue;
-    public TagNode TagNode => tag ?? throw new NullReferenceException("No assigne TagNode in NameNode");
     public Name GetName() => Ugh.GetName(Token.StringValue);
 
 
-    private TagNode? tag;
     private Function? fun;
     private IEnumerable<IReturnAny> args = [];
-       
+
     public override void Load()
     {
         base.Load();
 
-        if(exprs is not null && !TryGetNode<TagNode>(1, out tag)) 
+        if (Parent.CheckType<INamed>()) return;
+
+        if (exprs is not null)
         {
             fun = GetName().Get<Function>();
             args = exprs.GetNodes<IReturnAny>();
         }
     }
+
     public override void Execute()
     {
         base.Execute();
