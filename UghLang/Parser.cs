@@ -4,7 +4,7 @@ namespace UghLang;
 
 public class Parser
 {
-    public readonly AST AST;
+    public readonly AST Ast;
     public bool Inserted { get; init; }
 
     private ASTNode currentNode;
@@ -12,8 +12,8 @@ public class Parser
 
     public Parser(Ugh ugh, bool inserted = false)
     {
-        AST = new(ugh, this);
-        currentNode = AST;
+        Ast = new(ugh, this);
+        currentNode = Ast;
         Inserted = inserted;
     }
 
@@ -60,8 +60,7 @@ public class Parser
                 break;
 
             case TokenType.Name:
-                bool isInit = IsMasterBranch();
-                ASTNode nameNode =  isInit ? new InitializeNode() { Token = token } : new NameNode() { Token = token };
+                ASTNode nameNode =  IsMasterBranch() ? new InitializeNode() { Token = token } : new NameNode() { Token = token };
                 EnterNode(nameNode);
                 break;
 
@@ -84,7 +83,9 @@ public class Parser
             case TokenType.Comma:
                 QuitAll<IOperatable>();
                 break;
-
+            case TokenType.Pi:
+                CreateNode(new ConstDoubleValueNode() { Value = (float)Math.PI });
+                break;
             default: throw new UghException($"Unhandled token type: {token.Type}");
         }
     }
@@ -124,7 +125,7 @@ public class Parser
         return false;
     }
                
-    private void QuitAll<T>() { while (QuitNode<IOperatable>()) ; }
+    private void QuitAll<T>() { while (QuitNode<T>()); }
 
 
     /// <summary>
@@ -153,7 +154,7 @@ public class Parser
     /// <summary>
     /// Returns current master branch
     /// </summary>
-    public ASTNode GetMasterBranch() => masterBranches.Count < 1? AST : masterBranches.Peek();
+    public ASTNode GetMasterBranch() => masterBranches.Count < 1? Ast : masterBranches.Peek();
 
     /// <summary>
     /// Checks if current node is current masterBranch
@@ -167,12 +168,12 @@ public class Parser
     /// <summary>
     /// Loads AST 
     /// </summary>
-    public void Load() => AST.Load();
+    public void Load() => Ast.Load();
 
     /// <summary>
     /// Executes AST
     /// </summary>
-    public void Execute() => AST.Execute();
+    public void Execute() => Ast.Execute();
 
     /// <summary>
     /// Loads and executes AST

@@ -21,17 +21,18 @@ public enum Keyword : byte
 
     Repeat,
     While,
+    Foreach,
 
     Insert,
     Local,
 
     Module,
-    As
+    As,
 }
 
 public static class KeywordExtension
 {
-    private readonly static Dictionary<string, Keyword> keywords = new()
+    private static readonly Dictionary<string, Keyword> Keywords = new()
     {
         { "print", Keyword.Print },
         { "input", Keyword.Input },
@@ -51,6 +52,7 @@ public static class KeywordExtension
 
         { "repeat", Keyword.Repeat },
         { "while", Keyword.While },
+        { "foreach", Keyword.Foreach },
 
         { "insert", Keyword.Insert },
         { "local", Keyword.Local },
@@ -61,7 +63,7 @@ public static class KeywordExtension
 
     public static bool TryGetKeyword(this string word, out Keyword keyword, out TokenType type)
     {
-        if (keywords.TryGetValue(word, out Keyword value))
+        if (Keywords.TryGetValue(word, out Keyword value))
         {
             keyword = value;
             type = keyword == Keyword.True || keyword == Keyword.False ?
@@ -96,6 +98,7 @@ public static class KeywordExtension
 
             Keyword.Repeat => new RepeatNode(),
             Keyword.While => new WhileNode(),
+            Keyword.Foreach => new ForeachNode(),
 
             Keyword.Insert => new InsertNode(),
             Keyword.Local => new LocalNode(),

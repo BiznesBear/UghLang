@@ -1,11 +1,9 @@
-﻿using System.Linq.Expressions;
-
-namespace UghLang.Nodes;
+﻿namespace UghLang.Nodes;
 
 
 public class OperatorNode : ASTNode
 {
-    public required Operator Operator { get; set; }
+    public required Operator Operator { get; init; }
 }
 
 public class TagNode : ASTNode 
@@ -24,18 +22,16 @@ public class ExpressionNode : ASTNode, IReturnAny
 {
     public object AnyValue => Express();
 
-    public object Express()
+    private object Express()
     {
         if (HasEmptyBranch()) throw new EmptyExpressionException(this);
 
 
         Stack<object> vals = new();
         Stack<Operator> operators = new();
-
-        for (int i = 0; i < Nodes.Count; i++)
+        
+        foreach(var node in Nodes)
         {
-            var node = Nodes[i];
-
             if (node is IReturnAny d)
                 vals.Push(d.AnyValue);
             else if (node is OperatorNode opNode)
@@ -62,6 +58,14 @@ public class ExpressionNode : ASTNode, IReturnAny
             vals.Push(Operation.Operate(left, right, op));
         }
 
+        while (vals.Count > 1)
+        {
+            var right = vals.Pop();
+            var left = vals.Pop();
+            
+            vals.Push(Operation.Operate(left, right, Operator.Multiply));
+        }
+        
         return vals.First();
     }
 }

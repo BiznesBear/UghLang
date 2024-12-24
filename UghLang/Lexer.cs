@@ -54,6 +54,7 @@ public class Lexer
             else if (c == ']' ) AddSingle(TokenType.CloseList);
 
             else if (c == ',' ) AddSingle(TokenType.Comma);
+            else if (c == 'π') AddSingle(TokenType.Pi);
 
             else if (char.IsDigit(c) || c == '-' && char.IsDigit(CheckNext()))
             {

@@ -3,8 +3,8 @@
 /// <summary>
 /// Assignes node by index 
 /// </summary>
-/// <typeparam name="T"></typeparam>
-/// <param name="index"></param>
+/// <typeparam name="T">Type of node</typeparam>
+/// <param name="index">Index of node</param>
 public abstract class AssignedNode<T>(int index = 0) : ASTNode 
 {
     protected T? assigned;

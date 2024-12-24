@@ -187,6 +187,41 @@ public class WhileNode : AssignedIReturnAnyAndTagNode
     }
 }
 
+public class ForeachNode : AssignedNode<ExpressionNode>
+{
+    private NameNode? itemNode;
+    private NameNode? collectionNode;
+    private TagNode? tagNode;
+    
+    public override void Load()
+    {
+        base.Load();
+        itemNode = Assigned.GetNode<NameNode>(0);
+        collectionNode = Assigned.GetNode<NameNode>(1);
+        tagNode = GetNode<TagNode>(1);
+    }
+
+    public override void Execute()
+    {
+        base.Execute();
+        if(itemNode is null || collectionNode is null || tagNode is null) throw new InvalidSpellingException(this); 
+        
+        var collection = collectionNode.AnyValue as object[] ?? throw new InvalidSpellingException(this);
+        Variable item = new(itemNode.Token.StringValue, 0);
+        
+        Ugh.RegisterName(item);
+
+        tagNode.Executable = true;
+        foreach (var obj in collection)
+        {
+            item.Value = obj;
+            tagNode.Execute();
+        }
+        
+        tagNode.Executable = false;
+        Ugh.FreeName(item);
+    }
+}
 
 /// <summary>
 /// Imports other ugh files and mark them as Inserted
@@ -197,11 +232,10 @@ public class InsertNode : ASTNode
     {
         base.Load();
         
-        string path = GetNode<ConstStringValueNode>(0).Value;
+        var path = GetNode<ConstStringValueNode>(0).Value;
 
         if(File.Exists(path)) { }
         else if (Path.Exists(path)) { path += "/source.ugh"; }
-        else path = Path.GetDirectoryName(Environment.ProcessPath) ?? "" + $"/{path}/source.ugh";
 
         var file = File.ReadAllText(path);
 

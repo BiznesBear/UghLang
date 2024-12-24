@@ -22,7 +22,8 @@ public enum TokenType : byte
     BoolValue, // boolean
     FloatValue, // float
 
-    Comma
+    Comma,
+    Pi
 }
 
 

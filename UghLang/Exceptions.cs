@@ -15,4 +15,4 @@ public class IncorrectArgumentsException(Name name) : UghException($"Incorrect a
 public class MissingThingException(string thing, ASTNode node) : UghException($"Missing {thing} for {node}") { }
 
 [Serializable]
-public class EmptyExpressionException(ASTNode node) : UghException($"Empty expression node in iteration {node.Parser.AST.CurrentIteration} ") { }
+public class EmptyExpressionException(ASTNode node) : UghException($"Empty expression node in iteration {node.Parser.Ast.CurrentIteration} ") { }

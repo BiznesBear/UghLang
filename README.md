@@ -81,6 +81,11 @@ myVar * 5; myVar *= 5;# Multiply #
 myVar / 5; myVar /= 5;# Divide #
 myVar ** 2; # Power #
 myVar // 2; # Square root #
+
+# PI example #
+pi = π; # PI number is aviable in std #
+# Remember to put comma or any operator between names #
+print (2pi, 2pi); # Result: 39,47842 #
 ```
 
 
@@ -113,6 +118,24 @@ while(myVar < 10){
 	print myVar;
 }
 ```
+### Foreach
+> [!NOTE]
+> Arrays are experimental future. This example is only for testing new future.
+
+```ugh
+module "Array" as "array";
+
+myArray = array.New(3);
+array.Set(myArray, 0, "Hello");
+array.Set(myArray, 1, "world");
+array.Set(myArray, 2, "item3");
+
+foreach(item, myArray){
+    print item;
+}
+```
+
+
 ### Fun, return
 ```ugh
 fun hello(){
@@ -176,7 +199,7 @@ n = 10; # Lenght #
 a = 0; 
 b = 1;  
 
-repeat(n){ 
+repeat n{ 
     c = (a + b); 
     print c;  
     a = b;     

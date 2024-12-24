@@ -1,3 +1,5 @@
+PI = π;
+
 # Testing function #
 fun helloworld(){
 	print "Hello world!";
