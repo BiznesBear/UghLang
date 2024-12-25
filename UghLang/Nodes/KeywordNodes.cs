@@ -123,23 +123,16 @@ public class IfNode : AssignedIReturnAnyAndTagNode
     }
 }
 
-public class ElseNode : ASTNode
+public class ElseNode : AssignedNode<TagNode>
 {
     public ElseNode() => Executable = false;
-    private TagNode? tag;
-
-    public override void Load()
-    {
-        base.Load();
-        tag = GetNode<TagNode>(0);
-    }
 
     public override void Execute()
     {
         if (!Executable) return;
 
         base.Execute();
-        tag?.ForceExecute();
+        Assigned.ForceExecute();
     }
 }
 
@@ -278,7 +271,7 @@ public class ModuleNode : ASTNode
 
         foreach (var method in ModuleLoader.LoadModuleMethods(strNode.Value))
         {
-            ModuleFunction function = new($"{name}.{method.Key}",Ugh, method.Value);
+            ModuleFunction function = new($"{name}.{method.Key}", Ugh, method.Value);
             Ugh.RegisterName(function);
         }
     }

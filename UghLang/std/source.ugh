@@ -12,7 +12,7 @@ fun fib(len){
     a = 0; 
     b = 1;  
 
-    repeat len{ 
+    repeat len { 
         c = (a + b); 
         r += (c + " "); 
 

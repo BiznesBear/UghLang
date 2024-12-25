@@ -49,8 +49,7 @@ public abstract class ASTNode
 
     public bool CheckType<T>() => this is T;
     public bool HasEmptyBranch() => Nodes.Count < 1;
-
-
+    
     public T? GetNextBrother<T>() where T : ASTNode
     {
         var index = Parent.CurrentIteration + 1;
@@ -86,7 +85,7 @@ public abstract class ASTNode
     public T GetNode<T>(int index)
     {
         var node = GetNodeOrDefalut<T>(index);
-        if(node?.GetType() == typeof(T))
+        if(node is not null)
             return node;
         throw new InvalidSpellingException(this);
     }

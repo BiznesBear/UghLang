@@ -1,12 +1,11 @@
 ﻿# TODO 
-
-consts (and consts from modules)
+consts from modules
 from (keyword)
-lists, arrays etc.
+arrays and lists etc.
 lambda expression 
 possibility to add " inside of a string (string modifier)
 more types (double, int64, byte etc.)
-
+better array initalizing
 imaginary units
 dodac koparke krypto 
 #

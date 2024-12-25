@@ -39,7 +39,7 @@ public class ExpressionNode : ASTNode, IReturnAny
                 while (operators.Count > 0 &&
                        Operation.GetPrecedence(operators.Peek()) >= Operation.GetPrecedence(opNode.Operator))
                 {
-                    var right = vals.Pop();
+                    var right = vals.Pop(); 
                     var left = vals.Pop();
                     vals.Push(Operation.Operate(left, right, operators.Pop()));
                 }
@@ -69,9 +69,9 @@ public class ExpressionNode : ASTNode, IReturnAny
         return vals.First();
     }
 }
-public class ListNode : ASTNode
+public class ListNode : AssignedNode<ConstIntValueNode>, IReturnAny
 {
-    // TODO: Implement lists
+    public object AnyValue => new object[Assigned.Value];
 }
 
 
@@ -85,8 +85,8 @@ public class InitializeNode : ASTNode
     private IReturnAny? value;
     private OperatorNode? oprNode;
     private ExpressionNode? exprs;
-
-    private bool isOperation;
+    private ListNode? list;
+    
     private BaseFunction? fun;
     private IEnumerable<IReturnAny> args = [];
 
@@ -95,15 +95,14 @@ public class InitializeNode : ASTNode
         base.Load();
 
         if (TryGetNode<OperatorNode>(0, out oprNode))
-        {
-            isOperation = true;
-            value = GetNodes<IReturnAny>().First();
-        }
+            value =  GetNode<IReturnAny>(1);
         else if (TryGetNode<ExpressionNode>(0, out exprs) && Ugh.TryGetName(Token.StringValue, out Name n)) 
         {
             fun = n.Get<BaseFunction>();
             args = exprs.GetNodes<IReturnAny>();
         }
+        else if (TryGetNode<ListNode>(0, out list) && TryGetNode<OperatorNode>(1, out oprNode))
+            value = GetNode<IReturnAny>(2);
         else throw new InvalidSpellingException(this);
     }
 
@@ -111,10 +110,20 @@ public class InitializeNode : ASTNode
     {
         base.Execute();
 
-        if (isOperation && value is not null)
+        if (oprNode is not null && value is not null)
         {
-            if (Ugh.TryGetName(Token.StringValue, out var variable) && oprNode is not null)
-                variable.Value = Operation.Operate(variable.Value, value.AnyValue, oprNode.Operator);
+            if (Ugh.TryGetName(Token.StringValue, out var variable))
+            {
+                if (list is not null)
+                {
+                    var array = variable.Value as object[];
+                    array![list.Assigned.Value] = Operation.Operate(array[list.Assigned.Value], value.AnyValue, oprNode.Operator);
+                }
+                else
+                {
+                    variable.Value = Operation.Operate(variable.Value, value.AnyValue, oprNode.Operator);
+                }
+            }
             else
             {
                 var v = new Variable(Token.StringValue, value.AnyValue);
@@ -131,27 +140,35 @@ public class InitializeNode : ASTNode
 }
 
 
-public class NameNode : AssignedNode<ExpressionNode>, IReturnAny , IOperatable
+public class NameNode : AssignedNode<ExpressionNode>, IReturnAny, IOperatable
 {
     public required Token Token { get; init; }
-    public object AnyValue => GetName().AnyValue;
-    public Name GetName() => Ugh.GetName(Token.StringValue);
-
+    public object AnyValue => GetValue(); // TODO: Make optimalizations for this
 
     private BaseFunction? fun;
     private IEnumerable<IReturnAny> args = [];
+    private ListNode? list;
+
+    public Name GetName() => Ugh.GetName(Token.StringValue);
+    
+    public object GetValue()
+    {
+        var name = GetName();
+        if (list is null) return name.AnyValue;
+        
+        var array = name.AnyValue as object[];
+        return array![list.Assigned.Value];
+    }
 
     public override void Load()
     {
         base.Load();
-
-        if (Parent.CheckType<INamed>()) return;
-
-        if (assigned is not null)
-        {
-            fun = GetName().Get<BaseFunction>();
-            args = assigned.GetNodes<IReturnAny>();
-        }
+        
+        list = GetNodeOrDefalut<ListNode>(0);
+        if (Parent.CheckType<INamed>() || assigned is null) return;
+        
+        fun = GetName().Get<BaseFunction>();
+        args = assigned.GetNodes<IReturnAny>();
     }
 
     public override void Execute()
@@ -159,4 +176,5 @@ public class NameNode : AssignedNode<ExpressionNode>, IReturnAny , IOperatable
         base.Execute();
         fun?.Invoke(args);
     }
+
 }

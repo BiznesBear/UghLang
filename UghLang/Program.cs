@@ -1,11 +1,12 @@
 ﻿using UghLang;
 
 
-const string VERSION = "v0.2.2";
+const string version = "v0.2.2";
+const string ughLangVersion = "UghLang " + version;
 
 if (args.Length < 1) 
 {
-    Console.WriteLine("Ugh " + VERSION);
+    Console.WriteLine(ughLangVersion);
     return;
 }
 
@@ -19,7 +20,7 @@ foreach(var arg in args)
         switch (arg)
         {
             case "--version":
-                Console.WriteLine($"UghLang {VERSION}");
+                Console.WriteLine(ughLangVersion);
                 break;
             case "--info" or "--help":
                 Console.WriteLine($"Welcome to Ugh language! Arguments list: --debug; --version; --help; --info");
@@ -38,7 +39,7 @@ foreach(var arg in args)
 
 if (path == string.Empty) return;
 
-string file = File.ReadAllText(path);
+var file = File.ReadAllText(path);
 
 var ugh = new Ugh();
 var parser = new Parser(ugh, false);

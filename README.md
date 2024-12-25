@@ -54,9 +54,11 @@ Remeber that empty expression (not arguments list) throws you an exception. This
 - elif
 - repeat
 - while
+- foreach
 - insert
 - local
 - module (experimental)
+- as
 
 ### Declaring variables
 ```ugh
@@ -119,16 +121,12 @@ while(myVar < 10){
 }
 ```
 ### Foreach
-> [!NOTE]
-> Arrays are experimental future. This example is only for testing new future.
-
 ```ugh
-module "Array" as "array";
+myArray = [3];
 
-myArray = array.New(3);
-array.Set(myArray, 0, "Hello");
-array.Set(myArray, 1, "world");
-array.Set(myArray, 2, "item3");
+myArray[0] = "Hello";
+myArray[1] = "world";
+myArray[2] = "item3";
 
 foreach(item, myArray){
     print item;
