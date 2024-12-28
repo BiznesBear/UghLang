@@ -1,11 +1,10 @@
 ﻿using UghLang.Nodes;
-
 namespace UghLang;
 
-public class Parser
+public class Parser : IDisposable
 {
     public readonly AST Ast;
-    public bool Inserted { get; init; }
+    public bool Inserted { get; }
 
     private ASTNode currentNode;
     private Stack<ASTNode> masterBranches = new();
@@ -24,24 +23,22 @@ public class Parser
             case TokenType.Keyword:
                 EnterNode((token.Keyword ?? default).GetNode());
                 break;
-
             case TokenType.OpenExpression:
                 EnterNode(new ExpressionNode()); 
                 break;
             case TokenType.CloseExpression:
-                QuitNode<IOperatable>();
-
+                QuitNode<IOperable>();
                 QuitNode<ExpressionNode>();
                 break;
 
             case TokenType.Operator:
-                QuitAll<IOperatable>();
+                QuitAllNodes<IOperable>();
 
                 CreateNode(new OperatorNode() { Operator = token.Operator });
                 break;
 
             case TokenType.OpenBlock:
-                QuitAll<IOperatable>();
+                QuitAllNodes<IOperable>();
 
                 EnterNode(new TagNode());
                 CreateMasterBranch();
@@ -56,6 +53,7 @@ public class Parser
                 EnterNode(new ListNode());
                 break;
             case TokenType.CloseList:
+                QuitAllNodes<IOperable>();
                 QuitNode<ListNode>();
                 break;
 
@@ -81,7 +79,7 @@ public class Parser
                 BackToMasterBranch();
                 break;
             case TokenType.Comma:
-                QuitAll<IOperatable>();
+                QuitAllNodes<IOperable>();
                 break;
             case TokenType.Pi:
                 CreateNode(new ConstDoubleValueNode() { Value = (float)Math.PI });
@@ -125,7 +123,7 @@ public class Parser
         return false;
     }
                
-    private void QuitAll<T>() { while (QuitNode<T>()); }
+    private void QuitAllNodes<T>() { while (QuitNode<T>()); }
 
 
     /// <summary>
@@ -183,4 +181,6 @@ public class Parser
         Load();
         Execute();
     }
+
+    public void Dispose() => GC.SuppressFinalize(this);
 }

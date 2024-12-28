@@ -23,21 +23,22 @@ public enum TokenType : byte
     FloatValue, // float
 
     Comma,
-    Pi
+    Pi,
 }
 
 
 public class Token 
 {
-    public TokenType Type { get; set; }
+    public TokenType Type { get; }
 
-    public string StringValue { get; set; }
+    public string StringValue { get; }
     public int IntValue => int.Parse(StringValue);
-    public float FloatValue => float.Parse(StringValue, System.Globalization.CultureInfo.InvariantCulture);
     public bool BoolValue => bool.Parse(StringValue);
+    public float FloatValue => float.Parse(StringValue, System.Globalization.CultureInfo.InvariantCulture);
+    public double DoubleValue => double.Parse(StringValue, System.Globalization.CultureInfo.InvariantCulture);
+   
     public Operator Operator => Operation.GetOperator(StringValue);
-
-    public Keyword? Keyword { get; set; }
+    public Keyword? Keyword { get; }
 
 
     public Token(string val, TokenType type) 

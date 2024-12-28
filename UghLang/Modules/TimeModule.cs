@@ -3,7 +3,7 @@
 [Module("Time")]
 public static class TimeModule
 {
-    public static void Sleep(float seconds) => Thread.Sleep((int)(seconds*1000));
+    public static void Sleep(double seconds) => Thread.Sleep((int)(seconds*1000));
 
     public static DateTime Now() => DateTime.Now;
     public static DateTime UtcNow() => DateTime.UtcNow;

@@ -16,10 +16,11 @@ ughlang master.ugh
 
 ### Console arguments
 - `--debug` (prints debug tree)
-- `--version`
-- `--info`
-- `--help`
-- `--noexe` (prevents file from being executed)
+- `--version` (prints version)
+- `--info` (prints info about the language)
+- `--help` (currently
+- `--nowarns` (disables warrings)
+- `--noexe` (prevents AST from being loaded and executed)
 
 # Mini documentation
 This section is dedicated to the basic functions of the ugh language.
@@ -32,13 +33,12 @@ This section is dedicated to the basic functions of the ugh language.
 
 Don't do:
 ```
-print "Hello " + "world!"; # This won't work, because ugh (currently) doesn't know how to read it #
+print "Hello " + "world!"; # This won't work, because ugh (currently) doesn't know that there's a calculation #
 ```
 Do:
 ```
 print("Hello " + "world!"); # print keyword prints one single value, not a list of them # 
 ```
-Remeber that empty expression (not arguments list) throws you an exception. This may change in the future.
 
 ## Keywords list
 - print
@@ -107,7 +107,7 @@ else {
 ### Repeat
 ```ugh
 myVar = 0;
-repeat 10{
+repeat 10 {
 	myVar + 1;
 	print myVar;
 }
@@ -136,30 +136,30 @@ foreach(item, myArray){
 
 ### Fun, return
 ```ugh
-fun hello(){
+fun Hello(){
 	return "Hello";
 }
 
-hello();
-print(hello + " world!"); # Get value from last hello execution #
+Hello();
+print(Hello + " world!"); # Get value from last hello execution #
 
 
-myVar = hello();
+myVar = Hello();
 print(myVar + " world!");
 
 # The fastest way to do all above #
-print(hello() + " world!"); 
+print(Hello() + " world!"); 
 ```
 
 ### Insert
 ```ugh
 insert "std"; # You can put any name of ugh file here (or directory which contains source.ugh) #
-helloworld(); 
+Helloworld(); 
 ```
 
 ### Local
 ```ugh
-local fun foo(){ # Nodes marked as local won't load when inserted from other file # 
+local fun Foo(){ # Nodes marked as local won't load when inserted from other file # 
 	print "Hello, world!";
 } 
 
@@ -185,7 +185,7 @@ print myVar;
 ```ugh
 module "Convert";
 myVar = "10";
-print(Convert.Int(myVar) + 5); # Types: string, int, bool, float #
+print(Convert.Int(myVar) + 5);
 ```
 
 # Examples

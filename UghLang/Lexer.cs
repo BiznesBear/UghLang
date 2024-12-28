@@ -1,6 +1,6 @@
 ﻿namespace UghLang;
 
-public class Lexer
+public class Lexer : IDisposable
 {
     public Parser Parser { get; }
 
@@ -69,19 +69,19 @@ public class Lexer
                         Skip();
                         continue;
                     }
-                    else if (ch == '.')
+                    if (ch == '.')
                     {
                         AddChar(ch);
                         Skip();
                         digitType = TokenType.FloatValue;
                         continue;
                     }
-                    else if (ch == '_')
+                    if (ch == '_')
                     {
                         Skip();
                         continue;
                     }
-                    else break;
+                    break;
                 }
                 AddPart(digitType);
             }
@@ -107,10 +107,10 @@ public class Lexer
 
             char CheckNext(int next = 1)
             {
-                int realIndex = i + next;
-                if (realIndex < contents.Length)
+                int index = i + next;
+                if (index < contents.Length)
                 {
-                    char c = contents[realIndex];
+                    char c = contents[index];
                     if (char.IsWhiteSpace(c)) CheckNext(next + 1);
                     else return c;
                 }
@@ -146,4 +146,6 @@ public class Lexer
         currentPart = string.Empty;
         Parser.AddToken(token);
     }
+    
+    public void Dispose() => GC.SuppressFinalize(this);
 }

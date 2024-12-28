@@ -16,7 +16,7 @@ public class PrintNode : AssignedNode<IReturnAny>
 /// <summary>
 /// Creates input field and writes value 
 /// </summary>
-public class InputNode : AssignedNode<IReturnAny>, IReturn<string>, IOperatable
+public class InputNode : AssignedNode<IReturnAny>, IReturn<string>, IOperable
 {
     public string Value { get; set; } = string.Empty;
     public object AnyValue => Value;
@@ -63,11 +63,9 @@ public class DeclareFunctionNode : ASTNode, INamed
     public override void Load()
     {
         base.Load();
+        name = HandleGetNode<NameNode>(0);
 
-        name = GetNode<NameNode>(0);
-
-
-        Function fun = new(name.Token.StringValue, GetNode<TagNode>(1), name.GetNode<ExpressionNode>(0));
+        Function fun = new(name.Token.StringValue, HandleGetNode<TagNode>(1), name.HandleGetNode<ExpressionNode>(0));
         Ugh.RegisterName(fun);
     }
 }
@@ -83,18 +81,16 @@ public class BreakNode : ASTNode
 /// <summary>
 /// Sets current executed function value and breaks it whole execution
 /// </summary>
-public class ReturnNode : AssignedNode<IReturnAny>, IReturnAny
+public class ReturnNode : AssignedNode<IReturnAny>
 {
-    public Function Function => Ugh.Function as Function ?? throw new InvalidSpellingException(this);
-    public object AnyValue => Function.AnyValue;
+    private Function Function => Ugh.Function ?? throw new InvalidSpellingException(this);
 
     public override void Execute()
     {
         base.Execute();
-            
+        
         if(assigned is not null) 
             Function.Value = assigned.AnyValue;
-
         Function.TagNode.Executable = false;
     }
 }
@@ -116,8 +112,7 @@ public class IfNode : AssignedIReturnAnyAndTagNode
         if (!Executable) return;
         base.Execute();
 
-
-        if ((bool)Assigned.AnyValue == true)
+        if ((bool)Assigned.AnyValue)
             Tag?.ForceExecute();
         else if (elseNode is not null) elseNode.Executable = true;
     }
@@ -189,17 +184,21 @@ public class ForeachNode : AssignedNode<ExpressionNode>
     public override void Load()
     {
         base.Load();
-        itemNode = Assigned.GetNode<NameNode>(0);
-        collectionNode = Assigned.GetNode<NameNode>(1);
-        tagNode = GetNode<TagNode>(1);
+        tagNode = HandleGetNode<TagNode>(1);
+        itemNode = Assigned.HandleGetNode<NameNode>(0);
+        collectionNode = Assigned.HandleGetNode<NameNode>(1);
     }
 
+   
     public override void Execute()
     {
         base.Execute();
-        if(itemNode is null || collectionNode is null || tagNode is null) throw new InvalidSpellingException(this); 
+        if(itemNode is null || collectionNode is null || tagNode is null) 
+            throw new InvalidSpellingException(this); 
+
         
         var collection = collectionNode.AnyValue as object[] ?? throw new InvalidSpellingException(this);
+        
         Variable item = new(itemNode.Token.StringValue, 0);
         
         Ugh.RegisterName(item);
@@ -225,15 +224,15 @@ public class InsertNode : ASTNode
     {
         base.Load();
         
-        var path = GetNode<ConstStringValueNode>(0).Value;
+        var path = HandleGetNode<ConstStringValueNode>(0).Value;
 
         if(File.Exists(path)) { }
         else if (Path.Exists(path)) { path += "/source.ugh"; }
 
         var file = File.ReadAllText(path);
 
-        var parser = new Parser(Ugh, true);
-        var lexer = new Lexer(file, parser);
+        using var parser = new Parser(Ugh, true);
+        using var lexer = new Lexer(file, parser);
         
         parser.LoadAndExecute();
     }
@@ -264,7 +263,7 @@ public class ModuleNode : ASTNode
     public override void Load()
     {
         base.Load();
-        var strNode = GetNode<ConstStringValueNode>(0);
+        var strNode = HandleGetNode<ConstStringValueNode>(0);
         var asNode = GetNodeOrDefalut<AsNode>(1);
 
         var name = asNode is null? strNode.Value : asNode.Assigned.Value;

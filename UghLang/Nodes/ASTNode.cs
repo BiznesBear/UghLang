@@ -89,6 +89,13 @@ public abstract class ASTNode
             return node;
         throw new InvalidSpellingException(this);
     }
+    
+    public T HandleGetNode<T>(int index)
+    {
+        try { return GetNode<T>(index); }
+        catch (Exception ex) { Debug.Error(ex.Message); }
+        return default!;
+    }
 
     public bool TryGetNode<T>(int index, out T node) where T : ASTNode
     {
@@ -172,16 +179,15 @@ public class AST : ASTNode
 
 public class UndefinedNode : ASTNode
 {
-    public override void Load() 
-        => throw new NotImplementedException("Undefined instructions");
+    public override void Load() => throw new UndefinedInstructions();
 }
 
 /// <summary>
-/// Tags node as operatable (can be placed anywere)
+/// Tags node as operable 
 /// </summary>
-public interface IOperatable;
+public interface IOperable;
 
 /// <summary>
-/// Prevents NameNode from being executed as function 
+/// Prevents NameNode from being executed  
 /// </summary>
 public interface INamed;

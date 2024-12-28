@@ -5,14 +5,28 @@ namespace UghLang;
 
 public static class Debug
 {
-    public static bool Enabled { get; set; } = false;
+    public static bool EnabledMessages { get; set; } 
+    public static bool EnabledWarrings { get; set; } = true;
+    public static bool EnabledStackTrace { get; set; } = false;
+    
     public static void Print(object message)
     {
-        if (!Enabled) return;
+        if (!EnabledMessages) return;
         Console.WriteLine(message);
     }
+    
+    public static void Warring(object message)
+    {
+        if (!EnabledWarrings) return;
+        Console.WriteLine("Warring: " + message);
+    }
 
-
+    public static void Error(object message, int exitCode = 1)
+    {
+        Console.WriteLine("Error: " + message);
+        Environment.Exit(exitCode);
+    }
+    
     public static void PrintTree(ASTNode node, string title = "DEBUG TREE") 
     { 
         Print($"\n{title}"); 
@@ -41,5 +55,4 @@ public static class Debug
             sb.Append(GenerateTreeString(node.Nodes[i], indent, i == node.Nodes.Count - 1));
         return sb.ToString();
     }
-
 }

@@ -1,11 +1,16 @@
-﻿# TODO 
-consts from modules
+﻿myVar = 0;
+repeat 1_000_000{
+    print myVar;
+    myVar+1;
+}
+
+# TODO 
+refs
+more error handling
+big optimalizations
 from (keyword)
-arrays and lists etc.
-lambda expression 
-possibility to add " inside of a string (string modifier)
-more types (double, int64, byte etc.)
-better array initalizing
+string modifiers
+more things from modules
 imaginary units
 dodac koparke krypto 
 #
