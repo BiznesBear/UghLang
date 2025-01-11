@@ -48,6 +48,7 @@ But new versions allows you to be lazy and not put it up after end of the line. 
 ```ugh
 print "Hello, world"
 ```
+Simicolons are optional.
 
 ## Keywords list
 - print
@@ -102,13 +103,13 @@ print (2pi, 2pi) # Result: 39,47842 #
 ### If and else and elif
 ```ugh
 if(5 > 3){
-	print "5 is higher than 3";
+	print "5 is higher than 3"
 }
 elif(5 == 3){
-	print "5 equals 3";
+	print "5 equals 3"
 }
 else {
-	print "5 is lower than 3";
+	print "5 is lower than 3"
 }
 ```
 
@@ -116,8 +117,8 @@ else {
 ```ugh
 myVar = 0;
 repeat 10 {
-	myVar + 1;
-	print myVar;
+	myVar + 1
+	print myVar
 }
 ```
 ### While
