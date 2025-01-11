@@ -1,16 +1,6 @@
-﻿myVar = 0;
-repeat 1_000_000{
-    print myVar;
-    myVar+1;
-}
-
-# TODO 
-refs
-more error handling
-big optimalizations
-from (keyword)
-string modifiers
-more things from modules
+﻿# TODO 
+fix error handling
+importing modules, more modules, more in modules
 imaginary units
 dodac koparke krypto 
 #

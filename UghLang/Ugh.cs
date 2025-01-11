@@ -77,9 +77,9 @@ public abstract class BaseFunction(string name, Ugh ugh) : Name(name, 0)
     public abstract void Invoke(IEnumerable<IReturnAny> args);
 }
 
-public class Function(string name, TagNode node, ExpressionNode exprs) : BaseFunction(name, node.Ugh)
+public class Function(string name, BlockNode node, ExpressionNode exprs) : BaseFunction(name, node.Ugh)
 {
-    public TagNode TagNode { get; } = node;
+    public BlockNode BlockNode { get; } = node;
     private ExpressionNode ExpressionNode { get; } = exprs;
 
 
@@ -90,9 +90,9 @@ public class Function(string name, TagNode node, ExpressionNode exprs) : BaseFun
 
         List<Variable> localVariables = new(); // TODO: Rework this (optimizations)
 
-        var nodes = ExpressionNode.GetNodes<NameNode>();
+        var nodes = ExpressionNode.GetNodes<InitializeNode>();
 
-        var nameNodes = nodes as NameNode[] ?? nodes.ToArray();
+        var nameNodes = nodes as InitializeNode[] ?? nodes.ToArray();
         var arguments = args as IReturnAny[] ?? args.ToArray();
         
         if (nameNodes.Length != arguments.Length) throw new IncorrectArgumentsException(this);
@@ -107,9 +107,11 @@ public class Function(string name, TagNode node, ExpressionNode exprs) : BaseFun
             localVariables.Add(v);
         }
 
-        TagNode.ForceExecute();
+        BlockNode.ForceExecute();
         
         localVariables.ForEach(Ugh.FreeName);
+        BlockNode.FreeLocalNames();
+        
         Ugh.Function = lastFun;
     }
 }
@@ -124,7 +126,7 @@ public class ModuleFunction(string name, Ugh ugh, MethodInfo method) : BaseFunct
             if (len != args.Count()) throw new IncorrectArgumentsException(this);
             Value = method.Invoke(null, args.Select(item => item.AnyValue).ToArray()) ?? 0;
         }
-        catch (Exception ex){ Debug.Error(ex.Message); }
+        catch (Exception ex) { Debug.Error(ex.Message); }
     }
 }
 

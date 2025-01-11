@@ -25,3 +25,7 @@ fun Fib(len){
     
     return r;
 }
+
+local fun foo(){
+    print "Hello, world!!!!!!!!!";
+}

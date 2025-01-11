@@ -34,11 +34,11 @@ public class InputNode : AssignedNode<IReturnAny>, IReturn<string>, IOperable
 /// </summary>
 public class FreeNode : ASTNode
 {
-    private NameNode? refNode;
+    private InitializeNode? refNode;
     public override void Load()
     {
         base.Load();
-        refNode = GetNodeOrDefalut<NameNode>(0);
+        refNode = GetNodeOrDefalut<InitializeNode>(0);
     }
 
     public override void Execute()
@@ -58,14 +58,14 @@ public class FreeNode : ASTNode
 /// </summary>
 public class DeclareFunctionNode : ASTNode, INamed
 {
-    private NameNode? name;
+    private InitializeNode? name;
 
     public override void Load()
     {
         base.Load();
-        name = HandleGetNode<NameNode>(0);
+        name = HandleGetNode<InitializeNode>(0);
 
-        Function fun = new(name.Token.StringValue, HandleGetNode<TagNode>(1), name.HandleGetNode<ExpressionNode>(0));
+        Function fun = new(name.Token.StringValue, HandleGetNode<BlockNode>(1), name.HandleGetNode<ExpressionNode>(0));
         Ugh.RegisterName(fun);
     }
 }
@@ -91,7 +91,7 @@ public class ReturnNode : AssignedNode<IReturnAny>
         
         if(assigned is not null) 
             Function.Value = assigned.AnyValue;
-        Function.TagNode.Executable = false;
+        Function.BlockNode.Executable = false;
     }
 }
 
@@ -112,13 +112,16 @@ public class IfNode : AssignedIReturnAnyAndTagNode
         if (!Executable) return;
         base.Execute();
 
+        
         if ((bool)Assigned.AnyValue)
-            Tag?.ForceExecute();
+            Block?.ForceExecute();
         else if (elseNode is not null) elseNode.Executable = true;
+        
+        Block?.FreeLocalNames();
     }
 }
 
-public class ElseNode : AssignedNode<TagNode>
+public class ElseNode : AssignedNode<BlockNode>
 {
     public ElseNode() => Executable = false;
 
@@ -128,6 +131,7 @@ public class ElseNode : AssignedNode<TagNode>
 
         base.Execute();
         Assigned.ForceExecute();
+        Assigned?.FreeLocalNames();
     }
 }
 
@@ -145,14 +149,14 @@ public class RepeatNode : AssignedIReturnAnyAndTagNode
     {
         base.Execute();
 
-        Tag.Executable = true;
+        Block.Executable = true;
         for (int i = 0; i < (int)Assigned.AnyValue; i++)
         {
-            if (!Tag.Executable) break;
-            Tag.Execute();
+            if (!Block.Executable) break;
+            Block.Execute();
         }
-        Tag.Executable = false;
-
+        Block.Executable = false;
+        Block.FreeLocalNames();
     }
 }
 
@@ -165,35 +169,36 @@ public class WhileNode : AssignedIReturnAnyAndTagNode
     {
         base.Execute();
 
-        Tag.Executable = (bool)Assigned.AnyValue;
+        Block.Executable = (bool)Assigned.AnyValue;
         while ((bool)Assigned.AnyValue)
         {
-            if (!Tag.Executable) break;
-            Tag.Execute();
+            if (!Block.Executable) break;
+            Block.Execute();
         }
-        Tag.Executable = false;
+        Block.Executable = false;
+        Block.FreeLocalNames();
     }
 }
 
-public class ForeachNode : AssignedNode<ExpressionNode>
+public class ForeachNode : ASTNode
 {
-    private NameNode? itemNode;
-    private NameNode? collectionNode;
-    private TagNode? tagNode;
+    private InitializeNode? itemNode;
+    private InitializeNode? collectionNode;
+    private BlockNode? blockNode;
     
     public override void Load()
     {
         base.Load();
-        tagNode = HandleGetNode<TagNode>(1);
-        itemNode = Assigned.HandleGetNode<NameNode>(0);
-        collectionNode = Assigned.HandleGetNode<NameNode>(1);
+        itemNode = HandleGetNode<InitializeNode>(0);
+        collectionNode = HandleGetNode<InitializeNode>(1);
+        blockNode = HandleGetNode<BlockNode>(2);
     }
 
    
     public override void Execute()
     {
         base.Execute();
-        if(itemNode is null || collectionNode is null || tagNode is null) 
+        if(itemNode is null || collectionNode is null || blockNode is null) 
             throw new InvalidSpellingException(this); 
 
         
@@ -203,20 +208,21 @@ public class ForeachNode : AssignedNode<ExpressionNode>
         
         Ugh.RegisterName(item);
 
-        tagNode.Executable = true;
+        blockNode.Executable = true;
         foreach (var obj in collection)
         {
             item.Value = obj;
-            tagNode.Execute();
+            blockNode.Execute();
         }
         
-        tagNode.Executable = false;
+        blockNode.Executable = false;
+        blockNode.FreeLocalNames();
         Ugh.FreeName(item);
     }
 }
 
 /// <summary>
-/// Imports other ugh files and mark them as Inserted
+/// Imports other ugh files and mark them as inserted
 /// </summary>
 public class InsertNode : ASTNode 
 {
@@ -229,7 +235,7 @@ public class InsertNode : ASTNode
         if(File.Exists(path)) { }
         else if (Path.Exists(path)) { path += "/source.ugh"; }
 
-        var file = File.ReadAllText(path);
+        var file = File.ReadAllLines(path);
 
         using var parser = new Parser(Ugh, true);
         using var lexer = new Lexer(file, parser);
@@ -239,7 +245,7 @@ public class InsertNode : ASTNode
 }
 
 /// <summary>
-/// Marks node as local. Local nodes can't be inserted to other file
+/// Marks children as local which makes them invisible for inserter. 
 /// </summary>
 public class LocalNode : ASTNode
 {
@@ -250,10 +256,10 @@ public class LocalNode : ASTNode
             Executable = false;
             return;
         }
-
-        if (TryGetNode<TagNode>(0, out var tag)) // Nested local
+    
+        if (TryGetNode<BlockNode>(0, out var tag)) // Nested local
             tag.Executable = true;
-
+    
         base.Load();
     }
 }
@@ -265,7 +271,7 @@ public class ModuleNode : ASTNode
         base.Load();
         var strNode = HandleGetNode<ConstStringValueNode>(0);
         var asNode = GetNodeOrDefalut<AsNode>(1);
-
+        
         var name = asNode is null? strNode.Value : asNode.Assigned.Value;
 
         foreach (var method in ModuleLoader.LoadModuleMethods(strNode.Value))

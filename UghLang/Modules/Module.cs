@@ -5,18 +5,17 @@ namespace UghLang.Modules;
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
 public sealed class Module(string name) : Attribute
 {
-    private readonly string name = name;
     public string Name => name;
 }
 
-public class ModuleLoader
+public static class ModuleLoader
 {
     public static Dictionary<string, MethodInfo> LoadModuleMethods(string moduleName)
     {
         var methods = new Dictionary<string, MethodInfo>();
-
+        
         var types = Assembly.GetExecutingAssembly().GetTypes();
-
+        
         foreach (var type in types)
         {
             var moduleAttr = type.GetCustomAttribute<Module>();

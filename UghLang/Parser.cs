@@ -32,33 +32,31 @@ public class Parser : IDisposable
                 break;
 
             case TokenType.Operator:
-                QuitAllNodes<IOperable>();
-
+                QuitNode<IOperable>();
                 CreateNode(new OperatorNode() { Operator = token.Operator });
                 break;
 
             case TokenType.OpenBlock:
-                QuitAllNodes<IOperable>();
-
-                EnterNode(new TagNode());
+                QuitNode<IOperable>();
+                EnterNode(new BlockNode());
                 CreateMasterBranch();
                 break;
 
             case TokenType.CloseBlock:
-                QuitNode<TagNode>();
-                RemoveMasterBranch<TagNode>();
+                QuitNode<BlockNode>();
+                RemoveMasterBranch<BlockNode>();
                 break;
 
             case TokenType.OpenList:
-                EnterNode(new ListNode());
+                EnterNode(new ArrayNode());
                 break;
             case TokenType.CloseList:
                 QuitAllNodes<IOperable>();
-                QuitNode<ListNode>();
+                QuitNode<ArrayNode>();
                 break;
 
             case TokenType.Name:
-                ASTNode nameNode =  IsMasterBranch() ? new InitializeNode() { Token = token } : new NameNode() { Token = token };
+                ASTNode nameNode =  IsMasterBranch() ? new InitializeNode() { Token = token } : new OperableInitializeNode() { Token = token };
                 EnterNode(nameNode);
                 break;
 

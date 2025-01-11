@@ -61,23 +61,9 @@ public abstract class ASTNode
         }
         return null;
     }
-
-    public bool TryGetNextBrother<T>(out T node) where T : ASTNode
-    {
-        var index = Parent.CurrentIteration + 1;
-        if (index < Parent.Nodes.Count)
-        {
-            var n = Parent.Nodes[index];
-            if (n is T t)
-            {
-                node = t;
-                return true;
-            }
-        }
-
-        node = (T)NULL;
-        return false;
-    }
+    
+    public ASTNode? GetNodeAt(int index) 
+        => index < Nodes.Count? Nodes[index] : default;
 
     public T? GetNodeOrDefalut<T>(int index) 
         => index < Nodes.Count && Nodes[index] is T t ? t : default;

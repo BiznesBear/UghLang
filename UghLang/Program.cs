@@ -53,7 +53,7 @@ for (var i = 0; i < args.Length; i++)
 
 if (path == string.Empty) return;
 
-var file = File.ReadAllText(path);
+var file = File.ReadAllLines(path);
 
 var ugh = new Ugh();
 var parser = new Parser(ugh);

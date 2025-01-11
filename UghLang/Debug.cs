@@ -21,10 +21,9 @@ public static class Debug
         Console.WriteLine("Warring: " + message);
     }
 
-    public static void Error(object message, int exitCode = 1)
+    public static void Error(object message)
     {
         Console.WriteLine("Error: " + message);
-        Environment.Exit(exitCode);
     }
     
     public static void PrintTree(ASTNode node, string title = "DEBUG TREE") 

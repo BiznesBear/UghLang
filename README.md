@@ -15,11 +15,10 @@ ughlang master.ugh
 ```
 
 ### Console arguments
-- `--debug` (prints debug tree)
+- `--debug` (enters debug mode)
 - `--version` (prints version)
-- `--info` (prints info about the language)
-- `--help` (currently
-- `--nowarns` (disables warrings)
+- `--info` or `--help` (displays info about the language)
+- `--nowarns` (disables warnings)
 - `--noexe` (prevents AST from being loaded and executed)
 
 # Mini documentation
@@ -32,12 +31,22 @@ This section is dedicated to the basic functions of the ugh language.
 () creates new expression which returns somthing.
 
 Don't do:
-```
-print "Hello " + "world!"; # This won't work, because ugh (currently) doesn't know that there's a calculation #
+```ugh
+print "Hello " + "world!" # This won't work, because ugh (currently) doesn't know that there's a calculation #
 ```
 Do:
+```ugh
+print("Hello " + "world!") # print keyword prints one single value, not a list of them # 
 ```
-print("Hello " + "world!"); # print keyword prints one single value, not a list of them # 
+
+## How semicolons work in UghLang
+In old UghLang you needed to put semicolon after ending every instruction. Example:
+```ugh
+print "Hello, world!";
+```
+But new versions allows you to be lazy and not put it up after end of the line. Example:
+```ugh
+print "Hello, world"
 ```
 
 ## Keywords list
@@ -57,21 +66,20 @@ print("Hello " + "world!"); # print keyword prints one single value, not a list 
 - foreach
 - insert
 - local
-- module (experimental)
+- module 
 - as
 
 ### Declaring variables
 ```ugh
-myVar = 5;
-print("myVar equals " + myVar);
+myVar = 5
+print("myVar equals " + myVar)
 ```
 
 ### Releasing resources
 ```ugh
 # TIP: You can replace name with "all" to release all names. #
-
-myVar = 5;
-free myVar;
+myVar = 5
+free myVar
 ```
 
 ### Math operations
@@ -85,9 +93,9 @@ myVar ** 2; # Power #
 myVar // 2; # Square root #
 
 # PI example #
-pi = π; # PI number is aviable in std #
-# Remember to put comma or any operator between names #
-print (2pi, 2pi); # Result: 39,47842 #
+pi = π # PI number is aviable also in std as `PI` #
+# Remember to put comma or any operator between names. Comma works as * in this example #
+print (2pi, 2pi) # Result: 39,47842 #
 ```
 
 
@@ -115,21 +123,21 @@ repeat 10 {
 ### While
 ```ugh
 myVar = 0;
-while(myVar < 10){
-	myVar + 1;
-	print myVar;
+while(myVar < 10) {
+	myVar + 1
+	print myVar
 }
 ```
 ### Foreach
 ```ugh
-myArray = [3];
+myArray = [3]
 
-myArray[0] = "Hello";
-myArray[1] = "world";
-myArray[2] = "item3";
+myArray[0] = "foo"
+myArray[1] = "somthing"
+myArray[2] = "trash"
 
-foreach(item, myArray){
-    print item;
+foreach item, myArray {
+    print item
 }
 ```
 
@@ -137,36 +145,36 @@ foreach(item, myArray){
 ### Fun, return
 ```ugh
 fun Hello(){
-	return "Hello";
+	return "Hello"
 }
 
 Hello();
-print(Hello + " world!"); # Get value from last hello execution #
+print(Hello + " world!") # Get value from last hello execution #
 
 
 myVar = Hello();
-print(myVar + " world!");
+print(myVar + " world!")
 
 # The fastest way to do all above #
-print(Hello() + " world!"); 
+print(Hello() + " world!")
 ```
 
 ### Insert
 ```ugh
-insert "std"; # You can put any name of ugh file here (or directory which contains source.ugh) #
-Helloworld(); 
+insert "std" # You can put any name of ugh file here (or directory which contains source.ugh) #
+Helloworld()
 ```
 
 ### Local
 ```ugh
 local fun Foo(){ # Nodes marked as local won't load when inserted from other file # 
-	print "Hello, world!";
+	print "Hello, world!"
 } 
 
 local { # Example of nested local #
 
-	repeat(100){
-		print "Hello, world!";
+	repeat 100 {
+		print "Hello, world!"
 	}
 }
 ```
@@ -176,16 +184,16 @@ local { # Example of nested local #
 > Modules are experimental future.
 
 ```ugh
-module "File" as "f";
-myVar = f.Read("myFile.txt");
-print myVar;
+module "File" as "f"
+myVar = f.Read("myFile.txt")
+print myVar
 ```
 
 ### Converting types
 ```ugh
-module "Convert";
-myVar = "10";
-print(Convert.Int(myVar) + 5);
+module "Convert"
+myVar = "10"
+print(Convert.Int(myVar) + 5)
 ```
 
 # Examples
@@ -193,14 +201,14 @@ print(Convert.Int(myVar) + 5);
 ```ugh
 # Fibonacci sequence example #
 
-n = 10; # Lenght #
-a = 0; 
-b = 1;  
+n = 10 # Lenght #
+a = 0 
+b = 1  
 
-repeat n{ 
-    c = (a + b); 
-    print c;  
-    a = b;     
-    b = c;     
+repeat n { 
+    c = (a + b) 
+    print c
+    a = b 
+    b = c    
 }
 ```

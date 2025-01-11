@@ -9,4 +9,5 @@ public static class MathModule
     public static double Cos(double d) => Math.Cos(d);
     public static double Sin(double a) => Math.Sin(a);
     public static double Abs(double x) => Math.Abs(x);
+    public static double Minus(double x) => -x;
 }

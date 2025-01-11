@@ -6,14 +6,16 @@ public class OperatorNode : ASTNode
     public required Operator Operator { get; init; }
 }
 
-public class TagNode : ASTNode 
+public class BlockNode : ASTNode 
 {
-    public event Action? EndedExecution;
-    public TagNode() => Executable = false;
-    public override void Execute()
+    public BlockNode() => Executable = false;
+    public List<Name> LocalNames { get; } = new();
+    
+
+    public void FreeLocalNames()
     {
-        base.Execute();
-        EndedExecution?.Invoke();
+        LocalNames.ForEach(Ugh.FreeName);
+        LocalNames.Clear();
     }
 }
 
@@ -62,7 +64,7 @@ public class ExpressionNode : ASTNode, IReturnAny
         return vals.First();
     }
 }
-public class ListNode : AssignedNode<IReturnAny>, IReturn<object[]>
+public class ArrayNode : AssignedNode<IReturnAny>, IReturn<object[]>
 {
     public int Index
     {
@@ -83,34 +85,35 @@ public class ListNode : AssignedNode<IReturnAny>, IReturn<object[]>
 /// <summary>
 /// Used to declare and set variables
 /// </summary>
-public class InitializeNode : ASTNode
+
+public class InitializeNode : ASTNode, IReturnAny // TODO: Optimize and create clearer look this 
 {
     public required Token Token { get; init; }
 
+    public object AnyValue => GetValue();
+    
     private IReturnAny? any;
     private OperatorNode? oprNode;
-    private ExpressionNode? exprs;
-    private ListNode? list;
+    private ArrayNode? arrayNode;
     
     private BaseFunction? fun;
     private IEnumerable<IReturnAny> args = [];
-
+    
     public override void Load()
     {
         base.Load();
 
+        if (Parent.CheckType<INamed>()) return;
+        
         if (TryGetNode<OperatorNode>(0, out oprNode))
             any =  HandleGetNode<IReturnAny>(1);
-        else if (TryGetNode<ExpressionNode>(0, out exprs) && Ugh.TryGetName(Token.StringValue, out Name n)) 
+        else if (TryGetNode<ExpressionNode>(0, out var exprsNode) && Ugh.TryGetName(Token.StringValue, out Name n)) 
         {
             fun = n.GetAs<BaseFunction>();
-            args = exprs.GetNodes<IReturnAny>();
+            args = exprsNode.GetNodes<IReturnAny>();
         }
-        else if (TryGetNode<ListNode>(0, out list) && TryGetNode<OperatorNode>(1, out oprNode))
-        {
+        else if (TryGetNode<ArrayNode>(0, out arrayNode) && TryGetNode<OperatorNode>(1, out oprNode))
             any = HandleGetNode<IReturnAny>(2);
-        }
-        else throw new InvalidSpellingException(this);
     }
 
     public override void Execute()
@@ -125,10 +128,10 @@ public class InitializeNode : ASTNode
 
         if (Ugh.TryGetName(Token.StringValue, out var variable))
         {
-            if (list is not null)
+            if (arrayNode is not null)
             {
                 var array = variable.Value as object[];
-                array![list.Index] = Operation.Operate(array[list.Index], any.AnyValue, oprNode.Operator);
+                array![arrayNode.Index] = Operation.Operate(array[arrayNode.Index], any.AnyValue, oprNode.Operator);
             }
             else
                 variable.Value = Operation.Operate(variable.Value, any.AnyValue, oprNode.Operator);
@@ -138,48 +141,21 @@ public class InitializeNode : ASTNode
             var v = new Variable(Token.StringValue, any.AnyValue);
             Ugh.RegisterName(v);
 
-            if(Parent is TagNode tgn) // deregister variable after end of tag node execution
-                tgn.EndedExecution += () => { Ugh.FreeName(v); };
+            if (Parent is BlockNode blockNode) // deregister variable after end of tag node execution
+                blockNode.LocalNames.Add(v);
         }
     }
-}
 
-
-public class NameNode : AssignedNode<ExpressionNode>, IReturnAny, IOperable
-{
-    public required Token Token { get; init; }
-    public object AnyValue => GetValue(); // TODO: Make optimizations for this
-
-    private BaseFunction? fun;
-    private IEnumerable<IReturnAny> args = [];
-    private ListNode? list;
-
-    public Name GetName() => Ugh.GetName(Token.StringValue);
     
+    public Name GetName() => Ugh.GetName(Token.StringValue);
     public object GetValue()
     {
         var name = GetName();
-        if (list is null) return name.AnyValue;
+        if (arrayNode is null) return name.AnyValue;
         
         var array = name.AnyValue as object[];
-        return array![list.Index];
+        return array![arrayNode.Index];
     }
-
-    public override void Load()
-    {
-        base.Load();
-        
-        list = GetNodeOrDefalut<ListNode>(0);
-        if (Parent.CheckType<INamed>() || assigned is null) return;
-        
-        fun = GetName().GetAs<BaseFunction>();
-        args = assigned.GetNodes<IReturnAny>();
-    }
-
-    public override void Execute()
-    {
-        base.Execute();
-        fun?.Invoke(args);
-    }
-
 }
+
+public class OperableInitializeNode : InitializeNode, IOperable;
