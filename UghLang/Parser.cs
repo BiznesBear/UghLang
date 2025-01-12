@@ -18,6 +18,7 @@ public class Parser : IDisposable
 
     public void AddToken(Token token)
     {
+        // Debug.Print(token);
         switch (token.Type)
         {
             case TokenType.Keyword:
@@ -56,7 +57,7 @@ public class Parser : IDisposable
                 break;
 
             case TokenType.Name:
-                ASTNode nameNode =  IsMasterBranch() ? new InitializeNode() { Token = token } : new OperableInitializeNode() { Token = token };
+                ASTNode nameNode = IsMasterBranch() || currentNode is ITag? new NameNode() { Token = token } : new OperableNameNode() { Token = token };
                 EnterNode(nameNode);
                 break;
 

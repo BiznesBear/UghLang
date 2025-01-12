@@ -1,7 +1,7 @@
 ﻿using UghLang;
 
 
-const string version = "v0.2.2";
+const string version = "v0.1";
 const string ughlang = "UghLang " + version;
 
 
@@ -26,7 +26,7 @@ for (var i = 0; i < args.Length; i++)
                 Console.WriteLine(ughlang);
                 break;
             case "--info" or "--help":
-                Console.WriteLine("Welcome to Ugh language! Arguments list: --debug; --version; --help; --info; --nowarns; --noerrors");
+                Console.WriteLine("Welcome to Ugh language! Arguments list: --debug; --version; --help; --info; --nowarns; ");
                 break;
             case "--debug":
                 Debug.EnabledMessages = true;
@@ -48,6 +48,11 @@ for (var i = 0; i < args.Length; i++)
         if (index < args.Length)
             return args[index];
         return string.Empty;
+    }
+
+    void SkipArg(int skips = 1)
+    {
+        if (i + skips < args.Length) i += skips;
     }
 }
 

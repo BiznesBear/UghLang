@@ -3,6 +3,9 @@
 [Module("Math")]
 public static class MathModule
 {
+    public const double NUM_PI = Math.PI;
+    public const double NUM_TAU = Math.Tau;
+    public const double NUM_E = Math.E;
     public static double Clamp(double val, double min, double max) => Math.Clamp(val, min, max);
     public static double Min(double a, double b) => Math.Min(a, b);
     public static double Max(double a, double b) => Math.Max(a, b);

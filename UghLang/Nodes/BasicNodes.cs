@@ -6,11 +6,12 @@ public class OperatorNode : ASTNode
     public required Operator Operator { get; init; }
 }
 
-public class BlockNode : ASTNode 
+public class BlockNode : ASTNode, IReturnAny
 {
     public BlockNode() => Executable = false;
     public List<Name> LocalNames { get; } = new();
-    
+
+    public object AnyValue => Nodes.OfType<IReturnAny>().Select(a => a.AnyValue).ToArray();
 
     public void FreeLocalNames()
     {
@@ -86,7 +87,7 @@ public class ArrayNode : AssignedNode<IReturnAny>, IReturn<object[]>
 /// Used to declare and set variables
 /// </summary>
 
-public class InitializeNode : ASTNode, IReturnAny // TODO: Optimize and create clearer look this 
+public class NameNode : ASTNode, IReturnAny // TODO: Optimize and create clearer look this 
 {
     public required Token Token { get; init; }
 
@@ -138,7 +139,7 @@ public class InitializeNode : ASTNode, IReturnAny // TODO: Optimize and create c
         }
         else // Initialization
         {
-            var v = new Variable(Token.StringValue, any.AnyValue);
+            var v = Parent is ConstNode? new Constant(Token.StringValue, any.AnyValue) : new Variable(Token.StringValue, any.AnyValue);
             Ugh.RegisterName(v);
 
             if (Parent is BlockNode blockNode) // deregister variable after end of tag node execution
@@ -158,4 +159,4 @@ public class InitializeNode : ASTNode, IReturnAny // TODO: Optimize and create c
     }
 }
 
-public class OperableInitializeNode : InitializeNode, IOperable;
+public class OperableNameNode : NameNode, IOperable;

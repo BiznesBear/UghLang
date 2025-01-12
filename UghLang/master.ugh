@@ -1,6 +1,18 @@
 ﻿# TODO 
+sth like this: 
+repeat 100, i {
+	print i
+}
+and this
+
+repeat 50, 100, i {
+	print i	
+}
+
+
+importing modules (from keyword), more modules in std
+creating types and more types
 fix error handling
-importing modules, more modules, more in modules
 imaginary units
 dodac koparke krypto 
 #

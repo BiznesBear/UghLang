@@ -16,5 +16,4 @@ public static class TimeModule
     public static int ParseDayOfWeek(DateTime time) => (int)time.DayOfWeek;
     public static int ParseMonth(DateTime time) => time.Month;
     public static int ParseYear(DateTime time) => time.Year;
-
 }

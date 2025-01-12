@@ -27,7 +27,11 @@ public enum Keyword : byte
     Local,
 
     Module,
+    
     As,
+    From,
+
+    Const,
 }
 
 public static class KeywordExtension
@@ -58,7 +62,11 @@ public static class KeywordExtension
         { "local", Keyword.Local },
 
         { "module", Keyword.Module },
+        
         { "as", Keyword.As },
+        { "from", Keyword.From },
+
+        { "const", Keyword.Const },
     };
 
     public static bool TryGetKeyword(this string word, out Keyword keyword, out TokenType type)
@@ -106,6 +114,9 @@ public static class KeywordExtension
             Keyword.Module => new ModuleNode(),
 
             Keyword.As => new AsNode(),
+            Keyword.From => new FromNode(),
+
+            Keyword.Const => new ConstNode(),
 
             _ => new UndefinedNode(),
         };

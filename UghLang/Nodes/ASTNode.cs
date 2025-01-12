@@ -177,3 +177,8 @@ public interface IOperable;
 /// Prevents NameNode from being executed  
 /// </summary>
 public interface INamed;
+
+/// <summary>
+/// Marks node as tag node
+/// </summary>
+public interface ITag;

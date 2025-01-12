@@ -34,11 +34,11 @@ public class InputNode : AssignedNode<IReturnAny>, IReturn<string>, IOperable
 /// </summary>
 public class FreeNode : ASTNode
 {
-    private InitializeNode? refNode;
+    private NameNode? refNode;
     public override void Load()
     {
         base.Load();
-        refNode = GetNodeOrDefalut<InitializeNode>(0);
+        refNode = GetNodeOrDefalut<NameNode>(0);
     }
 
     public override void Execute()
@@ -58,12 +58,12 @@ public class FreeNode : ASTNode
 /// </summary>
 public class DeclareFunctionNode : ASTNode, INamed
 {
-    private InitializeNode? name;
+    private NameNode? name;
 
     public override void Load()
     {
         base.Load();
-        name = HandleGetNode<InitializeNode>(0);
+        name = HandleGetNode<NameNode>(0);
 
         Function fun = new(name.Token.StringValue, HandleGetNode<BlockNode>(1), name.HandleGetNode<ExpressionNode>(0));
         Ugh.RegisterName(fun);
@@ -182,15 +182,15 @@ public class WhileNode : AssignedIReturnAnyAndTagNode
 
 public class ForeachNode : ASTNode
 {
-    private InitializeNode? itemNode;
-    private InitializeNode? collectionNode;
+    private NameNode? itemNode;
+    private NameNode? collectionNode;
     private BlockNode? blockNode;
     
     public override void Load()
     {
         base.Load();
-        itemNode = HandleGetNode<InitializeNode>(0);
-        collectionNode = HandleGetNode<InitializeNode>(1);
+        itemNode = HandleGetNode<NameNode>(0); // idk why this node can work without INamed but who cares
+        collectionNode = HandleGetNode<NameNode>(1);
         blockNode = HandleGetNode<BlockNode>(2);
     }
 
@@ -247,7 +247,7 @@ public class InsertNode : ASTNode
 /// <summary>
 /// Marks children as local which makes them invisible for inserter. 
 /// </summary>
-public class LocalNode : ASTNode
+public class LocalNode : ASTNode, ITag
 {
     public override void Load()
     {
@@ -264,7 +264,7 @@ public class LocalNode : ASTNode
     }
 }
 
-public class ModuleNode : ASTNode
+public class ModuleNode : ASTNode, INamed
 {
     public override void Load()
     {
@@ -272,14 +272,29 @@ public class ModuleNode : ASTNode
         var strNode = HandleGetNode<ConstStringValueNode>(0);
         var asNode = GetNodeOrDefalut<AsNode>(1);
         
-        var name = asNode is null? strNode.Value : asNode.Assigned.Value;
+        // TODO: Add `from` keyword here
+        
+        var name = asNode is null? strNode.Value : asNode.GetStringName();
+        var module = MLoader.LoadModule(strNode.Value);
 
-        foreach (var method in ModuleLoader.LoadModuleMethods(strNode.Value))
+        foreach (var method in module.Methods)
         {
             ModuleFunction function = new($"{name}.{method.Key}", Ugh, method.Value);
             Ugh.RegisterName(function);
         }
+
+        foreach (var field in module.Fields)
+        {
+            Constant con = new($"{name}.{field.Key}", field.Value.GetValue(null) ?? 0);
+            Ugh.RegisterName(con);
+        }
     }
 }
 
-public class AsNode : AssignedNode<ConstStringValueNode>;
+public class AsNode : AssignedNode<NameNode>, INamed
+{
+    public string GetStringName() => Assigned.Token.StringValue;
+}
+public class FromNode : AssignedNode<ConstStringValueNode>;
+
+public class ConstNode : ASTNode, ITag;

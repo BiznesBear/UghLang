@@ -48,7 +48,7 @@ But new versions allows you to be lazy and not put it up after end of the line. 
 ```ugh
 print "Hello, world"
 ```
-Simicolons are optional.
+Simicolons are optional in new lexing system.
 
 ## Keywords list
 - print
@@ -69,6 +69,7 @@ Simicolons are optional.
 - local
 - module 
 - as
+- const
 
 ### Declaring variables
 ```ugh
@@ -131,12 +132,19 @@ while(myVar < 10) {
 ```
 ### Foreach
 ```ugh
+# 1 #
 myArray = [3]
 
 myArray[0] = "foo"
 myArray[1] = "somthing"
 myArray[2] = "trash"
 
+foreach item, myArray {
+    print item
+}
+
+# 2 #
+myArray = { "foo", "somthing", "trash" } # Quick array initialization #
 foreach item, myArray {
     print item
 }
@@ -179,13 +187,19 @@ local { # Example of nested local #
 	}
 }
 ```
+### Constants
+```ugh
+const MYNUM = 100 
+MYNUM += 900 # This operation is readonly #
+```
+
 
 ### Modules and As keyword
 > [!NOTE]
 > Modules are experimental future.
 
 ```ugh
-module "File" as "f"
+module "File" as f
 myVar = f.Read("myFile.txt")
 print myVar
 ```

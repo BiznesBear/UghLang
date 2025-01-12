@@ -52,13 +52,15 @@ public class Ugh
 
 }
 
-
+public interface IGetOnly;
 public abstract class Name(string name, object val) : IDisposable, IReturnAny
 {
     public const Name Null = default!;
     public string Key { get; } = name;
 
-    public object Value { get; set; } = val;
+
+    protected object value = val;
+    public object Value { get => value; set { if (this is not IGetOnly) this.value = value; } }  
     public object AnyValue => Value;
 
 
@@ -70,6 +72,7 @@ public abstract class Name(string name, object val) : IDisposable, IReturnAny
 }
 
 public class Variable(string name, object value) : Name(name, value) { }
+public class Constant(string name, object value) : Variable(name, value), IGetOnly { }
 
 public abstract class BaseFunction(string name, Ugh ugh) : Name(name, 0)
 {
@@ -90,9 +93,9 @@ public class Function(string name, BlockNode node, ExpressionNode exprs) : BaseF
 
         List<Variable> localVariables = new(); // TODO: Rework this (optimizations)
 
-        var nodes = ExpressionNode.GetNodes<InitializeNode>();
+        var nodes = ExpressionNode.GetNodes<NameNode>();
 
-        var nameNodes = nodes as InitializeNode[] ?? nodes.ToArray();
+        var nameNodes = nodes as NameNode[] ?? nodes.ToArray();
         var arguments = args as IReturnAny[] ?? args.ToArray();
         
         if (nameNodes.Length != arguments.Length) throw new IncorrectArgumentsException(this);

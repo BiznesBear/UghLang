@@ -1,31 +1,27 @@
-PI = π;
+const pi = π
 
 # Testing function #
 fun Helloworld(){
-	print "Hello world!";
+	print "Hello world!"
 }
 
 # Returns array of fibbonaci sequance #
 fun Fib(len){
-    r = [len];
-    a = 0; 
-    b = 1; 
-    c = 0;
-    index = 0;
+    r = [len]
+    a = 0
+    b = 1
+    c = 0
+    index = 0
     
     repeat len { 
-        c = (a + b);
+        c = (a + b)
          
-        a = b;     
-        b = c;
+        a = b
+        b = c
         
-        r[index] = c;
-        index+1;
+        r[index] = c
+        index+1
     }
     
-    return r;
-}
-
-local fun foo(){
-    print "Hello, world!!!!!!!!!";
+    return r
 }
