@@ -1,6 +1,5 @@
 ﻿using UghLang;
 
-
 const string version = "v0.1";
 const string ughlang = "UghLang " + version;
 
@@ -26,13 +25,16 @@ for (var i = 0; i < args.Length; i++)
                 Console.WriteLine(ughlang);
                 break;
             case "--info" or "--help":
-                Console.WriteLine("Welcome to Ugh language! Arguments list: --debug; --version; --help; --info; --nowarns; ");
+                Console.WriteLine("Welcome to Ugh language! Arguments list: --debug; --version; --help; --info; --nowarns; --stacktrace");
                 break;
             case "--debug":
                 Debug.EnabledMessages = true;
                 break;
             case "--nowarns":
                 Debug.EnabledWarrings = false;
+                break;
+            case "--stacktrace":
+                Debug.EnabledStackTrace = true;
                 break;
             case "--noexe":
                 exe = false;

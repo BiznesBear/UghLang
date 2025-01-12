@@ -1,7 +1,7 @@
 const pi = π
 
 # Testing function #
-fun Helloworld(){
+fun Helloworld() {
 	print "Hello world!"
 }
 
@@ -13,7 +13,7 @@ fun Fib(len){
     c = 0
     index = 0
     
-    repeat len { 
+    repeat 0, len { 
         c = (a + b)
          
         a = b

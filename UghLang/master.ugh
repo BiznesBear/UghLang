@@ -1,18 +1,12 @@
 ﻿# TODO 
-sth like this: 
-repeat 100, i {
-	print i
-}
-and this
 
-repeat 50, 100, i {
-	print i	
-}
+?? real references (names can contain names - namespaces) ??
 
+compiling AST's to binary files
 
-importing modules (from keyword), more modules in std
-creating types and more types
+importing modules (from keyword)
 fix error handling
+
 imaginary units
 dodac koparke krypto 
 #

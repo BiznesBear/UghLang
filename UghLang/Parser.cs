@@ -73,15 +73,18 @@ public class Parser : IDisposable
             case TokenType.FloatValue:
                 CreateNode(new ConstFloatValueNode() { Value = token.FloatValue });
                 break;
-
             case TokenType.Separator:
                 BackToMasterBranch();
                 break;
-            case TokenType.Comma:
+            case TokenType.Comma or TokenType.Colon: 
                 QuitAllNodes<IOperable>();
                 break;
             case TokenType.Pi:
                 CreateNode(new ConstDoubleValueNode() { Value = (float)Math.PI });
+                break;
+            case TokenType.EOL:
+                // Debug.Print(currentNode);
+                if(currentNode is not IKeywordNode && currentNode is not NameNode) BackToMasterBranch();
                 break;
             default: throw new UghException($"Unhandled token type: {token.Type}");
         }

@@ -3,19 +3,34 @@ using UghLang.Nodes;
 
 namespace UghLang;
 
+
+
+public class Namespace : Dictionary<string, Name>;
+
 /// <summary>
 /// Contains list of reserved runtime names
 /// </summary>
 public class Ugh
 {
-    private readonly Dictionary<string, Name> names = new();
-
-    public IReadOnlyDictionary<string, Name> Names => names;
-
     /// <summary>
-    /// Gets execution of current function if exist
+    /// Current executed function
     /// </summary>
     public Function? Function { get; set; }
+    
+    /// <summary>
+    /// ReturnNode will end this block node
+    /// </summary>
+    public BlockNode? ReturnBlock { get; private set; }
+    public IReadOnlyDictionary<string, Name> Names => names;
+
+    private readonly Namespace names = new();
+    private BlockNode? lastReturnBlock;
+
+    public void SetReturnBlock(BlockNode? node)
+    {
+        if(node is null) ReturnBlock = lastReturnBlock;
+        else { ReturnBlock = node; lastReturnBlock = node; }
+    }
 
     public void RegisterName(Name name)
     {
@@ -52,7 +67,11 @@ public class Ugh
 
 }
 
+/// <summary>
+/// Names values with GetOnly can't be set
+/// </summary>
 public interface IGetOnly;
+
 public abstract class Name(string name, object val) : IDisposable, IReturnAny
 {
     public const Name Null = default!;
@@ -132,4 +151,3 @@ public class ModuleFunction(string name, Ugh ugh, MethodInfo method) : BaseFunct
         catch (Exception ex) { Debug.Error(ex.Message); }
     }
 }
-

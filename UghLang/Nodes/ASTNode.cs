@@ -6,10 +6,10 @@ public abstract class ASTNode
 
     #region Properties
 
-    public bool Executable { get; set; } = true;
-
     public IReadOnlyList<ASTNode> Nodes => nodes;
-    public int CurrentIteration { get; private set; } = 0;
+
+    public int Iteration { get; private set; } = 0;
+    public bool Executable { get; set; } = true;
 
     private readonly List<ASTNode> nodes = new();
 
@@ -52,7 +52,7 @@ public abstract class ASTNode
     
     public T? GetNextBrother<T>() where T : ASTNode
     {
-        var index = Parent.CurrentIteration + 1;
+        var index = Parent.Iteration + 1;
         if (index < Parent.Nodes.Count)
         {
             var n = Parent.Nodes[index];
@@ -123,7 +123,7 @@ public abstract class ASTNode
     {
         for (int i = 0; i < Nodes.Count; i++)
         {
-            CurrentIteration = i;
+            Iteration = i;
             Nodes[i].Load();
         }
     }
@@ -135,7 +135,7 @@ public abstract class ASTNode
     {
         for (int i = 0; i < Nodes.Count; i++)
         {
-            CurrentIteration = i;
+            Iteration = i;
             if (Executable)
                 Nodes[i].Execute();
         }

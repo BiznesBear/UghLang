@@ -19,16 +19,14 @@ ughlang master.ugh
 - `--version` (prints version)
 - `--info` or `--help` (displays info about the language)
 - `--nowarns` (disables warnings)
+- `--stacktrace` (enables stack trace when c# exception is thrown)
 - `--noexe` (prevents AST from being loaded and executed)
 
 # Mini documentation
 This section is dedicated to the basic functions of the ugh language.
 
 ## How brackets work in UghLang
-> [!NOTE]
-> This inconvenience may be removed in the future
-
-() creates new expression which returns somthing.
+Brackets creates new expression which returns somthing (0 by defalut).
 
 Don't do:
 ```ugh
@@ -100,7 +98,6 @@ pi = π # PI number is aviable also in std as `PI` #
 print (2pi, 2pi) # Result: 39,47842 #
 ```
 
-
 ### If and else and elif
 ```ugh
 if(5 > 3){
@@ -115,13 +112,27 @@ else {
 ```
 
 ### Repeat
+Repeats somthing X times and always changes i variable by 1 or -1.
+
 ```ugh
-myVar = 0;
-repeat 10 {
-	myVar + 1
-	print myVar
+# Basic repeat #
+repeat 0, 10 { # This will repeat 10 times #
+	print "Hello"
 }
+
+# Counts from 0 to 10 #
+repeat 0, 10, i {
+	print i
+}
+
+# Reversed repeat. Counts from 10 to 0 #
+repeat 10, 0, i {
+	print i
+}
+
+
 ```
+
 ### While
 ```ugh
 myVar = 0;
@@ -130,6 +141,7 @@ while(myVar < 10) {
 	print myVar
 }
 ```
+
 ### Foreach
 ```ugh
 # 1 #
@@ -149,7 +161,6 @@ foreach item, myArray {
     print item
 }
 ```
-
 
 ### Fun, return
 ```ugh
@@ -187,12 +198,12 @@ local { # Example of nested local #
 	}
 }
 ```
+
 ### Constants
 ```ugh
 const MYNUM = 100 
 MYNUM += 900 # This operation is readonly #
 ```
-
 
 ### Modules and As keyword
 > [!NOTE]
@@ -220,7 +231,7 @@ n = 10 # Lenght #
 a = 0 
 b = 1  
 
-repeat n { 
+repeat 0, n { 
     c = (a + b) 
     print c
     a = b 

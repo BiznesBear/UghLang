@@ -24,46 +24,7 @@ public class BlockNode : ASTNode, IReturnAny
 public class ExpressionNode : ASTNode, IReturnAny
 {
     public object AnyValue => Express();
-
-    private object Express()
-    {
-        if (HasEmptyBranch())
-        {
-            Debug.Warring("Tried calculate empty expression");
-            return 0; 
-        }
-
-        Stack<object> vals = new();
-        Stack<Operator> operators = new();
-        
-        foreach(var node in Nodes)
-        {
-            if (node is IReturnAny d)
-                vals.Push(d.AnyValue);
-            else if (node is OperatorNode opNode)
-            {
-                while (operators.Count > 0 &&
-                       Operation.GetPrecedence(operators.Peek()) >= Operation.GetPrecedence(opNode.Operator))
-                {
-                    var right = vals.Pop(); 
-                    var left = vals.Pop();
-                    vals.Push(Operation.Operate(left, right, operators.Pop()));
-                }
-                operators.Push(opNode.Operator);
-            }
-        }
-
-        while (vals.Count > 1)
-        {
-            var right = vals.Pop();
-            var left = vals.Pop();
-            var op = operators.Count < 1? Operator.Multiply : operators.Pop();
-
-            vals.Push(Operation.Operate(left, right, op));
-        }
-        
-        return vals.First();
-    }
+    private object Express() => Operation.Express(Nodes);
 }
 public class ArrayNode : AssignedNode<IReturnAny>, IReturn<object[]>
 {
@@ -87,7 +48,7 @@ public class ArrayNode : AssignedNode<IReturnAny>, IReturn<object[]>
 /// Used to declare and set variables
 /// </summary>
 
-public class NameNode : ASTNode, IReturnAny // TODO: Optimize and create clearer look this 
+public class NameNode : ASTNode, IReturnAny 
 {
     public required Token Token { get; init; }
 
@@ -146,9 +107,8 @@ public class NameNode : ASTNode, IReturnAny // TODO: Optimize and create clearer
                 blockNode.LocalNames.Add(v);
         }
     }
-
     
-    public Name GetName() => Ugh.GetName(Token.StringValue);
+    public Name GetName() => Ugh.GetName(Token.StringValue); // TODO: Make this variable
     public object GetValue()
     {
         var name = GetName();

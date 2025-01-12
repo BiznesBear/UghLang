@@ -1,4 +1,6 @@
-﻿namespace UghLang;
+﻿using UghLang.Nodes;
+
+namespace UghLang;
 
 public enum Operator
 {
@@ -40,6 +42,45 @@ public static class Operation
         { Operator.Power, 8 },
         { Operator.Sqrt, 9 },
     };
+
+
+    public static object Express(IReadOnlyList<Nodes.ASTNode> nodes)
+    {
+        if (nodes.Count == 0) return 0;
+
+        Stack<object> vals = new();
+        Stack<Operator> operators = new();
+
+        foreach (var node in nodes)
+        {
+            if (node is IReturnAny d)
+                vals.Push(d.AnyValue);
+            else if (node is OperatorNode opNode)
+            {
+                while (operators.Count > 0 &&
+                       GetPrecedence(operators.Peek()) >= GetPrecedence(opNode.Operator))
+                {
+                    var right = vals.Pop();
+                    var left = vals.Pop();
+                    vals.Push(Operate(left, right, operators.Pop()));
+                }
+                operators.Push(opNode.Operator);
+            }
+        }
+
+        while (vals.Count > 1)
+        {
+            var right = vals.Pop();
+            var left = vals.Pop();
+            var op = operators.Count < 1 ? Operator.Multiply : operators.Pop();
+
+            vals.Push(Operate(left, right, op));
+        }
+
+        return vals.First();
+    }
+
+
 
     public static dynamic Operate(dynamic left, dynamic right, Operator opr)
     {

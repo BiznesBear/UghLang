@@ -10,12 +10,13 @@ public class Lexer : IDisposable
     private Token? lastToken;
 
     private Lexer(Parser parser){ Parser = parser; }
+
     /// <summary>
     /// Old way of lexing. Must use semicolons
     /// </summary>
     /// <param name="input">Text to lex</param>
     /// <param name="parser">Parser to send tokens</param>
-    public Lexer(string input, Parser parser) : this(parser) =>  Lex(input);
+    public Lexer(string input, Parser parser) : this(parser) => Lex(input);
     public Lexer(string[] lines, Parser parser) : this(parser)
     {
         foreach (string line in lines)
@@ -23,13 +24,13 @@ public class Lexer : IDisposable
             Lex(line);
             switch (lastToken?.Type)
             {
-                case TokenType.Separator // exceptions in placing seperator
+                case TokenType.Separator // exceptions
                     or TokenType.Comma
-                    or TokenType.Keyword 
+                    or TokenType.Colon
                     or TokenType.OpenBlock 
                     or TokenType.CloseBlock: break; // if something is wrong then check out this
                 default: 
-                    AddPart(TokenType.Separator);
+                    AddPart(TokenType.EOL);
                     break;
             }
         }
@@ -78,6 +79,7 @@ public class Lexer : IDisposable
             else if (c == ']') AddSingle(TokenType.CloseList);
             
             else if (c == ',') AddSingle(TokenType.Comma);
+            else if (c == ':') AddSingle(TokenType.Colon);
             else if (c == 'π') AddSingle(TokenType.Pi);
 
             else if (char.IsDigit(c) || c == '-' && char.IsDigit(CheckNext()))
@@ -122,10 +124,8 @@ public class Lexer : IDisposable
 
                 AddPart(TokenType.Operator);
             }
-            else
-                AddChar(c);
+            else AddChar(c);
 
-            
             
             void Skip(int skips = 1)
             {
@@ -177,6 +177,5 @@ public class Lexer : IDisposable
         currentPart = string.Empty;
         Parser.AddToken(lastToken);
     }
-    
     public void Dispose() => GC.SuppressFinalize(this);
 }

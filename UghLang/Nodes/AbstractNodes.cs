@@ -24,7 +24,7 @@ public abstract class AssignedNode<T>(int index = 0) : ASTNode
 /// </summary>
 /// <param name="anyIndex">Index for IReturnAny node</param>
 /// <param name="tagIndex">Index for TagNode node</param>
-public abstract class AssignedIReturnAnyAndTagNode(int anyIndex = 0, int tagIndex = 1) : AssignedNode<IReturnAny>(anyIndex)
+public abstract class AssignedIReturnAnyAndBlockNode(int anyIndex = 0, int tagIndex = 1) : AssignedNode<IReturnAny>(anyIndex)
 {
     protected BlockNode? tag;
     public BlockNode Block => tag ?? throw new MissingException("{}", this);

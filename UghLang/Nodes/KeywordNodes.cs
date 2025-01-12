@@ -1,10 +1,16 @@
 ﻿using UghLang.Modules;
 namespace UghLang.Nodes;
 
+
+public interface IKeywordNode
+{
+    
+}
+
 /// <summary>
 /// Writes value 
 /// </summary>
-public class PrintNode : AssignedNode<IReturnAny>
+public class PrintNode : AssignedNode<IReturnAny>, IKeywordNode
 {
     public override void Execute()
     {
@@ -16,7 +22,7 @@ public class PrintNode : AssignedNode<IReturnAny>
 /// <summary>
 /// Creates input field and writes value 
 /// </summary>
-public class InputNode : AssignedNode<IReturnAny>, IReturn<string>, IOperable
+public class InputNode : AssignedNode<IReturnAny>, IReturn<string>, IOperable, IKeywordNode
 {
     public string Value { get; set; } = string.Empty;
     public object AnyValue => Value;
@@ -32,7 +38,7 @@ public class InputNode : AssignedNode<IReturnAny>, IReturn<string>, IOperable
 /// <summary>
 /// Disposes Name from Ugh
 /// </summary>
-public class FreeNode : ASTNode
+public class FreeNode : ASTNode, IKeywordNode
 {
     private NameNode? refNode;
     public override void Load()
@@ -56,7 +62,7 @@ public class FreeNode : ASTNode
 /// <summary>
 /// Declares new function 
 /// </summary>
-public class DeclareFunctionNode : ASTNode, INamed
+public class DeclareFunctionNode : ASTNode, INamed, IKeywordNode
 {
     private NameNode? name;
 
@@ -73,7 +79,7 @@ public class DeclareFunctionNode : ASTNode, INamed
 /// <summary>
 /// Breaks parent execution
 /// </summary>
-public class BreakNode : ASTNode
+public class BreakNode : ASTNode, IKeywordNode
 {
     public override void Execute() => Parent.Executable = false;
 }
@@ -81,21 +87,26 @@ public class BreakNode : ASTNode
 /// <summary>
 /// Sets current executed function value and breaks it whole execution
 /// </summary>
-public class ReturnNode : AssignedNode<IReturnAny>
+public class ReturnNode : AssignedNode<IReturnAny>, IKeywordNode
 {
-    private Function Function => Ugh.Function ?? throw new InvalidSpellingException(this);
-
     public override void Execute()
     {
         base.Execute();
-        
-        if(assigned is not null) 
-            Function.Value = assigned.AnyValue;
-        Function.BlockNode.Executable = false;
+
+        if (Ugh.Function is not null)
+        {
+            if (assigned is not null)
+                Ugh.Function.Value = assigned.AnyValue;
+            Ugh.Function.BlockNode.Executable = false;
+        }
+        else if (Ugh.ReturnBlock is not null)
+            Ugh.ReturnBlock.Executable = false;
+        else
+            Parent.Executable = false;
     }
 }
 
-public class IfNode : AssignedIReturnAnyAndTagNode
+public class IfNode : AssignedIReturnAnyAndBlockNode, IKeywordNode
 {
     private ASTNode? elseNode; 
 
@@ -121,7 +132,7 @@ public class IfNode : AssignedIReturnAnyAndTagNode
     }
 }
 
-public class ElseNode : AssignedNode<BlockNode>
+public class ElseNode : AssignedNode<BlockNode>, IKeywordNode
 {
     public ElseNode() => Executable = false;
 
@@ -135,7 +146,7 @@ public class ElseNode : AssignedNode<BlockNode>
     }
 }
 
-public class ElifNode : IfNode
+public class ElifNode : IfNode, IKeywordNode
 {
     public ElifNode() => Executable = false;
 }
@@ -143,32 +154,79 @@ public class ElifNode : IfNode
 /// <summary>
 /// Creates for loop from 0 to (value)
 /// </summary>
-public class RepeatNode : AssignedIReturnAnyAndTagNode
+public class RepeatNode() : ASTNode, INamed, IKeywordNode
 {
+    private IReturnAny? minNode;
+    private IReturnAny? maxNode;
+    private NameNode? nameNode;
+    private BlockNode? blockNode;
+
+    private BlockNode BlockNode => blockNode ?? throw new InvalidSpellingException(this);
+
+    public override void Load()
+    {
+        base.Load();
+        minNode = HandleGetNode<IReturnAny>(0);
+        maxNode = HandleGetNode<IReturnAny>(1);
+        nameNode = GetNodeOrDefalut<NameNode>(2);
+        blockNode = HandleGetNode<BlockNode>(nameNode is null? 2 : 3);
+    }
+
     public override void Execute()
     {
         base.Execute();
 
-        Block.Executable = true;
-        for (int i = 0; i < (int)Assigned.AnyValue; i++)
+        
+        int min = (int)(minNode?.AnyValue ?? 0);
+        int max = (int)(maxNode?.AnyValue ?? 0);
+
+        Variable? var = nameNode is null? null : new(nameNode?.Token.StringValue ?? string.Empty, min);
+
+        if(var is not null)
         {
-            if (!Block.Executable) break;
-            Block.Execute();
+            Ugh.RegisterName(var);
+            BlockNode.LocalNames.Add(var);
         }
-        Block.Executable = false;
-        Block.FreeLocalNames();
+
+        Ugh.SetReturnBlock(BlockNode);
+
+        BlockNode.Executable = true;
+
+        if (min < max)
+            for (int i = min; i < max; i++)
+            {
+                if (!BlockNode.Executable) break;
+                Do(i);
+            }
+        else
+            for (int i = min - 1; i >= max; i--)
+            {
+                if (!BlockNode.Executable) break;
+                Do(i);
+            }
+
+        BlockNode.Executable = false;
+        BlockNode.FreeLocalNames();
+        Ugh.SetReturnBlock(null);
+
+        void Do(int i)
+        {
+            if (var is not null) var.Value = i;
+            BlockNode.Execute();
+        }
     }
 }
 
 /// <summary>
 /// Creates new while loop
 /// </summary>
-public class WhileNode : AssignedIReturnAnyAndTagNode
+public class WhileNode : AssignedIReturnAnyAndBlockNode, IKeywordNode
 {
     public override void Execute()
     {
         base.Execute();
 
+        Ugh.SetReturnBlock(Block);
         Block.Executable = (bool)Assigned.AnyValue;
         while ((bool)Assigned.AnyValue)
         {
@@ -177,10 +235,11 @@ public class WhileNode : AssignedIReturnAnyAndTagNode
         }
         Block.Executable = false;
         Block.FreeLocalNames();
+        Ugh.SetReturnBlock(null);
     }
 }
 
-public class ForeachNode : ASTNode
+public class ForeachNode : ASTNode, IKeywordNode
 {
     private NameNode? itemNode;
     private NameNode? collectionNode;
@@ -199,9 +258,10 @@ public class ForeachNode : ASTNode
     {
         base.Execute();
         if(itemNode is null || collectionNode is null || blockNode is null) 
-            throw new InvalidSpellingException(this); 
-
+            throw new InvalidSpellingException(this);
         
+        Ugh.SetReturnBlock(blockNode);
+
         var collection = collectionNode.AnyValue as object[] ?? throw new InvalidSpellingException(this);
         
         Variable item = new(itemNode.Token.StringValue, 0);
@@ -218,13 +278,14 @@ public class ForeachNode : ASTNode
         blockNode.Executable = false;
         blockNode.FreeLocalNames();
         Ugh.FreeName(item);
+        Ugh.SetReturnBlock(null);
     }
 }
 
 /// <summary>
 /// Imports other ugh files and mark them as inserted
 /// </summary>
-public class InsertNode : ASTNode 
+public class InsertNode : ASTNode, IKeywordNode
 {
     public override void Load()
     {
@@ -247,7 +308,7 @@ public class InsertNode : ASTNode
 /// <summary>
 /// Marks children as local which makes them invisible for inserter. 
 /// </summary>
-public class LocalNode : ASTNode, ITag
+public class LocalNode : ASTNode, ITag, IKeywordNode
 {
     public override void Load()
     {
@@ -264,7 +325,7 @@ public class LocalNode : ASTNode, ITag
     }
 }
 
-public class ModuleNode : ASTNode, INamed
+public class ModuleNode : ASTNode, INamed, IKeywordNode
 {
     public override void Load()
     {
@@ -291,10 +352,10 @@ public class ModuleNode : ASTNode, INamed
     }
 }
 
-public class AsNode : AssignedNode<NameNode>, INamed
+public class AsNode : AssignedNode<NameNode>, INamed, IKeywordNode
 {
     public string GetStringName() => Assigned.Token.StringValue;
 }
-public class FromNode : AssignedNode<ConstStringValueNode>;
+public class FromNode : AssignedNode<ConstStringValueNode>, IKeywordNode;
 
-public class ConstNode : ASTNode, ITag;
+public class ConstNode : ASTNode, ITag, IKeywordNode;

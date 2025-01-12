@@ -23,7 +23,9 @@ public enum TokenType : byte
     FloatValue, // float
 
     Comma,
+    Colon,
     Pi,
+    EOL
 }
 
 
