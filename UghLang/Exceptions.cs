@@ -5,7 +5,7 @@ namespace UghLang;
 [Serializable]
 public class UghException : Exception
 {
-    public override string? StackTrace => Debug.EnabledStackTrace? base.StackTrace : string.Empty;
+    public override string? StackTrace => Debug.EnabledMessages? base.StackTrace : string.Empty;
     public UghException(string mess) => Debug.Error(mess);
 }
 public class UndefinedInstructions() : UghException("Undefined instructions");

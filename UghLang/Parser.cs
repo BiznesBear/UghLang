@@ -3,7 +3,7 @@ namespace UghLang;
 
 public class Parser : IDisposable
 {
-    public AST Ast;
+    public AST AST;
     public bool Inserted { get; }
 
     private ASTNode currentNode;
@@ -11,8 +11,8 @@ public class Parser : IDisposable
 
     public Parser(Ugh ugh, bool inserted = false)
     {
-        Ast = new(ugh, this);
-        currentNode = Ast;
+        AST = new(ugh, this);
+        currentNode = AST;
         Inserted = inserted;
     }
 
@@ -150,7 +150,7 @@ public class Parser : IDisposable
     /// <summary>
     /// Returns current master branch
     /// </summary>
-    public ASTNode GetMasterBranch() => masterBranches.Count < 1? Ast : masterBranches.Peek();
+    public ASTNode GetMasterBranch() => masterBranches.Count < 1? AST : masterBranches.Peek();
 
     /// <summary>
     /// Checks if current node is current masterBranch
@@ -164,21 +164,19 @@ public class Parser : IDisposable
     /// <summary>
     /// Loads AST 
     /// </summary>
-    public void Load() => Ast.Load();
+    public void Load() => AST.Load();
 
     /// <summary>
     /// Executes AST
     /// </summary>
-    public void Execute() => Ast.Execute();
+    public void Execute() => AST.Execute();
 
     /// <summary>
     /// Loads and executes AST
     /// </summary>
-    public void LoadAndExecute()
-    {
-        Load();
-        Execute();
-    }
+    public void LoadAndExecute() => AST.LoadAndExecute();
 
     public void Dispose() => GC.SuppressFinalize(this);
+
+    
 }

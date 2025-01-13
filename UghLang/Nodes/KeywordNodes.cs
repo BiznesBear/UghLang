@@ -330,13 +330,18 @@ public class ModuleNode : ASTNode, INamed, IKeywordNode
     public override void Load()
     {
         base.Load();
+
         var strNode = HandleGetNode<ConstStringValueNode>(0);
         var asNode = GetNodeOrDefalut<AsNode>(1);
+
+        var fromNode = asNode?.GetNodeOrDefalut<FromNode>(1);
+        fromNode ??= GetNodeOrDefalut<FromNode>(0);
+        fromNode ??= GetNodeOrDefalut<FromNode>(1);
         
-        // TODO: Add `from` keyword here
-        
+        asNode ??= fromNode?.GetNodeOrDefalut<AsNode>(1);
+
         var name = asNode is null? strNode.Value : asNode.GetStringName();
-        var module = MLoader.LoadModule(strNode.Value);
+        var module = ModuleLoader.LoadModule(strNode.Value, fromNode?.Assigned.Value);
 
         foreach (var method in module.Methods)
         {

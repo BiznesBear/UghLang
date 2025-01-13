@@ -7,7 +7,6 @@ public static class Debug
 {
     public static bool EnabledMessages { get; set; } 
     public static bool EnabledWarrings { get; set; } = true;
-    public static bool EnabledStackTrace { get; set; } = false;
     
     public static void Print(object message)
     {

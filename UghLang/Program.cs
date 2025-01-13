@@ -1,12 +1,7 @@
-﻿using System.Runtime.Serialization.Formatters.Binary;
-using System.Text.Json.Serialization;
-using System.Text.Json;
-using UghLang;
-using UghLang.Nodes;
+﻿using UghLang;
 
 const string version = "v0.1";
 const string ughlang = "UghLang " + version;
-
 
 if (args.Length < 1) 
 {
@@ -14,7 +9,7 @@ if (args.Length < 1)
     return;
 }
 
-bool exe = true;
+bool load = true;
 string path = string.Empty;
 
 for (var i = 0; i < args.Length; i++)
@@ -29,7 +24,7 @@ for (var i = 0; i < args.Length; i++)
                 Console.WriteLine(ughlang);
                 break;
             case "--info" or "--help":
-                Console.WriteLine("Welcome to Ugh language! Arguments list: --debug; --version; --help; --info; --nowarns; --stacktrace");
+                Console.WriteLine("Welcome to Ugh language! Arguments list: --debug; --version; --help; --info; --nowarns; --noload");
                 break;
             case "--debug":
                 Debug.EnabledMessages = true;
@@ -37,11 +32,8 @@ for (var i = 0; i < args.Length; i++)
             case "--nowarns":
                 Debug.EnabledWarrings = false;
                 break;
-            case "--stacktrace":
-                Debug.EnabledStackTrace = true;
-                break;
-            case "--noexe":
-                exe = false;
+            case "--noload":
+                load = false;
                 break;
             default: throw new UghException($"Cannot find argument '{arg}'");
         }
@@ -72,11 +64,12 @@ var parser = new Parser(ugh);
 switch (Path.GetExtension(path))
 {
     case ".ugh":
-        var lexer = new Lexer(file, parser);
-        Debug.PrintTree(parser.Ast, path);
-        if (exe)
+        new Lexer(file, parser); 
+        Debug.PrintTree(parser.AST, path);
+        if (load)
             parser.LoadAndExecute();
         break;
+
     case ".bin":
         Debug.Error("Binary AST is not currently supported");
         break;

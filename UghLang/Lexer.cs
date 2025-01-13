@@ -10,20 +10,19 @@ public class Lexer : IDisposable
 
     private Token? lastToken;
 
-    private Lexer(Parser parser){ Parser = parser; }
 
     /// <summary>
     /// Old way of lexing. Must use semicolons
     /// </summary>
     /// <param name="input">Text to lex</param>
     /// <param name="parser">Parser to send tokens</param>
-    public Lexer(string input, Parser parser) : this(parser) => Lex(input);
+    public Lexer(string input, Parser parser)  { Parser = parser; Lex(input); }
 
-    private void Lex(string line)
+    private void Lex(string input)
     {
-        for (int i = 0; i < line.Length; i++)
+        for (int i = 0; i < input.Length; i++)
         {
-            char c = line[i];
+            char c = input[i];
 
             // comments
             if (c == '#' && !insideString)
@@ -112,15 +111,15 @@ public class Lexer : IDisposable
             
             void Skip(int skips = 1)
             {
-                if (i + skips < line.Length) i += skips;
+                if (i + skips < input.Length) i += skips;
             }
 
             char CheckNext(int next = 1)
             {
                 int index = i + next;
-                if (index < line.Length)
+                if (index < input.Length)
                 {
-                    char c = line[index];
+                    char c = input[index];
                     if (char.IsWhiteSpace(c))
                         CheckNext(next + 1);
                     else
@@ -159,6 +158,7 @@ public class Lexer : IDisposable
         lastToken = new(currentPart, type);
         currentPart = string.Empty;
         Parser.AddToken(lastToken);
+        
     }
     public void Dispose() => GC.SuppressFinalize(this);
 }

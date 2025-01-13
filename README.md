@@ -19,8 +19,7 @@ ughlang master.ugh
 - `--version` (prints version)
 - `--info` or `--help` (displays info about the language)
 - `--nowarns` (disables warnings)
-- `--stacktrace` (enables stack trace when c# exception is thrown)
-- `--noexe` (prevents AST from being loaded and executed)
+- `--noload` (prevents AST from being loaded and executed)
 
 # Mini documentation
 This section is dedicated to the basic functions of the ugh language.
@@ -56,6 +55,7 @@ print("Hello " + "world!") # print keyword prints one single value, not a list o
 - local
 - module 
 - as
+- from
 - const
 
 ### Declaring variables
@@ -194,6 +194,10 @@ MYNUM += 900; # This operation is readonly #
 module "File" as f;
 myVar = f.Read("myFile.txt");
 print myVar;
+
+# Importing custom modules #
+module "CustomModule" as custom from "path/to/your/dll";
+custom.Foo();
 ```
 
 ### Converting types

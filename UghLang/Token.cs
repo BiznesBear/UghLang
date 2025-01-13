@@ -1,4 +1,6 @@
-﻿namespace UghLang;
+﻿using System.Data.Common;
+
+namespace UghLang;
 
 public enum TokenType : byte
 {
@@ -55,4 +57,19 @@ public class Token
     }
 
     public override string ToString() => $"{nameof(Token)} {{ Value = {StringValue} | Type = {Type} | Keyword = {Keyword} }}";
+
+
+    public void WriteTo(BinaryWriter writer)
+    {
+        writer.Write(StringValue);
+        writer.Write((byte)Type);
+    }
+
+    public static Token ReadFrom(BinaryReader reader)
+    {
+        var value = reader.ReadString();
+        var type = (TokenType)reader.ReadByte();
+        return new(value, type);
+    }
+
 }

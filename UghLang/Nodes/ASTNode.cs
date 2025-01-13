@@ -9,7 +9,7 @@ public abstract class ASTNode
 
     public IReadOnlyList<ASTNode> Nodes => nodes;
 
-    public int Iteration { get; private set; } = 0;
+    public byte Iteration { get; private set; } = 0;
     public bool Executable { get; set; } = true;
 
     private readonly List<ASTNode> nodes = new();
@@ -126,7 +126,7 @@ public abstract class ASTNode
     /// </summary>
     public virtual void Load()
     {
-        for (int i = 0; i < Nodes.Count; i++)
+        for (byte i = 0; i < Nodes.Count; i++)
         {
             Iteration = i;
             Nodes[i].Load();
@@ -138,9 +138,21 @@ public abstract class ASTNode
     /// </summary>
     public virtual void Execute()
     {
-        for (int i = 0; i < Nodes.Count; i++)
+        for (byte i = 0; i < Nodes.Count; i++)
         {
             Iteration = i;
+            if (Executable)
+                Nodes[i].Execute();
+        }
+    }
+
+   
+    public void LoadAndExecute()
+    {
+        for (byte i = 0; i < Nodes.Count; i++)
+        {
+            Iteration = i;
+            Nodes[i].Load();
             if (Executable)
                 Nodes[i].Execute();
         }
@@ -161,7 +173,6 @@ public abstract class ASTNode
 public class AST : ASTNode
 {
     public AST() { Parent = this; }
-
     public AST(Ugh ugh, Parser parser) : this()
     {
         Ugh = ugh;
