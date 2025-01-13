@@ -262,7 +262,7 @@ public class ForeachNode : ASTNode, IKeywordNode
         
         Ugh.SetReturnBlock(blockNode);
 
-        var collection = collectionNode.AnyValue as object[] ?? throw new InvalidSpellingException(this);
+        var collection = collectionNode.AnyValue as IList<object> ?? throw new InvalidSpellingException(this);
         
         Variable item = new(itemNode.Token.StringValue, 0);
         
@@ -296,7 +296,7 @@ public class InsertNode : ASTNode, IKeywordNode
         if(File.Exists(path)) { }
         else if (Path.Exists(path)) { path += "/source.ugh"; }
 
-        var file = File.ReadAllLines(path);
+        var file = File.ReadAllText(path);
 
         using var parser = new Parser(Ugh, true);
         using var lexer = new Lexer(file, parser);

@@ -11,7 +11,7 @@ public class BlockNode : ASTNode, IReturnAny
     public BlockNode() => Executable = false;
     public List<Name> LocalNames { get; } = new();
 
-    public object AnyValue => Nodes.OfType<IReturnAny>().Select(a => a.AnyValue).ToArray();
+    public object AnyValue => ArrayNode.NodesToArray(Nodes);
 
     public void FreeLocalNames()
     {
@@ -20,27 +20,26 @@ public class BlockNode : ASTNode, IReturnAny
     }
 }
 
-
 public class ExpressionNode : ASTNode, IReturnAny
 {
     public object AnyValue => Express();
     private object Express() => Operation.Express(Nodes);
 }
-public class ArrayNode : AssignedNode<IReturnAny>, IReturn<object[]>
+
+public class ArrayNode : AssignedNode<IReturnAny>, IReturnAny
 {
     public int Index
     {
         get
         {
             try { return (int)Assigned.AnyValue; }
-            catch(Exception ex) { Debug.Error(ex.Message); }
+            catch (Exception ex) { Debug.Error(ex.Message); }
             return 0;
         }
     }
-        
-    public object AnyValue => new object[Index];
-    
-    public object[] Value { get; set; } = Array.Empty<object>();
+
+    public object AnyValue => NodesToArray(Nodes);
+    public static object[] NodesToArray(IReadOnlyList<ASTNode> nodes) => nodes.OfType<IReturnAny>().Select(a => a.AnyValue).ToArray();
 }
 
 
@@ -92,7 +91,7 @@ public class NameNode : ASTNode, IReturnAny
         {
             if (arrayNode is not null)
             {
-                var array = variable.Value as object[];
+                var array = variable.Value as IList<object>;
                 array![arrayNode.Index] = Operation.Operate(array[arrayNode.Index], any.AnyValue, oprNode.Operator);
             }
             else
@@ -114,7 +113,7 @@ public class NameNode : ASTNode, IReturnAny
         var name = GetName();
         if (arrayNode is null) return name.AnyValue;
         
-        var array = name.AnyValue as object[];
+        var array = name.AnyValue as IList<object>;
         return array![arrayNode.Index];
     }
 }

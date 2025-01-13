@@ -44,7 +44,7 @@ public static class Operation
     };
 
 
-    public static object Express(IReadOnlyList<Nodes.ASTNode> nodes)
+    public static object Express(IReadOnlyList<ASTNode> nodes)
     {
         if (nodes.Count == 0) return 0;
 
@@ -113,7 +113,7 @@ public static class Operation
         return opr switch
         {
             "=" => Operator.Equals ,
-            "+" or "+=" => Operator.Plus,
+            "+" or "+=" => Operator.Plus, // TODO: Make += for arrays operations (add, remove etc.)
             "-" or "-=" => Operator.Minus,
             "*" or "*=" => Operator.Multiply,
             "/" or "/=" => Operator.Divide,
@@ -131,7 +131,7 @@ public static class Operation
             "&&" => Operator.And,
             "||" => Operator.Or,
 
-            _ => throw new("Cannot find operator " + opr),
+            _ => throw new UghException("Cannot find operator " + opr),
         };
     }
     public static bool IsOperator(this char c) => c == '=' || c == '+' || c == '-' || c == '*' || c == '/' || c == '<' || c == '>' || c == '!' || c == '&' || c == '|';

@@ -7,6 +7,7 @@ public class Lexer : IDisposable
     private string currentPart = string.Empty;
     private bool insideString;
     private bool insideComment; 
+
     private Token? lastToken;
 
     private Lexer(Parser parser){ Parser = parser; }
@@ -17,24 +18,6 @@ public class Lexer : IDisposable
     /// <param name="input">Text to lex</param>
     /// <param name="parser">Parser to send tokens</param>
     public Lexer(string input, Parser parser) : this(parser) => Lex(input);
-    public Lexer(string[] lines, Parser parser) : this(parser)
-    {
-        foreach (string line in lines)
-        {
-            Lex(line);
-            switch (lastToken?.Type)
-            {
-                case TokenType.Separator // exceptions
-                    or TokenType.Comma
-                    or TokenType.Colon
-                    or TokenType.OpenBlock 
-                    or TokenType.CloseBlock: break; // if something is wrong then check out this
-                default: 
-                    AddPart(TokenType.EOL);
-                    break;
-            }
-        }
-    }
 
     private void Lex(string line)
     {

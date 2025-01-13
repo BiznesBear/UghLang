@@ -4,7 +4,6 @@ using UghLang.Nodes;
 namespace UghLang;
 
 
-
 public class Namespace : Dictionary<string, Name>;
 
 /// <summary>
@@ -23,7 +22,9 @@ public class Ugh
     public BlockNode? ReturnBlock { get; private set; }
     public IReadOnlyDictionary<string, Name> Names => names;
 
+
     private readonly Namespace names = new();
+
     private BlockNode? lastReturnBlock;
 
     public void SetReturnBlock(BlockNode? node)

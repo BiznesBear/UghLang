@@ -1,5 +1,6 @@
 ﻿namespace UghLang.Nodes;
 
+
 public abstract class ASTNode
 {
     public const ASTNode NULL = default;
@@ -13,12 +14,14 @@ public abstract class ASTNode
 
     private readonly List<ASTNode> nodes = new();
 
-    private Parser? parser;
-    public Parser Parser
+
+    private ASTNode? parent;
+    public ASTNode Parent
     {
-        get => parser ?? throw new UghException("No Parser assigned in node");
-        set => parser = value;
+        get => parent ?? this;
+        set => parent = value;
     }
+
 
     private Ugh? ugh;
     public Ugh Ugh
@@ -27,12 +30,14 @@ public abstract class ASTNode
         set => ugh = value;
     }
 
-    private ASTNode? parent;
-    public ASTNode Parent
+    private Parser? parser;
+    public Parser Parser
     {
-        get => parent ?? this;
-        set => parent = value;
+        get => parser ?? throw new UghException("No Parser assigned in node");
+        set => parser = value;
     }
+
+
 
     #endregion
 
@@ -155,9 +160,10 @@ public abstract class ASTNode
 
 public class AST : ASTNode
 {
-    public AST(Ugh ugh, Parser parser)
+    public AST() { Parent = this; }
+
+    public AST(Ugh ugh, Parser parser) : this()
     {
-        Parent = this;
         Ugh = ugh;
         Parser = parser;
     }

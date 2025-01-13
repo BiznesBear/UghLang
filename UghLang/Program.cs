@@ -1,4 +1,8 @@
-﻿using UghLang;
+﻿using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.Json.Serialization;
+using System.Text.Json;
+using UghLang;
+using UghLang.Nodes;
 
 const string version = "v0.1";
 const string ughlang = "UghLang " + version;
@@ -60,12 +64,22 @@ for (var i = 0; i < args.Length; i++)
 
 if (path == string.Empty) return;
 
-var file = File.ReadAllLines(path);
 
+var file = File.ReadAllText(path);
 var ugh = new Ugh();
 var parser = new Parser(ugh);
-var lexer = new Lexer(file, parser);
 
-Debug.PrintTree(parser.Ast, path);
+switch (Path.GetExtension(path))
+{
+    case ".ugh":
+        var lexer = new Lexer(file, parser);
+        Debug.PrintTree(parser.Ast, path);
+        if (exe)
+            parser.LoadAndExecute();
+        break;
+    case ".bin":
+        Debug.Error("Binary AST is not currently supported");
+        break;
+    default: throw new UghException("Wrong file format: " + path);
+}
 
-if(exe) parser.LoadAndExecute();

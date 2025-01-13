@@ -1,12 +1,11 @@
 ﻿# TODO 
-
-?? real references (names can contain names - namespaces) ??
-
-compiling AST's to binary files
-
-importing modules (from keyword)
+importing modules (`from` keyword)
 fix error handling
+compiling AST's to binary files
 
 imaginary units
 dodac koparke krypto 
+
+?? methods - functions called for type instead of name ??
+?? namespaces/references - name can contain names ??
 #

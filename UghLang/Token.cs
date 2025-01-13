@@ -25,7 +25,6 @@ public enum TokenType : byte
     Comma,
     Colon,
     Pi,
-    EOL
 }
 
 

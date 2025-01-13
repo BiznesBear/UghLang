@@ -3,7 +3,7 @@ namespace UghLang;
 
 public class Parser : IDisposable
 {
-    public readonly AST Ast;
+    public AST Ast;
     public bool Inserted { get; }
 
     private ASTNode currentNode;
@@ -18,7 +18,7 @@ public class Parser : IDisposable
 
     public void AddToken(Token token)
     {
-        // Debug.Print(token);
+        Debug.Print(token);
         switch (token.Type)
         {
             case TokenType.Keyword:
@@ -81,10 +81,6 @@ public class Parser : IDisposable
                 break;
             case TokenType.Pi:
                 CreateNode(new ConstDoubleValueNode() { Value = (float)Math.PI });
-                break;
-            case TokenType.EOL:
-                // Debug.Print(currentNode);
-                if(currentNode is not IKeywordNode && currentNode is not NameNode) BackToMasterBranch();
                 break;
             default: throw new UghException($"Unhandled token type: {token.Type}");
         }
