@@ -3,7 +3,7 @@ Written in C# interpreted programing language created for educational purpose an
 
 # Building
 Make sure you have .net 9 installed
-```
+```bash
 git clone https://github.com/BiznesBear/UghLang
 cd UghLang
 dotnet build
