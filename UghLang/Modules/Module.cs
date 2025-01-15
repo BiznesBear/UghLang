@@ -12,14 +12,14 @@ public record ModuleInfo(Dictionary<string, MethodInfo> Methods, Dictionary<stri
 
 public static class ModuleLoader
 {
-    public static ModuleInfo LoadModule(string moduleName, string? path = null)
+    public static ModuleInfo LoadModule(string moduleName, Type[]? assembly)
     {
         Dictionary<string, MethodInfo> methods = new();
         Dictionary<string, FieldInfo> fields = new();
 
-        var assembly = path is null ? Assembly.GetExecutingAssembly() : Assembly.LoadFrom(path);
+        var types = assembly is null ? Assembly.GetExecutingAssembly().GetTypes() : assembly;
 
-        foreach (var type in assembly.GetTypes())
+        foreach (var type in types)
         {
             var moduleAttr = type.GetCustomAttribute<Module>();
             if (moduleAttr != null && moduleAttr.Name == moduleName)
@@ -34,8 +34,11 @@ public static class ModuleLoader
                 break;
             }
         }
-        Debug.Print($"Loaded {methods.Count} methods and {fields.Count} fields from {assembly.FullName}");
+
+        Debug.Print($"Loaded {methods.Count} methods and {fields.Count} fields");
 
         return new(methods, fields);
     }
+
+    public static Type[] LoadAssembly(string path) => Assembly.LoadFrom(path).GetTypes();
 }

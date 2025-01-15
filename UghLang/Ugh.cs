@@ -93,6 +93,12 @@ public abstract class Name(string name, object val) : IDisposable, IReturnAny
 
 public class Variable(string name, object value) : Name(name, value) { }
 public class Constant(string name, object value) : Variable(name, value), IGetOnly { }
+public class AssemblyConst(string name, Type[] assembly) : Constant(name, 0) 
+{ 
+    public Type[] Assembly { get; } = assembly;
+}
+
+
 
 public abstract class BaseFunction(string name, Ugh ugh) : Name(name, 0)
 {
@@ -152,3 +158,4 @@ public class ModuleFunction(string name, Ugh ugh, MethodInfo method) : BaseFunct
         catch (Exception ex) { Debug.Error(ex); }
     }
 }
+ 

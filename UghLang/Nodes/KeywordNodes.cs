@@ -48,7 +48,7 @@ public class FreeNode : ASTNode, IKeywordNode
     {
         base.Execute();
         if (refNode is not null)
-            Ugh.FreeName(refNode.GetName());
+            Ugh.FreeName(refNode.Name);
         else if (TryGetNode<ConstStringValueNode>(0,out var modifier) && modifier.Value == "all")
             Ugh.FreeAll();
         else throw new InvalidSpellingException(this);
@@ -61,12 +61,10 @@ public class FreeNode : ASTNode, IKeywordNode
 /// </summary>
 public class DeclareFunctionNode : ASTNode, INamed, IKeywordNode
 {
-    private NameNode? name;
-
     public override void Load()
     {
         base.Load();
-        name = HandleGetNode<NameNode>(0);
+        var name = HandleGetNode<NameNode>(0);
 
         Function fun = new(name.Token.StringValue, HandleGetNode<BlockNode>(2), HandleGetNode<ExpressionNode>(1));
         Ugh.RegisterName(fun);
@@ -336,8 +334,8 @@ public class ModuleNode : ASTNode, INamed, IKeywordNode
         
         asNode ??= fromNode?.GetNodeOrDefalut<AsNode>(1);
 
-        var name = asNode is null? strNode.Value : asNode.GetStringName();
-        var module = ModuleLoader.LoadModule(strNode.Value, fromNode?.Assigned.Value);
+        var name = asNode is null? strNode.Value : asNode.StringName;
+        var module = ModuleLoader.LoadModule(strNode.Value, fromNode?.ConstAssembly.Assembly ?? null);
 
         foreach (var method in module.Methods)
         {
@@ -353,10 +351,31 @@ public class ModuleNode : ASTNode, INamed, IKeywordNode
     }
 }
 
+public class AssemblyNode : ASTNode, IKeywordNode
+{
+    public override void Load()
+    {
+        base.Load();
+
+        var pathNode = HandleGetNode<ConstStringValueNode>(0);
+        var asNode = HandleGetNode<AsNode>(1);
+
+        var assembly = ModuleLoader.LoadAssembly(pathNode.Value);
+
+        var name = new AssemblyConst(asNode.StringName, assembly);
+        Ugh.RegisterName(name);
+    }
+}
+
+
 public class AsNode : AssignedNode<NameNode>, INamed, IKeywordNode
 {
-    public string GetStringName() => Assigned.Token.StringValue;
+    public string StringName => Assigned.Token.StringValue;
 }
-public class FromNode : AssignedNode<ConstStringValueNode>, IKeywordNode;
+
+public class FromNode : AssignedNode<NameNode>, INamed, IKeywordNode
+{
+    public AssemblyConst ConstAssembly => Assigned.Name.GetAs<AssemblyConst>(); 
+}
 
 public class ConstNode : ASTNode, ITag, IKeywordNode;

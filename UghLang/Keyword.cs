@@ -27,6 +27,7 @@ public enum Keyword : byte
     Local,
 
     Module,
+    Assembly,
     
     As,
     From,
@@ -62,6 +63,7 @@ public static class KeywordExtension
         { "local", Keyword.Local },
 
         { "module", Keyword.Module },
+        { "assembly", Keyword.Assembly },
         
         { "as", Keyword.As },
         { "from", Keyword.From },
@@ -112,6 +114,7 @@ public static class KeywordExtension
             Keyword.Local => new LocalNode(),
 
             Keyword.Module => new ModuleNode(),
+            Keyword.Assembly => new AssemblyNode(),
 
             Keyword.As => new AsNode(),
             Keyword.From => new FromNode(),

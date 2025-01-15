@@ -1,4 +1,5 @@
-﻿module "UFL" as ufl from "C:\Users\ADAM\source\repos\UFL\UFL\bin\Release\net9.0\publish\UFL.dll";
+﻿assembly "C:\Users\ADAM\source\repos\UFL\UFL\bin\Release\net9.0\publish\UFL.dll" as A_UFL;
+module "UFL" as ufl from A_UFL;
 
 win = ufl.CreateWindow(400, 300, "Game"); 
 

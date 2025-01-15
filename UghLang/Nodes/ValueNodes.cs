@@ -22,6 +22,3 @@ public class ConstIntValueNode() : AnyValueNode<int>(0);
 public class ConstBoolValueNode() : AnyValueNode<bool>(false);
 public class ConstFloatValueNode() : AnyValueNode<float>(0f);
 public class ConstDoubleValueNode() : AnyValueNode<double>(0d);
-
-
-

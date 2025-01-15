@@ -52,7 +52,11 @@ public class NameNode : ASTNode, IReturnAny
     public required Token Token { get; init; }
 
     public object AnyValue => GetValue();
-    
+    public Name Name => name ?? throw new UghException("Cannot find name: " + Token.StringValue);
+
+    private Name? name;
+
+
     private IReturnAny? any;
     private OperatorNode? oprNode;
     private ArrayNode? arrayNode;
@@ -64,13 +68,15 @@ public class NameNode : ASTNode, IReturnAny
     {
         base.Load();
 
+        bool n = Ugh.TryGetName(Token.StringValue, out name);
+
         if (Parent.CheckType<INamed>()) return;
-        
+
         if (TryGetNode<OperatorNode>(0, out oprNode))
             any =  HandleGetNode<IReturnAny>(1);
-        else if (TryGetNode<ExpressionNode>(0, out var exprsNode) && Ugh.TryGetName(Token.StringValue, out Name n)) 
+        else if (TryGetNode<ExpressionNode>(0, out var exprsNode) && n) 
         {
-            fun = n.GetAs<BaseFunction>();
+            fun = name.GetAs<BaseFunction>();
             args = exprsNode.GetNodes<IReturnAny>();
         }
         else if (TryGetNode<ArrayNode>(0, out arrayNode) && TryGetNode<OperatorNode>(1, out oprNode))
@@ -87,33 +93,34 @@ public class NameNode : ASTNode, IReturnAny
             return;
         }
 
-        if (Ugh.TryGetName(Token.StringValue, out var variable))
+        if (name is null) Ugh.TryGetName(Token.StringValue, out name);
+        
+        if(name is not null)
         {
             if (arrayNode is not null)
             {
-                var array = variable.Value as IList<object>;
+                var array = name.Value as IList<object>;
                 array![arrayNode.Index] = Operation.Operate(array[arrayNode.Index], any.AnyValue, oprNode.Operator);
             }
             else
-                variable.Value = Operation.Operate(variable.Value, any.AnyValue, oprNode.Operator);
+                name.Value = Operation.Operate(name.Value, any.AnyValue, oprNode.Operator);
         }
+
         else // Initialization
         {
             var v = Parent is ConstNode? new Constant(Token.StringValue, any.AnyValue) : new Variable(Token.StringValue, any.AnyValue);
             Ugh.RegisterName(v);
-
+            name = v;
             if (Parent is BlockNode blockNode) // deregister variable after end of tag node execution
                 blockNode.LocalNames.Add(v);
         }
     }
     
-    public Name GetName() => Ugh.GetName(Token.StringValue); // TODO: Make this variable
     public object GetValue()
     {
-        var name = GetName();
-        if (arrayNode is null) return name.AnyValue;
+        if (arrayNode is null) return Name.AnyValue;
         
-        var array = name.AnyValue as IList<object>;
+        var array = Name.AnyValue as IList<object>;
         return array![arrayNode.Index];
     }
 }
