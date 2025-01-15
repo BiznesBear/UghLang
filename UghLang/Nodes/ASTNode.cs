@@ -84,7 +84,7 @@ public abstract class ASTNode
     public T HandleGetNode<T>(int index)
     {
         try { return GetNode<T>(index); }
-        catch (Exception ex) { Debug.Error(ex.Message); }
+        catch (Exception ex) { Debug.Error(ex); }
         return default!;
     }
 

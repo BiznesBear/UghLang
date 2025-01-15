@@ -16,9 +16,10 @@ public static class ModuleLoader
     {
         Dictionary<string, MethodInfo> methods = new();
         Dictionary<string, FieldInfo> fields = new();
-        var types = LoadTypes(path);
 
-        foreach (var type in types)
+        var assembly = path is null ? Assembly.GetExecutingAssembly() : Assembly.LoadFrom(path);
+
+        foreach (var type in assembly.GetTypes())
         {
             var moduleAttr = type.GetCustomAttribute<Module>();
             if (moduleAttr != null && moduleAttr.Name == moduleName)
@@ -33,14 +34,8 @@ public static class ModuleLoader
                 break;
             }
         }
-
-        if (methods.Count == 0)
-            throw new InvalidOperationException($"Module '{moduleName}' not found.");
+        Debug.Print($"Loaded {methods.Count} methods and {fields.Count} fields from {assembly.FullName}");
 
         return new(methods, fields);
     }
-
-
-    public static Type[] LoadTypes(string? path = null) =>
-        path is null ? Assembly.GetExecutingAssembly().GetTypes() : Assembly.LoadFrom(path).GetTypes();
 }

@@ -58,7 +58,9 @@ public class Parser : IDisposable
 
             case TokenType.Name:
                 ASTNode nameNode = IsMasterBranch() || currentNode is ITag? new NameNode() { Token = token } : new OperableNameNode() { Token = token };
-                EnterNode(nameNode);
+                if(currentNode is INamed) CreateNode(nameNode);
+                else EnterNode(nameNode);
+                
                 break;
 
             case TokenType.StringValue:

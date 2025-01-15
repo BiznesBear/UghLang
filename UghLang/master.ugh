@@ -1,6 +1,18 @@
-﻿# TODO 
+﻿module "UFL" as ufl from "C:\Users\ADAM\source\repos\UFL\UFL\bin\Release\net9.0\publish\UFL.dll";
+
+win = ufl.CreateWindow(400, 300, "Game"); 
+
+while true {
+	ufl.DispatchEvents(win);
+
+	if(ufl.IsWindowOpen(win) == false) { return; }
+}
+
+# TODO 
+
+pre-loading expressions
 fix error handling
-compiling AST's to binary files
+?? compiling AST's to binary files ??
 
 ?? imaginary units ??
 ?? dodac koparke krypto ??

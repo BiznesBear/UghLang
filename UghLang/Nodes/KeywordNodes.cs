@@ -2,10 +2,7 @@
 namespace UghLang.Nodes;
 
 
-public interface IKeywordNode
-{
-    
-}
+public interface IKeywordNode;
 
 /// <summary>
 /// Writes value 
@@ -71,7 +68,7 @@ public class DeclareFunctionNode : ASTNode, INamed, IKeywordNode
         base.Load();
         name = HandleGetNode<NameNode>(0);
 
-        Function fun = new(name.Token.StringValue, HandleGetNode<BlockNode>(1), name.HandleGetNode<ExpressionNode>(0));
+        Function fun = new(name.Token.StringValue, HandleGetNode<BlockNode>(2), HandleGetNode<ExpressionNode>(1));
         Ugh.RegisterName(fun);
     }
 }
@@ -294,7 +291,7 @@ public class InsertNode : ASTNode, IKeywordNode
         var path = HandleGetNode<ConstStringValueNode>(0).Value;
 
         if(File.Exists(path)) { }
-        else if (Path.Exists(path)) { path += "/source.ugh"; }
+        else if (Path.Exists(path)) { path += "/master.ugh"; }
 
         var file = File.ReadAllText(path);
 
@@ -335,7 +332,6 @@ public class ModuleNode : ASTNode, INamed, IKeywordNode
         var asNode = GetNodeOrDefalut<AsNode>(1);
 
         var fromNode = asNode?.GetNodeOrDefalut<FromNode>(1);
-        fromNode ??= GetNodeOrDefalut<FromNode>(0);
         fromNode ??= GetNodeOrDefalut<FromNode>(1);
         
         asNode ??= fromNode?.GetNodeOrDefalut<AsNode>(1);

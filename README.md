@@ -11,14 +11,14 @@ dotnet build
 ```
 
 # 🎈 Running script
-```
+```bash
 ughlang master.ugh
 ```
 
 # 📄 Documentation
 [Check out wiki](https://github.com/BiznesBear/UghLang/wiki)
 
-# Console arguments
+# 👉 Console arguments
 - `--debug` (enters debug mode)
 - `--version` (prints version)
 - `--info` or `--help` (displays info about the language)

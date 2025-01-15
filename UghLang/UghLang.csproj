@@ -11,7 +11,7 @@
     <None Update="master.ugh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="std\source.ugh">
+    <None Update="std\master.ugh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

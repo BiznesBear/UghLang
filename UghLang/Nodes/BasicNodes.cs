@@ -33,7 +33,7 @@ public class ArrayNode : AssignedNode<IReturnAny>, IReturnAny
         get
         {
             try { return (int)Assigned.AnyValue; }
-            catch (Exception ex) { Debug.Error(ex.Message); }
+            catch (Exception ex) { Debug.Error(ex); }
             return 0;
         }
     }

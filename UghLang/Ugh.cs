@@ -36,7 +36,7 @@ public class Ugh
     public void RegisterName(Name name)
     {
         try { names.Add(name.Key, name); }
-        catch (Exception ex) { Debug.Error(ex.Message); }
+        catch (Exception ex) { Debug.Error(ex); }
     }
 
     public bool TryGetName(string name, out Name value)
@@ -149,6 +149,6 @@ public class ModuleFunction(string name, Ugh ugh, MethodInfo method) : BaseFunct
             if (len != args.Count()) throw new IncorrectArgumentsException(this);
             Value = method.Invoke(null, args.Select(item => item.AnyValue).ToArray()) ?? 0;
         }
-        catch (Exception ex) { Debug.Error(ex.Message); }
+        catch (Exception ex) { Debug.Error(ex); }
     }
 }

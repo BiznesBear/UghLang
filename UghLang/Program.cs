@@ -65,11 +65,12 @@ switch (Path.GetExtension(path))
 {
     case ".ugh":
         new Lexer(file, parser); 
+        
         Debug.PrintTree(parser.AST, path);
-        if (load)
-            parser.LoadAndExecute();
-        break;
+        Debug.Print("Output: ");
 
+        if (load) parser.LoadAndExecute();
+        break;
     case ".bin":
         Debug.Error("Binary AST is not currently supported");
         break;
