@@ -1,11 +1,12 @@
 ﻿using UghLang;
 
-const string version = "v0.1";
+const string version = "v0.2dev";
 const string ughlang = "UghLang " + version;
+const string helpInfo = "Welcome to Ugh language! Arguments list: --debug; --version; --help; --info; --nowarns; --noload";
 
 if (args.Length < 1) 
 {
-    Console.WriteLine(ughlang);
+    Console.WriteLine(helpInfo);
     return;
 }
 
@@ -24,7 +25,7 @@ for (var i = 0; i < args.Length; i++)
                 Console.WriteLine(ughlang);
                 break;
             case "--info" or "--help":
-                Console.WriteLine("Welcome to Ugh language! Arguments list: --debug; --version; --help; --info; --nowarns; --noload");
+                Console.WriteLine(helpInfo);
                 break;
             case "--debug":
                 Debug.EnabledMessages = true;
@@ -63,16 +64,16 @@ var parser = new Parser(ugh);
 
 switch (Path.GetExtension(path))
 {
-    case ".ugh":
-        new Lexer(file, parser); 
-        
+    case ".ugh" or ".txt":
+        Debug.Print("Tokens:");
+        new Lexer(file, parser);
+
+        ugh.RegisterFile(path);
+
         Debug.PrintTree(parser.AST, path);
         Debug.Print("Output: ");
 
-        if (load) parser.LoadAndExecute();
-        break;
-    case ".bin":
-        Debug.Error("Binary AST is not currently supported");
+        if (load) parser.Execute();
         break;
     default: throw new UghException("Wrong file format: " + path);
 }

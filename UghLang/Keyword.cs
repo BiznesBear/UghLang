@@ -33,6 +33,8 @@ public enum Keyword : byte
     From,
 
     Const,
+    Unsigned,
+    Null
 }
 
 public static class KeywordExtension
@@ -69,6 +71,8 @@ public static class KeywordExtension
         { "from", Keyword.From },
 
         { "const", Keyword.Const },
+        { "unsigned", Keyword.Unsigned },
+        { "null", Keyword.Null },
     };
 
     public static bool TryGetKeyword(this string word, out Keyword keyword, out TokenType type)
@@ -120,6 +124,9 @@ public static class KeywordExtension
             Keyword.From => new FromNode(),
 
             Keyword.Const => new ConstNode(),
+
+            Keyword.Unsigned => new UnsignedNode(),
+            Keyword.Null => new ConstNullValueNode(),
 
             _ => new UndefinedNode(),
         };

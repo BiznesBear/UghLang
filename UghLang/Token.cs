@@ -1,6 +1,4 @@
-﻿using System.Data.Common;
-
-namespace UghLang;
+﻿namespace UghLang;
 
 public enum TokenType : byte
 {
@@ -27,29 +25,28 @@ public enum TokenType : byte
     Comma,
     Colon,
     Pi,
+    EOF
 }
 
 
 public class Token 
 {
     public TokenType Type { get; }
-
     public string StringValue { get; }
     public int IntValue => int.Parse(StringValue);
     public bool BoolValue => bool.Parse(StringValue);
     public float FloatValue => float.Parse(StringValue, System.Globalization.CultureInfo.InvariantCulture);
     public double DoubleValue => double.Parse(StringValue, System.Globalization.CultureInfo.InvariantCulture);
    
-    public Operator Operator => Operation.GetOperator(StringValue);
+    public Operator Operator => Expression.GetOperator(StringValue);
     public Keyword? Keyword { get; }
-
 
     public Token(string val, TokenType type) 
     {
         StringValue = val;
         Type = type;
 
-        if (StringValue.TryGetKeyword(out Keyword kw, out TokenType t) && Type == TokenType.Name) // check if none type can be keyword
+        if (Type == TokenType.Name && StringValue.TryGetKeyword(out Keyword kw, out TokenType t)) // check if none type can be keyword
         {
             Keyword = kw;
             Type = t;
@@ -57,19 +54,4 @@ public class Token
     }
 
     public override string ToString() => $"{nameof(Token)} {{ Value = {StringValue} | Type = {Type} | Keyword = {Keyword} }}";
-
-
-    public void WriteTo(BinaryWriter writer)
-    {
-        writer.Write(StringValue);
-        writer.Write((byte)Type);
-    }
-
-    public static Token ReadFrom(BinaryReader reader)
-    {
-        var value = reader.ReadString();
-        var type = (TokenType)reader.ReadByte();
-        return new(value, type);
-    }
-
 }

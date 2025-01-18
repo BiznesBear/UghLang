@@ -42,7 +42,9 @@ ughlang master.ugh
 - foreach
 - insert
 - local
+- assembly
 - module 
 - as
 - from
 - const
+- unsigned

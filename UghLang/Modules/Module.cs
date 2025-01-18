@@ -12,7 +12,7 @@ public record ModuleInfo(Dictionary<string, MethodInfo> Methods, Dictionary<stri
 
 public static class ModuleLoader
 {
-    public static ModuleInfo LoadModule(string moduleName, Type[]? assembly)
+    public static ModuleInfo LoadModule(string moduleName, Type[]? assembly, bool seal)
     {
         Dictionary<string, MethodInfo> methods = new();
         Dictionary<string, FieldInfo> fields = new();
@@ -21,8 +21,15 @@ public static class ModuleLoader
 
         foreach (var type in types)
         {
-            var moduleAttr = type.GetCustomAttribute<Module>();
-            if (moduleAttr != null && moduleAttr.Name == moduleName)
+            if(!seal)
+            {
+                var moduleAttr = type.GetCustomAttribute<Module>();
+                if (moduleAttr != null && moduleAttr.Name == moduleName)
+                    Load();
+            }
+            else if (type.Name == moduleName) Load();
+
+            void Load()
             {
                 var classMethods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
                 var classFields = type.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
@@ -31,11 +38,11 @@ public static class ModuleLoader
                     methods[method.Name] = method;
                 foreach (var field in classFields)
                     if (field.IsLiteral && !field.IsInitOnly) fields[field.Name] = field;
-                break;
             }
         }
 
-        Debug.Print($"Loaded {methods.Count} methods and {fields.Count} fields");
+
+        Debug.Print($"Loaded {methods.Count} methods and {fields.Count} constants");
 
         return new(methods, fields);
     }

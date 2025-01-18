@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using UghLang.Nodes;
-
 namespace UghLang;
 
 
@@ -11,8 +10,10 @@ public class Namespace : Dictionary<string, Name>;
 /// </summary>
 public class Ugh
 {
+    private readonly List<string> definedFiles = [];
+
     /// <summary>
-    /// Current executed function
+    /// Currently executed function
     /// </summary>
     public Function? Function { get; set; }
     
@@ -22,9 +23,7 @@ public class Ugh
     public BlockNode? ReturnBlock { get; private set; }
     public IReadOnlyDictionary<string, Name> Names => names;
 
-
     private readonly Namespace names = new();
-
     private BlockNode? lastReturnBlock;
 
     public void SetReturnBlock(BlockNode? node)
@@ -32,6 +31,9 @@ public class Ugh
         if(node is null) ReturnBlock = lastReturnBlock;
         else { ReturnBlock = node; lastReturnBlock = node; }
     }
+
+    public void RegisterFile(string fileName) => definedFiles.Add(fileName);
+    public bool IsFileDefined(string fileName) => definedFiles.Contains(fileName);
 
     public void RegisterName(Name name)
     {
@@ -73,7 +75,7 @@ public class Ugh
 /// </summary>
 public interface IGetOnly;
 
-public abstract class Name(string name, object val) : IDisposable, IReturnAny
+public abstract class Name(string name, object val) : Namespace, IDisposable, IReturnAny
 {
     public const Name Null = default!;
     public string Key { get; } = name;
@@ -82,6 +84,7 @@ public abstract class Name(string name, object val) : IDisposable, IReturnAny
     protected object value = val;
     public object Value { get => value; set { if (this is not IGetOnly) this.value = value; } }  
     public object AnyValue => Value;
+
 
 
     public T? GetAsOrNull<T>() where T : Name => this as T ?? null;
@@ -93,12 +96,10 @@ public abstract class Name(string name, object val) : IDisposable, IReturnAny
 
 public class Variable(string name, object value) : Name(name, value) { }
 public class Constant(string name, object value) : Variable(name, value), IGetOnly { }
-public class AssemblyConst(string name, Type[] assembly) : Constant(name, 0) 
+public class AssemblyConst(string name, Type[] assembly) : Constant(name, assembly) 
 { 
     public Type[] Assembly { get; } = assembly;
 }
-
-
 
 public abstract class BaseFunction(string name, Ugh ugh) : Name(name, 0)
 {
@@ -150,12 +151,9 @@ public class ModuleFunction(string name, Ugh ugh, MethodInfo method) : BaseFunct
     public override void Invoke(IEnumerable<IReturnAny> args)
     {
         int len = method.GetParameters().Length;
-        try
-        {
-            if (len != args.Count()) throw new IncorrectArgumentsException(this);
-            Value = method.Invoke(null, args.Select(item => item.AnyValue).ToArray()) ?? 0;
-        }
-        catch (Exception ex) { Debug.Error(ex); }
+        if (len != args.Count()) throw new IncorrectArgumentsException(this);
+
+        Value = method.Invoke(null, args.Select(item => item.AnyValue).ToArray()) ?? 0;
     }
 }
  

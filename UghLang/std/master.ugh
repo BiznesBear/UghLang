@@ -11,16 +11,14 @@ fun Fib(len){
     a = 0;
     b = 1;
     c = 0;
-    index = 0;
     
-    repeat 0, len { 
+    repeat 0, len, index { 
         c = (a + b);
-         
         a = b;
         b = c;
         
         r[index] = c;
-        index+1;
+        index += 1;
     }
     
     return r;

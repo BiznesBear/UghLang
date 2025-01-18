@@ -1,6 +1,6 @@
 ﻿namespace UghLang.Nodes;
 
-
+public delegate void ASTNodeEvent(ASTNode node);
 public abstract class ASTNode
 {
     public const ASTNode NULL = default;
@@ -9,8 +9,10 @@ public abstract class ASTNode
 
     public IReadOnlyList<ASTNode> Nodes => nodes;
 
-    public byte Iteration { get; private set; } = 0;
+    public int Iteration { get; protected set; } = 0;
     public bool Executable { get; set; } = true;
+
+    public event ASTNodeEvent? NodeAdded;
 
     private readonly List<ASTNode> nodes = new();
 
@@ -47,18 +49,18 @@ public abstract class ASTNode
         node.Ugh = Ugh;
         node.Parser = Parser;
         nodes.Add(node);
+        NodeAdded?.Invoke(node);
     }
 
 
     #region GettingNodes
 
-    public bool CheckType<T>() => this is T;
     public bool HasEmptyBranch() => Nodes.Count < 1;
     
-    public T? GetNextBrother<T>() where T : ASTNode
+    public T? GetBrother<T>(int skips = 1) where T : ASTNode
     {
-        var index = Parent.Iteration + 1;
-        if (index < Parent.Nodes.Count)
+        int index = skips + Parent.Iteration;
+        if (index < Parent.Nodes.Count && index >= 0)
         {
             var n = Parent.Nodes[index];
             if (n is T t)
@@ -66,7 +68,13 @@ public abstract class ASTNode
         }
         return null;
     }
-    
+
+    public bool TryGetBrother<T>(out T node, int skips = 1) where T : ASTNode
+    {
+        node = GetBrother<T>(skips) ?? (T)NULL;
+        return node is not null;
+    }
+
     public ASTNode? GetNodeAt(int index) 
         => index < Nodes.Count? Nodes[index] : default;
 
@@ -118,6 +126,8 @@ public abstract class ASTNode
         }
     }
 
+    public T? FindNode<T>() => GetNodes<T>().FirstOrDefault();
+
     #endregion
 
     
@@ -145,19 +155,6 @@ public abstract class ASTNode
                 Nodes[i].Execute();
         }
     }
-
-   
-    public void LoadAndExecute()
-    {
-        for (byte i = 0; i < Nodes.Count; i++)
-        {
-            Iteration = i;
-            Nodes[i].Load();
-            if (Executable)
-                Nodes[i].Execute();
-        }
-    }
-
     public void ForceExecute()
     {
         var startingState = Executable;
@@ -172,11 +169,23 @@ public abstract class ASTNode
 
 public class AST : ASTNode
 {
+    private ASTNode? previous;
     public AST() { Parent = this; }
     public AST(Ugh ugh, Parser parser) : this()
     {
         Ugh = ugh;
         Parser = parser;
+        NodeAdded += LoadNode;
+    }
+
+    private void LoadNode(ASTNode node)
+    {
+        if(previous is not null)
+        {
+            previous.Load();
+            Iteration++;
+        }
+        previous = node;
     }
 }
 

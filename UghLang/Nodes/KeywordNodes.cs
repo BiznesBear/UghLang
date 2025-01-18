@@ -53,7 +53,6 @@ public class FreeNode : ASTNode, IKeywordNode
             Ugh.FreeAll();
         else throw new InvalidSpellingException(this);
     }
-
 }
 
 /// <summary>
@@ -88,13 +87,13 @@ public class ReturnNode : AssignedNode<IReturnAny>, IKeywordNode
     {
         base.Execute();
 
-        if (Ugh.Function is not null)
+        if (Ugh.Function is not null) 
         {
             if (assigned is not null)
                 Ugh.Function.Value = assigned.AnyValue;
             Ugh.Function.BlockNode.Executable = false;
         }
-        else if (Ugh.ReturnBlock is not null)
+        else if (Ugh.ReturnBlock is not null) // Prevent's from breaking ifs, elifs etc.
             Ugh.ReturnBlock.Executable = false;
         else
             Parent.Executable = false;
@@ -103,14 +102,10 @@ public class ReturnNode : AssignedNode<IReturnAny>, IKeywordNode
 
 public class IfNode : AssignedIReturnAnyAndBlockNode, IKeywordNode
 {
-    private ASTNode? elseNode; 
-
-    public override void Load()
+    private ASTNode? elseNode;
+    public void SetElseNode(ASTNode node)
     {
-        base.Load();
-
-        elseNode = GetNextBrother<ElseNode>();
-        elseNode ??= GetNextBrother<ElifNode>(); // check of elif node
+        elseNode = node;
     }
 
     public override void Execute()
@@ -118,7 +113,7 @@ public class IfNode : AssignedIReturnAnyAndBlockNode, IKeywordNode
         if (!Executable) return;
         base.Execute();
 
-        
+
         if ((bool)Assigned.AnyValue)
             Block?.ForceExecute();
         else if (elseNode is not null) elseNode.Executable = true;
@@ -131,6 +126,12 @@ public class ElseNode : AssignedNode<BlockNode>, IKeywordNode
 {
     public ElseNode() => Executable = false;
 
+    public override void Load()
+    {
+        base.Load();
+        ParseIf(this);
+    }
+
     public override void Execute()
     {
         if (!Executable) return;
@@ -139,17 +140,30 @@ public class ElseNode : AssignedNode<BlockNode>, IKeywordNode
         Assigned.ForceExecute();
         Assigned?.FreeLocalNames();
     }
+
+    public static void ParseIf(ASTNode node)
+    {
+        if (node.TryGetBrother<IfNode>(out var ifNode, -1))
+            ifNode.SetElseNode(node);
+        else throw new MissingException("if or elif", node);
+    }
 }
 
 public class ElifNode : IfNode, IKeywordNode
 {
     public ElifNode() => Executable = false;
+
+    public override void Load()
+    {
+        base.Load();
+        ElseNode.ParseIf(this);
+    }
 }
 
 /// <summary>
 /// Creates for loop from 0 to (value)
 /// </summary>
-public class RepeatNode() : ASTNode, INamed, IKeywordNode
+public class RepeatNode() : ASTNode, IKeywordNode
 {
     private IReturnAny? minNode;
     private IReturnAny? maxNode;
@@ -175,9 +189,9 @@ public class RepeatNode() : ASTNode, INamed, IKeywordNode
         int min = (int)(minNode?.AnyValue ?? 0);
         int max = (int)(maxNode?.AnyValue ?? 0);
 
-        Variable? var = nameNode is null? null : new(nameNode?.Token.StringValue ?? string.Empty, min);
+        Variable var = new(nameNode?.Token.StringValue ?? string.Empty, min);
 
-        if(var is not null)
+        if(var.Key != string.Empty)
         {
             Ugh.RegisterName(var);
             BlockNode.LocalNames.Add(var);
@@ -206,7 +220,7 @@ public class RepeatNode() : ASTNode, INamed, IKeywordNode
 
         void Do(int i)
         {
-            if (var is not null) var.Value = i;
+            var.Value = i;
             BlockNode.Execute();
         }
     }
@@ -222,7 +236,7 @@ public class WhileNode : AssignedIReturnAnyAndBlockNode, IKeywordNode
         base.Execute();
 
         Ugh.SetReturnBlock(Block);
-        Block.Executable = (bool)Assigned.AnyValue;
+        Block.Executable = true;
         while ((bool)Assigned.AnyValue)
         {
             if (!Block.Executable) break;
@@ -252,16 +266,17 @@ public class ForeachNode : ASTNode, IKeywordNode
     public override void Execute()
     {
         base.Execute();
-        if(itemNode is null || collectionNode is null || blockNode is null) 
+        if(itemNode is null || blockNode is null) 
             throw new InvalidSpellingException(this);
         
         Ugh.SetReturnBlock(blockNode);
 
-        var collection = collectionNode.AnyValue as IList<object> ?? throw new InvalidSpellingException(this);
+        var collection = collectionNode?.AnyValue as IList<object> ?? throw new InvalidSpellingException(this);
         
         Variable item = new(itemNode.Token.StringValue, 0);
-        
         Ugh.RegisterName(item);
+
+        blockNode.LocalNames.Add(item);
 
         blockNode.Executable = true;
         foreach (var obj in collection)
@@ -272,7 +287,7 @@ public class ForeachNode : ASTNode, IKeywordNode
         
         blockNode.Executable = false;
         blockNode.FreeLocalNames();
-        Ugh.FreeName(item);
+
         Ugh.SetReturnBlock(null);
     }
 }
@@ -291,12 +306,16 @@ public class InsertNode : ASTNode, IKeywordNode
         if(File.Exists(path)) { }
         else if (Path.Exists(path)) { path += "/master.ugh"; }
 
+        if (Ugh.IsFileDefined(path)) { return; }
+
+        Ugh.RegisterFile(path);
+
         var file = File.ReadAllText(path);
 
         using var parser = new Parser(Ugh, true);
         using var lexer = new Lexer(file, parser);
         
-        parser.LoadAndExecute();
+        parser.Execute();
     }
 }
 
@@ -335,17 +354,19 @@ public class ModuleNode : ASTNode, INamed, IKeywordNode
         asNode ??= fromNode?.GetNodeOrDefalut<AsNode>(1);
 
         var name = asNode is null? strNode.Value : asNode.StringName;
-        var module = ModuleLoader.LoadModule(strNode.Value, fromNode?.ConstAssembly.Assembly ?? null);
+        var fullName = string.IsNullOrEmpty(name) ? string.Empty : name + '.';
+        
+        var module = ModuleLoader.LoadModule(strNode.Value, fromNode?.ConstAssembly.Assembly ?? null, Parent is UnsignedNode);
 
         foreach (var method in module.Methods)
         {
-            ModuleFunction function = new($"{name}.{method.Key}", Ugh, method.Value);
+            ModuleFunction function = new($"{fullName}{method.Key}", Ugh, method.Value);
             Ugh.RegisterName(function);
         }
 
         foreach (var field in module.Fields)
         {
-            Constant con = new($"{name}.{field.Key}", field.Value.GetValue(null) ?? 0);
+            Constant con = new($"{fullName}{field.Key}", field.Value.GetValue(null) ?? 0);
             Ugh.RegisterName(con);
         }
     }
@@ -368,9 +389,23 @@ public class AssemblyNode : ASTNode, IKeywordNode
 }
 
 
-public class AsNode : AssignedNode<NameNode>, INamed, IKeywordNode
+public class AsNode : ASTNode, INamed, IKeywordNode
 {
-    public string StringName => Assigned.Token.StringValue;
+    public string StringName 
+    {
+        get
+        {
+            switch (GetNodeAt(0))
+            {
+                case NameNode nn: 
+                    return nn.Token.StringValue;
+                case ConstNullValueNode:
+                    return string.Empty;
+                default: throw new InvalidSpellingException(this);
+            }
+        }
+    }
+
 }
 
 public class FromNode : AssignedNode<NameNode>, INamed, IKeywordNode
@@ -378,4 +413,13 @@ public class FromNode : AssignedNode<NameNode>, INamed, IKeywordNode
     public AssemblyConst ConstAssembly => Assigned.Name.GetAs<AssemblyConst>(); 
 }
 
+
 public class ConstNode : ASTNode, ITag, IKeywordNode;
+
+
+/// <summary>
+/// Marks modules and functions as sealed. 
+/// Sealed modules must contains Module attribute.
+/// Sealed functions can't be overriden. 
+/// </summary>
+public class UnsignedNode : ASTNode, ITag, IKeywordNode;

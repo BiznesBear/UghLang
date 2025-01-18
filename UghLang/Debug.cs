@@ -13,16 +13,18 @@ public static class Debug
         if (!EnabledMessages) return;
         Console.WriteLine(message);
     }
-    
+    public static void Info(object message) => Print("[INFO] " + message);
+
+
     public static void Warring(object message)
     {
         if (!EnabledWarrings) return;
-        Console.WriteLine("Warring: " + message);
+        Console.WriteLine("[WARRING] " + message);
     }
 
     public static void Error(object message)
     {
-        Console.WriteLine("Error: " + message);
+        Console.WriteLine("[ERROR] " + message);
     }
     
     public static void PrintTree(ASTNode node, string title = "DEBUG TREE") 

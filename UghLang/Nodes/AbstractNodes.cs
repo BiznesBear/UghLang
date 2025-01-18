@@ -35,21 +35,3 @@ public abstract class AssignedIReturnAnyAndBlockNode(int anyIndex = 0, int tagIn
         tag = GetNodeOrDefalut<BlockNode>(tagIndex);
     }
 }
-
-public abstract class TagNode : ASTNode
-{
-    protected abstract bool State { get; }
-    public override void Load()
-    {
-        if (State)
-        {
-            Executable = false;
-            return;
-        }
-
-        if (TryGetNode<BlockNode>(0, out var tag)) // Nested local
-            tag.Executable = true;
-
-        base.Load();
-    }
-}

@@ -52,7 +52,7 @@ public class Parser : IDisposable
                 EnterNode(new ArrayNode());
                 break;
             case TokenType.CloseList:
-                QuitAllNodes<IOperable>();
+                QuitNode<IOperable>();
                 QuitNode<ArrayNode>();
                 break;
 
@@ -79,10 +79,15 @@ public class Parser : IDisposable
                 BackToMasterBranch();
                 break;
             case TokenType.Comma or TokenType.Colon: 
-                QuitAllNodes<IOperable>();
+                QuitNode<IOperable>();
+                QuitNode<NameNode>();
                 break;
+            
             case TokenType.Pi:
-                CreateNode(new ConstDoubleValueNode() { Value = (float)Math.PI });
+                CreateNode(new ConstDoubleValueNode() { Value = Math.PI });
+                break;
+            case TokenType.EOF:
+                AST.AddNode(new EOFNode());
                 break;
             default: throw new UghException($"Unhandled token type: {token.Type}");
         }
@@ -95,7 +100,10 @@ public class Parser : IDisposable
     /// Adds node to current node
     /// </summary>
     /// <param name="node"></param>
-    private void CreateNode(ASTNode node) => currentNode.AddNode(node);
+    private void CreateNode(ASTNode node)
+    {
+        currentNode.AddNode(node);
+    }
 
     /// <summary>
     /// Add node to currentNode and sets it as new current node
@@ -115,7 +123,7 @@ public class Parser : IDisposable
     /// <typeparam name="T">Type of node</typeparam>
     private bool QuitNode<T>()
     {
-        if (currentNode.CheckType<T>())
+        if (currentNode is T)
         {
             QuitNode();
             return true;
@@ -164,21 +172,9 @@ public class Parser : IDisposable
     #endregion
 
     /// <summary>
-    /// Loads AST 
-    /// </summary>
-    public void Load() => AST.Load();
-
-    /// <summary>
     /// Executes AST
     /// </summary>
     public void Execute() => AST.Execute();
 
-    /// <summary>
-    /// Loads and executes AST
-    /// </summary>
-    public void LoadAndExecute() => AST.LoadAndExecute();
-
     public void Dispose() => GC.SuppressFinalize(this);
-
-    
 }

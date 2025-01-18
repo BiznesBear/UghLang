@@ -1,0 +1,46 @@
+comments rework
+rework how nodes are parsed
+
+idea: 
+operatorNode calculates value by itself and expression only sort list in right way
+
+NameNode huge rework (parsing)
+
+expressions rework
+
+refrences by type
+
+fix error handling
+
+structs: 
+`
+struct MyStruct {
+	first,
+	second,
+	third,
+}
+
+myStruct : MyStruct = { 2, 3, 4 }; 
+`
+
+for loop: for expression1, expression2, expression3 { Code every iteration  }
+
+
+function decorators and delegates 
+function should be type too so this would work: 
+
+`
+delegate(x, y) MyDelegate;
+
+fun Main(f:fun, sf:MyDelegate){
+	f(); // fun contains no args by defalut
+	sf(5, 10); // no error here
+}
+`
+
+own functionality for lambda expression
+
+enums (loading form modules) 
+
+?? compiling AST's to binary files ??
+?? imaginary units ??

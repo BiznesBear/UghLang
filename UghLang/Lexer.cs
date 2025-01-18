@@ -16,7 +16,7 @@ public class Lexer : IDisposable
     /// </summary>
     /// <param name="input">Text to lex</param>
     /// <param name="parser">Parser to send tokens</param>
-    public Lexer(string input, Parser parser)  { Parser = parser; Lex(input); }
+    public Lexer(string input, Parser parser)  { Parser = parser; Lex(input); AddPart(TokenType.EOF); }
 
     private void Lex(string input)
     {
@@ -33,7 +33,7 @@ public class Lexer : IDisposable
 
             if (insideComment) continue;
 
-            if (c == '"')
+            if (c == '"' || c == '\'')
             {
                 if (!IsPartEmpty() && !insideString) AddPart(TokenType.Name);
 
@@ -125,7 +125,6 @@ public class Lexer : IDisposable
                     else
                         return c;
                 }
-
                 return '\0';
             }
 
@@ -158,7 +157,6 @@ public class Lexer : IDisposable
         lastToken = new(currentPart, type);
         currentPart = string.Empty;
         Parser.AddToken(lastToken);
-        
     }
     public void Dispose() => GC.SuppressFinalize(this);
 }

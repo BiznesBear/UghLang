@@ -1,6 +1,6 @@
 ﻿namespace UghLang.Nodes;
 
-
+public class EOFNode : ASTNode;
 public class OperatorNode : ASTNode
 {
     public required Operator Operator { get; init; }
@@ -20,25 +20,17 @@ public class BlockNode : ASTNode, IReturnAny
     }
 }
 
-public class ExpressionNode : ASTNode, IReturnAny
+public class ExpressionNode : ASTNode, IReturn<object?>
 {
-    public object AnyValue => Express();
-    private object Express() => Operation.Express(Nodes);
+    public object? Value { get; set; } = null;
+    public object AnyValue => Value is not null? Value : Expression.Express(Nodes);
 }
 
 public class ArrayNode : AssignedNode<IReturnAny>, IReturnAny
 {
-    public int Index
-    {
-        get
-        {
-            try { return (int)Assigned.AnyValue; }
-            catch (Exception ex) { Debug.Error(ex); }
-            return 0;
-        }
-    }
+    public int Index => (int)Assigned.AnyValue;
 
-    public object AnyValue => NodesToArray(Nodes);
+    public object AnyValue => new object[Index];
     public static object[] NodesToArray(IReadOnlyList<ASTNode> nodes) => nodes.OfType<IReturnAny>().Select(a => a.AnyValue).ToArray();
 }
 
@@ -52,11 +44,10 @@ public class NameNode : ASTNode, IReturnAny
     public required Token Token { get; init; }
 
     public object AnyValue => GetValue();
-    public Name Name => name ?? throw new UghException("Cannot find name: " + Token.StringValue);
+    public Name Name => name ?? Ugh.GetName(Token.StringValue);
+
 
     private Name? name;
-
-
     private IReturnAny? any;
     private OperatorNode? oprNode;
     private ArrayNode? arrayNode;
@@ -70,14 +61,14 @@ public class NameNode : ASTNode, IReturnAny
 
         bool n = Ugh.TryGetName(Token.StringValue, out name);
 
-        if (Parent.CheckType<INamed>()) return;
+        if (Parent is INamed) return;
 
         if (TryGetNode<OperatorNode>(0, out oprNode))
-            any =  HandleGetNode<IReturnAny>(1);
-        else if (TryGetNode<ExpressionNode>(0, out var exprsNode) && n) 
+            any = HandleGetNode<IReturnAny>(1);
+        else if (TryGetNode<ExpressionNode>(0, out var exprsNode) && n)
         {
             fun = name.GetAs<BaseFunction>();
-            args = exprsNode.GetNodes<IReturnAny>();
+            args = args.Concat(exprsNode.GetNodes<IReturnAny>());
         }
         else if (TryGetNode<ArrayNode>(0, out arrayNode) && TryGetNode<OperatorNode>(1, out oprNode))
             any = HandleGetNode<IReturnAny>(2);
@@ -100,10 +91,10 @@ public class NameNode : ASTNode, IReturnAny
             if (arrayNode is not null)
             {
                 var array = name.Value as IList<object>;
-                array![arrayNode.Index] = Operation.Operate(array[arrayNode.Index], any.AnyValue, oprNode.Operator);
+                array![arrayNode.Index] = Expression.Operate(array[arrayNode.Index], any.AnyValue, oprNode.Operator);
             }
             else
-                name.Value = Operation.Operate(name.Value, any.AnyValue, oprNode.Operator);
+                name.Value = Expression.Operate(name.Value, any.AnyValue, oprNode.Operator);
         }
 
         else // Initialization
@@ -123,6 +114,8 @@ public class NameNode : ASTNode, IReturnAny
         var array = Name.AnyValue as IList<object>;
         return array![arrayNode.Index];
     }
+
+    public void SetArgs(IReturnAny arg) => args = [arg];
 }
 
 public class OperableNameNode : NameNode, IOperable;

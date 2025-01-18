@@ -7,7 +7,10 @@ public static class StringModule
 {
     public static int Lenght(string str) => str.Length;
     public static bool Contains(string str, string value) => str.Contains(value);
-    public static string Join(string separator, object[] array) => string.Join(separator, array);
+    public static string Join(object[] array, string separator) => string.Join(separator, array);
+    public static string Trim(string text) => text.Trim();
+    public static string TrimStart(string text) => text.TrimStart();
+    public static string TrimEnd(string text) => text.TrimEnd();
 
     public static double Calc(string input)
     {
