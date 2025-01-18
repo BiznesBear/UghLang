@@ -49,7 +49,7 @@ public class FreeNode : ASTNode, IKeywordNode
         base.Execute();
         if (refNode is not null)
             Ugh.FreeName(refNode.Name);
-        else if (TryGetNode<ConstStringValueNode>(0,out var modifier) && modifier.Value == "all")
+        else if (TryGetNode<ConstNullValueNode>(0, out _))
             Ugh.FreeAll();
         else throw new InvalidSpellingException(this);
     }
@@ -145,7 +145,7 @@ public class ElseNode : AssignedNode<BlockNode>, IKeywordNode
     {
         if (node.TryGetBrother<IfNode>(out var ifNode, -1))
             ifNode.SetElseNode(node);
-        else throw new MissingException("if or elif", node);
+        else throw new ExpectedException("if or elif", node);
     }
 }
 
@@ -170,7 +170,7 @@ public class RepeatNode() : ASTNode, IKeywordNode
     private NameNode? nameNode;
     private BlockNode? blockNode;
 
-    private BlockNode BlockNode => blockNode ?? throw new InvalidSpellingException(this);
+    private BlockNode BlockNode => blockNode ?? throw new ExpectedException("{ }", this);
 
     public override void Load()
     {
@@ -401,7 +401,7 @@ public class AsNode : ASTNode, INamed, IKeywordNode
                     return nn.Token.StringValue;
                 case ConstNullValueNode:
                     return string.Empty;
-                default: throw new InvalidSpellingException(this);
+                default: throw new ExpectedException("name or null", this);
             }
         }
     }

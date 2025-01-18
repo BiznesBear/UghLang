@@ -1,14 +1,10 @@
 comments rework
-rework how nodes are parsed
 
 idea: 
 operatorNode calculates value by itself and expression only sort list in right way
-
-NameNode huge rework (parsing)
-
 expressions rework
 
-refrences by type
+refrences and types
 
 fix error handling
 
@@ -41,6 +37,8 @@ fun Main(f:fun, sf:MyDelegate){
 own functionality for lambda expression
 
 enums (loading form modules) 
+
+more for array lists. map, sort, etc. functions 
 
 ?? compiling AST's to binary files ??
 ?? imaginary units ??

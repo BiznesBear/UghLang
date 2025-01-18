@@ -10,7 +10,7 @@ namespace UghLang.Nodes;
 public abstract class AssignedNode<T>(int index = 0) : ASTNode 
 {
     protected T? assigned;
-    public T Assigned => assigned ?? throw new InvalidSpellingException(this);
+    public T Assigned => assigned ?? throw new ExpectedException(typeof(T).ToString(), this);
 
     public override void Load()
     {
@@ -27,7 +27,7 @@ public abstract class AssignedNode<T>(int index = 0) : ASTNode
 public abstract class AssignedIReturnAnyAndBlockNode(int anyIndex = 0, int tagIndex = 1) : AssignedNode<IReturnAny>(anyIndex)
 {
     protected BlockNode? tag;
-    public BlockNode Block => tag ?? throw new MissingException("{}", this);
+    public BlockNode Block => tag ?? throw new ExpectedException("{ }", this);
 
     public override void Load()
     {
