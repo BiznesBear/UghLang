@@ -5,20 +5,24 @@ public class Parser : IDisposable
 {
     public AST AST;
     public bool Inserted { get; }
+    public bool NoLoad { get; }
 
     private ASTNode currentNode;
     private Stack<ASTNode> masterBranches = new();
 
-    public Parser(Ugh ugh, bool inserted = false)
+    public Parser(Ugh ugh, bool inserted, bool noload)
     {
         AST = new(ugh, this);
         currentNode = AST;
         Inserted = inserted;
+        NoLoad = noload;
     }
 
     public void AddToken(Token token)
     {
         Debug.Print(token);
+        bool instaQuit = currentNode is IInstantQuit;
+
         switch (token.Type)
         {
             case TokenType.Keyword:
@@ -34,7 +38,7 @@ public class Parser : IDisposable
 
             case TokenType.Operator:
                 QuitNode<IOperable>();
-                CreateNode(new OperatorNode() { Operator = token.Operator });
+                EnterNode(new OperatorNode() { Operator = token.Operator });
                 break;
 
             case TokenType.OpenBlock:
@@ -91,6 +95,8 @@ public class Parser : IDisposable
                 break;
             default: throw new UghException($"Unhandled token type: {token.Type}");
         }
+
+        if (instaQuit) QuitNode<IInstantQuit>();
     }
 
 

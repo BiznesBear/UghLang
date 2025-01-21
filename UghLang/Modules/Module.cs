@@ -12,14 +12,12 @@ public record ModuleInfo(Dictionary<string, MethodInfo> Methods, Dictionary<stri
 
 public static class ModuleLoader
 {
-    public static ModuleInfo LoadModule(string moduleName, Type[]? assembly, bool seal)
+    public static ModuleInfo LoadModule(string moduleName, Type[] assembly, bool seal)
     {
         Dictionary<string, MethodInfo> methods = new();
         Dictionary<string, FieldInfo> fields = new();
 
-        var types = assembly is null ? Assembly.GetExecutingAssembly().GetTypes() : assembly;
-
-        foreach (var type in types)
+        foreach (var type in assembly)
         {
             if(!seal)
             {

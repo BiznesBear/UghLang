@@ -1,9 +1,10 @@
 ﻿namespace UghLang.Nodes;
 
 public class EOFNode : ASTNode;
-public class OperatorNode : ASTNode
+public class OperatorNode : ASTNode, IInstantQuit
 {
     public required Operator Operator { get; init; }
+    public IReturnAny GetRight() => GetNodeOrDefalut<IReturnAny>(0) ?? throw new InvalidSpellingException(this,": cannot find right side of operation");
 }
 
 public class BlockNode : ASTNode, IReturnAny
@@ -23,13 +24,19 @@ public class BlockNode : ASTNode, IReturnAny
 public class ExpressionNode : ASTNode, IReturn<object?>
 {
     public object? Value { get; set; } = null;
-    public object AnyValue => Value is not null? Value : Expression.Express(Nodes);
+    public object AnyValue => Value is not null? Value : expressionTree.Express();
+
+    private ExpressionTree expressionTree;
+    public override void Load() // TODO: Remove building expression tree when don't needed
+    {
+        base.Load();
+        expressionTree = new ExpressionTree(this);
+    }
 }
 
 public class ArrayNode : AssignedNode<IReturnAny>, IReturnAny
 {
     public int Index => (int)Assigned.AnyValue;
-
     public object AnyValue => new object[Index];
     public static object[] NodesToArray(IReadOnlyList<ASTNode> nodes) => nodes.OfType<IReturnAny>().Select(a => a.AnyValue).ToArray();
 }
@@ -52,11 +59,11 @@ public class NameNode : ASTNode, IReturnAny
         bool n = Ugh.TryGetName(Token.StringValue, out name);
         if (Parent is INamed) return;
 
-        if (TryGetNode<OperatorNode>(0, out oprNode)) any = HandleGetNode<IReturnAny>(1);
+        if (TryGetNode<OperatorNode>(0, out oprNode)) any = oprNode.GetRight();
         else if (TryGetNode(0, out ExpressionNode exprsNode) && n)
             (fun, args) = (name.GetAs<BaseFunction>(), args.Concat(exprsNode.GetNodes<IReturnAny>()));
         else if (TryGetNode<ArrayNode>(0, out arrayNode) && TryGetNode<OperatorNode>(1, out oprNode))
-            any = HandleGetNode<IReturnAny>(2);
+            any = oprNode.GetRight();
     }
 
     public override void Execute()
@@ -69,8 +76,8 @@ public class NameNode : ASTNode, IReturnAny
         {
             if (arrayNode is not null)
                 (name.Value as IList<object>)![arrayNode.Index] 
-                    = Expression.Operate(((IList<object>)name.Value)[arrayNode.Index], any.AnyValue, oprNode.Operator);
-            else name.Value = Expression.Operate(name.Value, any.AnyValue, oprNode.Operator);
+                    = BinaryOperation.Operate(((IList<object>)name.Value)[arrayNode.Index], any.AnyValue, oprNode.Operator);
+            else name.Value = BinaryOperation.Operate(name.Value, any.AnyValue, oprNode.Operator);
         }
         else RegisterVariable();
     }

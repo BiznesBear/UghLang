@@ -1,15 +1,12 @@
-comments rework
+rework Keyword in tokens
+refrences instead of declaring full name (modules) declaring in lang e. g.
 
-idea: 
-operatorNode calculates value by itself and expression only sort list in right way
-expressions rework
+record MyClass();
+fun MyClass.customfunc(arg){
+	print arg;
+}
 
-refrences and types
-
-fix error handling
-
-structs: 
-`
+types and
 struct MyStruct {
 	first,
 	second,
@@ -17,22 +14,16 @@ struct MyStruct {
 }
 
 myStruct : MyStruct = { 2, 3, 4 }; 
-`
-
-for loop: for expression1, expression2, expression3 { Code every iteration  }
-
 
 function decorators and delegates 
 function should be type too so this would work: 
 
-`
 delegate(x, y) MyDelegate;
 
 fun Main(f:fun, sf:MyDelegate){
 	f(); // fun contains no args by defalut
 	sf(5, 10); // no error here
 }
-`
 
 own functionality for lambda expression
 

@@ -7,12 +7,11 @@ public abstract class ASTNode
 
     #region Properties
 
-    public IReadOnlyList<ASTNode> Nodes => nodes;
-
-    public int Iteration { get; protected set; } = 0;
+    public event ASTNodeEvent? NodeAdded;
+    public int Position { get; set; } 
     public bool Executable { get; set; } = true;
 
-    public event ASTNodeEvent? NodeAdded;
+    public IReadOnlyList<ASTNode> Nodes => nodes;
 
     private readonly List<ASTNode> nodes = new();
 
@@ -39,8 +38,6 @@ public abstract class ASTNode
         set => parser = value;
     }
 
-
-
     #endregion
 
     public void AddNode(ASTNode node)
@@ -57,21 +54,21 @@ public abstract class ASTNode
 
     public bool HasEmptyBranch() => Nodes.Count < 1;
     
-    public T? GetBrother<T>(int skips = 1) where T : ASTNode
+    public T? GetBrother<T>(int skips = 1) 
     {
-        int index = skips + Parent.Iteration;
+        int index = Position + skips;
         if (index < Parent.Nodes.Count && index >= 0)
         {
             var n = Parent.Nodes[index];
             if (n is T t)
                 return t;
         }
-        return null;
+        return default;
     }
 
-    public bool TryGetBrother<T>(out T node, int skips = 1) where T : ASTNode
+    public bool TryGetBrother<T>(out T node, int skips = 1) 
     {
-        node = GetBrother<T>(skips) ?? (T)NULL;
+        node = GetBrother<T>(skips) ?? default!;
         return node is not null;
     }
 
@@ -88,21 +85,14 @@ public abstract class ASTNode
             return node;
         throw new InvalidSpellingException(this);
     }
-    
-    public T HandleGetNode<T>(int index)
-    {
-        try { return GetNode<T>(index); }
-        catch (Exception ex) { Debug.Error(ex); }
-        return default!;
-    }
 
-    public bool TryGetNode<T>(int index, out T node) where T : ASTNode
+    public bool TryGetNode<T>(int index, out T node) 
     {
         var n = GetNodeOrDefalut<T>(index);
 
         if (n is null)
         {
-            node = (T)NULL;
+            node = default!;
             return false;
         }
 
@@ -126,19 +116,21 @@ public abstract class ASTNode
         }
     }
 
+
     public T? FindNode<T>() => GetNodes<T>().FirstOrDefault();
+    public T? SearchForNode<T>() => GetAllNodes<T>().FirstOrDefault();
 
     #endregion
 
-    
+
     /// <summary>
     /// Used for preloading nodes for faster execution time
     /// </summary>
     public virtual void Load()
     {
-        for (byte i = 0; i < Nodes.Count; i++)
+        for (int i = 0; i < Nodes.Count; i++)
         {
-            Iteration = i;
+            Nodes[i].Position = i;
             Nodes[i].Load();
         }
     }
@@ -148,13 +140,13 @@ public abstract class ASTNode
     /// </summary>
     public virtual void Execute()
     {
-        for (byte i = 0; i < Nodes.Count; i++)
-        {
-            Iteration = i;
+        for (int i = 0; i < Nodes.Count; i++)
             if (Executable)
-                Nodes[i].Execute();
-        }
+                if (Nodes[i].Executable)
+                    Nodes[i].Execute();
+                else return;
     }
+
     public void ForceExecute()
     {
         var startingState = Executable;
@@ -163,7 +155,7 @@ public abstract class ASTNode
         Executable = startingState;
     }
 
-    public override string ToString() => $"{GetType().Name}";
+    public override string ToString() => $"{GetType().Name}({Position})";
 }
 
 
@@ -180,10 +172,13 @@ public class AST : ASTNode
 
     private void LoadNode(ASTNode node)
     {
-        if(previous is not null)
+        if (Parser.NoLoad) return;
+
+        if (previous is not null)
         {
+            previous.Position = Position;
             previous.Load();
-            Iteration++;
+            Position++;
         }
         previous = node;
     }
@@ -195,16 +190,21 @@ public class UndefinedNode : ASTNode
 }
 
 /// <summary>
-/// Tags node as operable 
+/// Tags node as operable. Operable nodes can be quited by operators
 /// </summary>
 public interface IOperable;
 
 /// <summary>
-/// Prevents NameNode from being executed  
+/// If parent is marked as INamed: NameNode will not try to parse name. Parser will only create NameNode instead of entering them.
 /// </summary>
 public interface INamed;
 
 /// <summary>
-/// Marks node as tag node
+/// Marks node as tag node. Tag node is recognized by parser ad master branch
 /// </summary>
 public interface ITag;
+
+/// <summary>
+/// Next node quits after parsing 
+/// </summary>
+public interface IInstantQuit;

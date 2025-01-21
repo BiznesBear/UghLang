@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.Design.Serialization;
-
-namespace UghLang.Nodes;
+﻿namespace UghLang.Nodes;
 
 /// <summary>
 /// Assignes node

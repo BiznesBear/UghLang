@@ -93,12 +93,12 @@ public class Lexer : IDisposable
 
                 AddPart(digitType);
             }
-            else if (c.IsOperator())
+            else if (BinaryOperation.IsOperator(c))
             {
                 StartNew();
                 AddChar(c);
                 char next = CheckNext();
-                if (next.IsOperator())
+                if (BinaryOperation.IsOperator(next))
                 {
                     AddChar(next);
                     Skip();

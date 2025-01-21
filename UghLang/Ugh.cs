@@ -12,10 +12,12 @@ public class Ugh
 {
     private readonly List<string> definedFiles = [];
 
+
     /// <summary>
     /// Currently executed function
     /// </summary>
     public Function? Function { get; set; }
+    public Type[]? Std { get; set; } 
     
     /// <summary>
     /// ReturnNode will end this block node
@@ -86,7 +88,6 @@ public abstract class Name(string name, object val) : Namespace, IDisposable, IR
     public object AnyValue => Value;
 
 
-
     public T? GetAsOrNull<T>() where T : Name => this as T ?? null;
     public T GetAs<T>() where T : Name => GetAsOrNull<T>() ?? throw new UghException($"{GetType()} is not {typeof(T)}");
 
@@ -95,7 +96,11 @@ public abstract class Name(string name, object val) : Namespace, IDisposable, IR
 }
 
 public class Variable(string name, object value) : Name(name, value) { }
-public class Constant(string name, object value) : Variable(name, value), IGetOnly { }
+public class Constant(string name, object value) : Variable(name, value), IGetOnly, IConstantValue
+{
+    public object ConstantValue => AnyValue;
+}
+
 public class AssemblyConst(string name, Type[] assembly) : Constant(name, assembly) 
 { 
     public Type[] Assembly { get; } = assembly;
@@ -118,8 +123,6 @@ public class Function(string name, BlockNode node, ExpressionNode exprs) : BaseF
         var lastFun = Ugh.Function;
         Ugh.Function = this;
 
-        List<Variable> localVariables = new(); // TODO: Rework this (optimizations)
-
         var nodes = ExpressionNode.GetNodes<NameNode>();
 
         var nameNodes = nodes as NameNode[] ?? nodes.ToArray();
@@ -134,12 +137,10 @@ public class Function(string name, BlockNode node, ExpressionNode exprs) : BaseF
             Variable v = new(nameNode.Token.StringValue, arguments[i].AnyValue);
 
             Ugh.RegisterName(v);
-            localVariables.Add(v);
+            BlockNode.LocalNames.Add(v);
         }
 
         BlockNode.ForceExecute();
-        
-        localVariables.ForEach(Ugh.FreeName);
         BlockNode.FreeLocalNames();
         
         Ugh.Function = lastFun;

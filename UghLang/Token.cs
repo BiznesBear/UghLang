@@ -38,8 +38,8 @@ public class Token
     public float FloatValue => float.Parse(StringValue, System.Globalization.CultureInfo.InvariantCulture);
     public double DoubleValue => double.Parse(StringValue, System.Globalization.CultureInfo.InvariantCulture);
    
-    public Operator Operator => Expression.GetOperator(StringValue);
-    public Keyword? Keyword { get; }
+    public Operator Operator => BinaryOperation.GetOperator(StringValue);
+    public Keyword? Keyword { get; } // TODO: Remove this 
 
     public Token(string val, TokenType type) 
     {

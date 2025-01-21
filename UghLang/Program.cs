@@ -1,6 +1,8 @@
 ﻿using UghLang;
 
-const string version = "v0.2dev";
+
+
+const string version = "v0.1dev";
 const string ughlang = "UghLang " + version;
 const string helpInfo = "Welcome to Ugh language! Arguments list: --debug; --version; --help; --info; --nowarns; --noload";
 
@@ -60,7 +62,7 @@ if (path == string.Empty) return;
 
 var file = File.ReadAllText(path);
 var ugh = new Ugh();
-var parser = new Parser(ugh);
+var parser = new Parser(ugh, false, load);
 
 switch (Path.GetExtension(path))
 {

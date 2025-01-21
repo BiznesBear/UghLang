@@ -1,6 +1,6 @@
-﻿using UghLang.Modules;
+﻿using System.Reflection;
+using UghLang.Modules;
 namespace UghLang.Nodes;
-
 
 public interface IKeywordNode;
 
@@ -35,20 +35,13 @@ public class InputNode : AssignedNode<IReturnAny>, IReturn<string>, IOperable, I
 /// <summary>
 /// Disposes Name from Ugh
 /// </summary>
-public class FreeNode : ASTNode, IKeywordNode
+public class FreeNode : AssignedNode<NameNode>, IKeywordNode
 {
-    private NameNode? refNode;
-    public override void Load()
-    {
-        base.Load();
-        refNode = GetNodeOrDefalut<NameNode>(0);
-    }
-
     public override void Execute()
     {
         base.Execute();
-        if (refNode is not null)
-            Ugh.FreeName(refNode.Name);
+        if (assigned is not null)
+            Ugh.FreeName(assigned.Name);
         else if (TryGetNode<ConstNullValueNode>(0, out _))
             Ugh.FreeAll();
         else throw new InvalidSpellingException(this);
@@ -63,9 +56,9 @@ public class DeclareFunctionNode : ASTNode, INamed, IKeywordNode
     public override void Load()
     {
         base.Load();
-        var name = HandleGetNode<NameNode>(0);
+        var name = GetNode<NameNode>(0);
 
-        Function fun = new(name.Token.StringValue, HandleGetNode<BlockNode>(2), HandleGetNode<ExpressionNode>(1));
+        Function fun = new(name.Token.StringValue, GetNode<BlockNode>(2), GetNode<ExpressionNode>(1));
         Ugh.RegisterName(fun);
     }
 }
@@ -103,22 +96,16 @@ public class ReturnNode : AssignedNode<IReturnAny>, IKeywordNode
 public class IfNode : AssignedIReturnAnyAndBlockNode, IKeywordNode
 {
     private ASTNode? elseNode;
-    public void SetElseNode(ASTNode node)
-    {
-        elseNode = node;
-    }
+    public void SetElseNode(ASTNode node) => elseNode = node;
 
     public override void Execute()
     {
-        if (!Executable) return;
         base.Execute();
 
-
         if ((bool)Assigned.AnyValue)
-            Block?.ForceExecute();
+            Block.ForceExecute();
         else if (elseNode is not null) elseNode.Executable = true;
-        
-        Block?.FreeLocalNames();
+        Block.FreeLocalNames();
     }
 }
 
@@ -134,8 +121,6 @@ public class ElseNode : AssignedNode<BlockNode>, IKeywordNode
 
     public override void Execute()
     {
-        if (!Executable) return;
-
         base.Execute();
         Assigned.ForceExecute();
         Assigned?.FreeLocalNames();
@@ -175,16 +160,15 @@ public class RepeatNode() : ASTNode, IKeywordNode
     public override void Load()
     {
         base.Load();
-        minNode = HandleGetNode<IReturnAny>(0);
-        maxNode = HandleGetNode<IReturnAny>(1);
+        minNode = GetNode<IReturnAny>(0);
+        maxNode = GetNode<IReturnAny>(1);
         nameNode = GetNodeOrDefalut<NameNode>(2);
-        blockNode = HandleGetNode<BlockNode>(nameNode is null? 2 : 3);
+        blockNode = GetNode<BlockNode>(nameNode is null? 2 : 3);
     }
 
     public override void Execute()
     {
         base.Execute();
-
         
         int min = (int)(minNode?.AnyValue ?? 0);
         int max = (int)(maxNode?.AnyValue ?? 0);
@@ -257,9 +241,9 @@ public class ForeachNode : ASTNode, IKeywordNode
     public override void Load()
     {
         base.Load();
-        itemNode = HandleGetNode<NameNode>(0); // idk why this node can work without INamed but who cares
-        collectionNode = HandleGetNode<NameNode>(1);
-        blockNode = HandleGetNode<BlockNode>(2);
+        itemNode = GetNode<NameNode>(0); // idk why this node can work without INamed but who cares
+        collectionNode = GetNode<NameNode>(1);
+        blockNode = GetNode<BlockNode>(2);
     }
 
    
@@ -301,7 +285,7 @@ public class InsertNode : ASTNode, IKeywordNode
     {
         base.Load();
         
-        var path = HandleGetNode<ConstStringValueNode>(0).Value;
+        var path = GetNode<ConstStringValueNode>(0).Value;
 
         if(File.Exists(path)) { }
         else if (Path.Exists(path)) { path += "/master.ugh"; }
@@ -312,7 +296,7 @@ public class InsertNode : ASTNode, IKeywordNode
 
         var file = File.ReadAllText(path);
 
-        using var parser = new Parser(Ugh, true);
+        using var parser = new Parser(Ugh, true, Parser.NoLoad);
         using var lexer = new Lexer(file, parser);
         
         parser.Execute();
@@ -320,22 +304,19 @@ public class InsertNode : ASTNode, IKeywordNode
 }
 
 /// <summary>
-/// Marks children as local which makes them invisible for inserter. 
+/// Marks children as local which prevent them from being inserted. 
 /// </summary>
 public class LocalNode : ASTNode, ITag, IKeywordNode
 {
     public override void Load()
     {
-        if (Parser.Inserted)
-        {
-            Executable = false;
-            return;
-        }
-    
+        bool state = Parent is UnsignedNode ? !Parser.Inserted : Parser.Inserted;
+        if (state) { Executable = false; return; }
+
         if (TryGetNode<BlockNode>(0, out var tag)) // Nested local
             tag.Executable = true;
-    
-        base.Load();
+
+        base.Load(); // Load other things 
     }
 }
 
@@ -345,18 +326,23 @@ public class ModuleNode : ASTNode, INamed, IKeywordNode
     {
         base.Load();
 
-        var strNode = HandleGetNode<ConstStringValueNode>(0);
-        var asNode = GetNodeOrDefalut<AsNode>(1);
+        var strNode = GetNode<ConstStringValueNode>(0);
 
-        var fromNode = asNode?.GetNodeOrDefalut<FromNode>(1);
-        fromNode ??= GetNodeOrDefalut<FromNode>(1);
-        
-        asNode ??= fromNode?.GetNodeOrDefalut<AsNode>(1);
+        var asNode = SearchForNode<AsNode>();
+        var fromNode = SearchForNode<FromNode>();
 
         var name = asNode is null? strNode.Value : asNode.StringName;
         var fullName = string.IsNullOrEmpty(name) ? string.Empty : name + '.';
-        
-        var module = ModuleLoader.LoadModule(strNode.Value, fromNode?.ConstAssembly.Assembly ?? null, Parent is UnsignedNode);
+
+        var assembly = fromNode?.ConstAssembly.Assembly;
+
+        if (assembly is null)
+        { 
+            Ugh.Std ??= Assembly.GetExecutingAssembly().GetTypes(); 
+            assembly = Ugh.Std; 
+        }
+
+        var module = ModuleLoader.LoadModule(strNode.Value, assembly, Parent is UnsignedNode);
 
         foreach (var method in module.Methods)
         {
@@ -378,8 +364,8 @@ public class AssemblyNode : ASTNode, IKeywordNode
     {
         base.Load();
 
-        var pathNode = HandleGetNode<ConstStringValueNode>(0);
-        var asNode = HandleGetNode<AsNode>(1);
+        var pathNode = GetNode<ConstStringValueNode>(0);
+        var asNode = GetNode<AsNode>(1);
 
         var assembly = ModuleLoader.LoadAssembly(pathNode.Value);
 
@@ -389,20 +375,18 @@ public class AssemblyNode : ASTNode, IKeywordNode
 }
 
 
-public class AsNode : ASTNode, INamed, IKeywordNode
+public class AsNode : ASTNode, INamed, IKeywordNode // TODO: Add converting types
 {
     public string StringName 
     {
         get
         {
-            switch (GetNodeAt(0))
+            return GetNodeAt(0) switch
             {
-                case NameNode nn: 
-                    return nn.Token.StringValue;
-                case ConstNullValueNode:
-                    return string.Empty;
-                default: throw new ExpectedException("name or null", this);
-            }
+                NameNode nn => nn.Token.StringValue,
+                ConstNullValueNode => string.Empty,
+                _ => throw new ExpectedException("name or null", this),
+            };
         }
     }
 
