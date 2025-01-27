@@ -2,7 +2,7 @@
 
 public interface IReturnAny
 {
-    public object AnyValue { get; } 
+    public object AnyValue { get; }
 }
 
 public interface IReturn<T> : IReturnAny
@@ -30,6 +30,6 @@ public class ConstDecimalValueNode() : ConstValueNode<decimal>(0m);
 public class ConstByteValueNode() : ConstValueNode<byte>(0);
 public class ConstNullValueNode() : ASTNode, IReturn<object?>
 {
-    public object? Value { get; set; } = null;
+    public object? Value { get; set; } 
     public object AnyValue => null!;
 }

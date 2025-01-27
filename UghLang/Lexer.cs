@@ -16,7 +16,7 @@ public class Lexer : IDisposable
     /// </summary>
     /// <param name="input">Text to lex</param>
     /// <param name="parser">Parser to send tokens</param>
-    public Lexer(string input, Parser parser)  { Parser = parser; Lex(input); AddPart(TokenType.EOF); }
+    public Lexer(string input, Parser parser)  { Parser = parser; Lex(input); AddPart(TokenType.EndOfFile); }
 
     private void Lex(string input)
     {
@@ -33,7 +33,7 @@ public class Lexer : IDisposable
 
             if (insideComment) continue;
 
-            if (c == '"' || c == '\'')
+            if (c == '"')
             {
                 if (!IsPartEmpty() && !insideString) AddPart(TokenType.Name);
 
@@ -41,7 +41,27 @@ public class Lexer : IDisposable
                 if (!insideString) AddPart(TokenType.StringValue);
             }
             else if (insideString)
-                AddChar(c);
+            {
+                if(c == '\\')
+                {
+                    AddChar(CheckNext() switch
+                    {
+                        '\\' => '\\',
+                        '\"' => '\"',
+                        'n' => '\n',
+                        't' => '\t',
+                        '0' => '\0',
+                        'b' => '\b',
+                        'f' => '\f',
+                        'e' => '\e',
+                        'a' => '\a',
+                        'v' => '\v',
+                        _ => throw new UghException("Cannot find operand in string") // TODO: Change this message             
+                    });
+                    Skip();
+                }
+                else AddChar(c);
+            }
             else if (char.IsWhiteSpace(c))
             {
                 // check if current part is not empty space

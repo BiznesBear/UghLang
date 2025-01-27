@@ -7,5 +7,4 @@ public static class ArrayModule
     public static object[] Empty() => [];
     public static int Lenght(object[] array) => array.Length;
     public static object Contains(object[] array, object obj) => array.Contains(obj);
-    
 }

@@ -24,12 +24,12 @@ public abstract class AssignedNode<T>(int index = 0) : ASTNode
 /// <param name="tagIndex">Index for TagNode node</param>
 public abstract class AssignedIReturnAnyAndBlockNode(int anyIndex = 0, int tagIndex = 1) : AssignedNode<IReturnAny>(anyIndex)
 {
-    protected BlockNode? tag;
-    public BlockNode Block => tag ?? throw new ExpectedException("{ }", this);
+    protected BlockNode? block;
+    public BlockNode Block => block ?? throw new ExpectedException("{ }", this);
 
     public override void Load()
     {
         base.Load();
-        tag = GetNodeOrDefalut<BlockNode>(tagIndex);
+        block = GetNodeOrDefalut<BlockNode>(tagIndex);
     }
 }

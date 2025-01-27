@@ -11,7 +11,6 @@ public static class StringModule
     public static string Trim(string text) => text.Trim();
     public static string TrimStart(string text) => text.TrimStart();
     public static string TrimEnd(string text) => text.TrimEnd();
-
     public static double Calc(string input)
     {
         string? back = new DataTable().Compute(input, null).ToString();

@@ -1,6 +1,6 @@
 ﻿namespace UghLang.Nodes;
 
-public class EOFNode : ASTNode;
+public class EndOfFileNode : ASTNode;
 public class OperatorNode : ASTNode, IInstantQuit
 {
     public required Operator Operator { get; init; }
@@ -40,6 +40,7 @@ public class ArrayNode : AssignedNode<IReturnAny>, IReturnAny
     public object AnyValue => new object[Index];
     public static object[] NodesToArray(IReadOnlyList<ASTNode> nodes) => nodes.OfType<IReturnAny>().Select(a => a.AnyValue).ToArray();
 }
+
 public class NameNode : ASTNode, IReturnAny
 {
     public required Token Token { get; init; }
@@ -56,6 +57,7 @@ public class NameNode : ASTNode, IReturnAny
     public override void Load()
     {
         base.Load();
+
         bool n = Ugh.TryGetName(Token.StringValue, out name);
         if (Parent is INamed) return;
 
@@ -69,7 +71,9 @@ public class NameNode : ASTNode, IReturnAny
     public override void Execute()
     {
         base.Execute();
+
         if (oprNode is null || any is null) { fun?.Invoke(args); return; }
+
         if (name is null) Ugh.TryGetName(Token.StringValue, out name);
 
         if (name is not null)
@@ -79,15 +83,14 @@ public class NameNode : ASTNode, IReturnAny
                     = BinaryOperation.Operate(((IList<object>)name.Value)[arrayNode.Index], any.AnyValue, oprNode.Operator);
             else name.Value = BinaryOperation.Operate(name.Value, any.AnyValue, oprNode.Operator);
         }
-        else RegisterVariable();
-    }
+        else
+        {
+            var v = Parent is ConstNode ? new Constant(Token.StringValue, any.AnyValue) : new Variable(Token.StringValue, any.AnyValue);
+            Ugh.RegisterName(v);
+            name = v;
 
-    private void RegisterVariable()
-    {
-        var v = Parent is ConstNode ? new Constant(Token.StringValue, any!.AnyValue) : new Variable(Token.StringValue, any!.AnyValue);
-        Ugh.RegisterName(v);
-        name = v;
-        if (Parent is BlockNode blockNode) blockNode.LocalNames.Add(v);
+            if (Parent is BlockNode blockNode) blockNode.LocalNames.Add(v);
+        }
     }
 
     public object GetValue() => arrayNode is null ? Name.AnyValue : ((IList<object>)Name.AnyValue)![arrayNode.Index];
@@ -95,3 +98,5 @@ public class NameNode : ASTNode, IReturnAny
 }
 
 public class OperableNameNode : NameNode, IOperable;
+
+public class RefrenceNode : ExpressionNode;

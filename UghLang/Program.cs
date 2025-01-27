@@ -1,4 +1,5 @@
-﻿using UghLang;
+﻿using System.Linq.Expressions;
+using UghLang;
 
 
 
@@ -12,7 +13,7 @@ if (args.Length < 1)
     return;
 }
 
-bool load = true;
+bool noload = false;
 string path = string.Empty;
 
 for (var i = 0; i < args.Length; i++)
@@ -36,7 +37,7 @@ for (var i = 0; i < args.Length; i++)
                 Debug.EnabledWarrings = false;
                 break;
             case "--noload":
-                load = false;
+                noload = true;
                 break;
             default: throw new UghException($"Cannot find argument '{arg}'");
         }
@@ -62,7 +63,7 @@ if (path == string.Empty) return;
 
 var file = File.ReadAllText(path);
 var ugh = new Ugh();
-var parser = new Parser(ugh, false, load);
+var parser = new Parser(ugh, false, noload);
 
 switch (Path.GetExtension(path))
 {
@@ -75,7 +76,7 @@ switch (Path.GetExtension(path))
         Debug.PrintTree(parser.AST, path);
         Debug.Print("Output: ");
 
-        if (load) parser.Execute();
+        if (!noload) parser.Execute();
         break;
     default: throw new UghException("Wrong file format: " + path);
 }

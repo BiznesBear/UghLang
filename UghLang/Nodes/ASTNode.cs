@@ -162,9 +162,9 @@ public abstract class ASTNode
 public class AST : ASTNode
 {
     private ASTNode? previous;
-    public AST() { Parent = this; }
-    public AST(Ugh ugh, Parser parser) : this()
+    public AST(Ugh ugh, Parser parser) 
     {
+        Parent = this;
         Ugh = ugh;
         Parser = parser;
         NodeAdded += LoadNode;
@@ -205,6 +205,6 @@ public interface INamed;
 public interface ITag;
 
 /// <summary>
-/// Next node quits after parsing 
+/// Next node quits after parsing this node
 /// </summary>
 public interface IInstantQuit;

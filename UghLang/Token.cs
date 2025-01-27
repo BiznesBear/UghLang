@@ -25,7 +25,8 @@ public enum TokenType : byte
     Comma,
     Colon,
     Pi,
-    EOF
+
+    EndOfFile
 }
 
 
@@ -33,6 +34,7 @@ public class Token
 {
     public TokenType Type { get; }
     public string StringValue { get; }
+
     public int IntValue => int.Parse(StringValue);
     public bool BoolValue => bool.Parse(StringValue);
     public float FloatValue => float.Parse(StringValue, System.Globalization.CultureInfo.InvariantCulture);

@@ -221,11 +221,13 @@ public class WhileNode : AssignedIReturnAnyAndBlockNode, IKeywordNode
 
         Ugh.SetReturnBlock(Block);
         Block.Executable = true;
-        while ((bool)Assigned.AnyValue)
+        
+        while ((bool)Assigned.AnyValue) // TODO: Change this 
         {
             if (!Block.Executable) break;
             Block.Execute();
         }
+
         Block.Executable = false;
         Block.FreeLocalNames();
         Ugh.SetReturnBlock(null);
@@ -245,7 +247,6 @@ public class ForeachNode : ASTNode, IKeywordNode
         collectionNode = GetNode<NameNode>(1);
         blockNode = GetNode<BlockNode>(2);
     }
-
    
     public override void Execute()
     {
@@ -263,6 +264,7 @@ public class ForeachNode : ASTNode, IKeywordNode
         blockNode.LocalNames.Add(item);
 
         blockNode.Executable = true;
+
         foreach (var obj in collection)
         {
             item.Value = obj;
@@ -326,12 +328,12 @@ public class ModuleNode : ASTNode, INamed, IKeywordNode
     {
         base.Load();
 
-        var strNode = GetNode<ConstStringValueNode>(0);
+        var strNode = GetNode<NameNode>(0);
 
         var asNode = SearchForNode<AsNode>();
         var fromNode = SearchForNode<FromNode>();
 
-        var name = asNode is null? strNode.Value : asNode.StringName;
+        var name = asNode is null? strNode.Token.StringValue : asNode.StringName;
         var fullName = string.IsNullOrEmpty(name) ? string.Empty : name + '.';
 
         var assembly = fromNode?.ConstAssembly.Assembly;
@@ -342,7 +344,7 @@ public class ModuleNode : ASTNode, INamed, IKeywordNode
             assembly = Ugh.Std; 
         }
 
-        var module = ModuleLoader.LoadModule(strNode.Value, assembly, Parent is UnsignedNode);
+        var module = ModuleLoader.LoadModule(strNode.Token.StringValue, assembly, Parent is UnsignedNode);
 
         foreach (var method in module.Methods)
         {
@@ -374,7 +376,6 @@ public class AssemblyNode : ASTNode, IKeywordNode
     }
 }
 
-
 public class AsNode : ASTNode, INamed, IKeywordNode // TODO: Add converting types
 {
     public string StringName 
@@ -389,7 +390,6 @@ public class AsNode : ASTNode, INamed, IKeywordNode // TODO: Add converting type
             };
         }
     }
-
 }
 
 public class FromNode : AssignedNode<NameNode>, INamed, IKeywordNode
@@ -397,13 +397,5 @@ public class FromNode : AssignedNode<NameNode>, INamed, IKeywordNode
     public AssemblyConst ConstAssembly => Assigned.Name.GetAs<AssemblyConst>(); 
 }
 
-
 public class ConstNode : ASTNode, ITag, IKeywordNode;
-
-
-/// <summary>
-/// Marks modules and functions as sealed. 
-/// Sealed modules must contains Module attribute.
-/// Sealed functions can't be overriden. 
-/// </summary>
 public class UnsignedNode : ASTNode, ITag, IKeywordNode;

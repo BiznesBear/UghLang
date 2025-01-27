@@ -64,7 +64,6 @@ public class Parser : IDisposable
                 ASTNode nameNode = IsMasterBranch() || currentNode is ITag? new NameNode() { Token = token } : new OperableNameNode() { Token = token };
                 if(currentNode is INamed) CreateNode(nameNode);
                 else EnterNode(nameNode);
-                
                 break;
 
             case TokenType.StringValue:
@@ -82,16 +81,18 @@ public class Parser : IDisposable
             case TokenType.Separator:
                 BackToMasterBranch();
                 break;
-            case TokenType.Comma or TokenType.Colon: 
+            case TokenType.Comma: 
                 QuitNode<IOperable>();
                 QuitNode<NameNode>();
                 break;
-            
+            case TokenType.Colon:
+                EnterNode(new RefrenceNode());
+                break;
             case TokenType.Pi:
                 CreateNode(new ConstDoubleValueNode() { Value = Math.PI });
                 break;
-            case TokenType.EOF:
-                AST.AddNode(new EOFNode());
+            case TokenType.EndOfFile:
+                AST.AddNode(new EndOfFileNode());
                 break;
             default: throw new UghException($"Unhandled token type: {token.Type}");
         }

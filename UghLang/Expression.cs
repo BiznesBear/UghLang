@@ -5,7 +5,7 @@ namespace UghLang;
 
 public readonly struct ExpressionTree // TODO: add truncation for constant values
 {
-    private readonly IReturnAny? Any;
+    private readonly IReturnAny? Last { get; }
     public ExpressionTree(ASTNode node)
     {
         var values = new Stack<IReturnAny>();  
@@ -17,7 +17,7 @@ public readonly struct ExpressionTree // TODO: add truncation for constant value
         if(first is null) return;
         else if (!oprNodes.Any())
         {
-            Any = first;
+            Last = first;
             return;
         }
 
@@ -51,10 +51,10 @@ public readonly struct ExpressionTree // TODO: add truncation for constant value
             values.Push(new BinaryOperation(left, right, op));
         }
 
-        Any = values.Pop();
+        Last = values.Pop();
     }
 
-    public readonly object Express() => Any?.AnyValue ?? null!;
+    public readonly object Express() => Last?.AnyValue ?? null!;
 }
 
 public enum Operator
@@ -92,7 +92,8 @@ public class BinaryOperation(IReturnAny left, IReturnAny right,Operator op) : IR
     public object AnyValue => Operate();
     public object Operate() => Operate(Left.AnyValue, Right.AnyValue, Operator);
 
-    public static object Operate(dynamic left, dynamic right, Operator opr)
+    public static object Operate(dynamic left, dynamic right, Operator opr) => OperateType<object>(left, right, opr);
+    public static T OperateType<T>(dynamic left, dynamic right, Operator opr)
     {
         return opr switch
         {
@@ -173,6 +174,7 @@ public class BinaryOperation(IReturnAny left, IReturnAny right,Operator op) : IR
         { Operator.Power, 8 },
         { Operator.Sqrt, 9 },
     };
+
     public static IReadOnlyDictionary<Operator, int> OperatorPrecedence => operatorPrecedence;
     public override string ToString() => $"BinOpr({Operator}, {Left.AnyValue}, {Right.AnyValue})";
 }

@@ -17,7 +17,7 @@ public class Ugh
     /// Currently executed function
     /// </summary>
     public Function? Function { get; set; }
-    public Type[]? Std { get; set; } 
+    public Type[]? Std { get; set; }  
     
     /// <summary>
     /// ReturnNode will end this block node
@@ -151,10 +151,6 @@ public class ModuleFunction(string name, Ugh ugh, MethodInfo method) : BaseFunct
 {
     public override void Invoke(IEnumerable<IReturnAny> args)
     {
-        int len = method.GetParameters().Length;
-        if (len != args.Count()) throw new IncorrectArgumentsException(this);
-
         Value = method.Invoke(null, args.Select(item => item.AnyValue).ToArray()) ?? 0;
     }
 }
- 
