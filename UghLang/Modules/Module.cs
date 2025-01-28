@@ -40,7 +40,7 @@ public static class ModuleLoader
         }
 
 
-        Debug.Print($"Loaded {methods.Count} methods and {fields.Count} constants");
+        Debug.Info($"Loaded {methods.Count} methods and {fields.Count} constants");
 
         return new(methods, fields);
     }

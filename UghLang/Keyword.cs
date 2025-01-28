@@ -18,6 +18,7 @@ public enum Keyword : byte
     If,
     Else,
     Elif,
+    Not,
 
     Repeat,
     While,
@@ -34,10 +35,11 @@ public enum Keyword : byte
 
     Const,
     Unsigned,
-    Null
+    Null,
+    Def,
 }
 
-public static class KeywordExtension
+public static class KeywordExtensions
 {
     private static readonly Dictionary<string, Keyword> Keywords = new()
     {
@@ -56,6 +58,7 @@ public static class KeywordExtension
         { "if", Keyword.If },
         { "else", Keyword.Else },
         { "elif", Keyword.Elif },
+        { "not", Keyword.Not },
 
         { "repeat", Keyword.Repeat },
         { "while", Keyword.While },
@@ -73,6 +76,7 @@ public static class KeywordExtension
         { "const", Keyword.Const },
         { "unsigned", Keyword.Unsigned },
         { "null", Keyword.Null },
+        { "def", Keyword.Def },
     };
 
     public static bool TryGetKeyword(this string word, out Keyword keyword, out TokenType type)
@@ -109,6 +113,7 @@ public static class KeywordExtension
             Keyword.If => new IfNode(),
             Keyword.Else => new ElseNode(),
             Keyword.Elif => new ElifNode(),
+            Keyword.Not => new NotNode(),
 
             Keyword.Repeat => new RepeatNode(),
             Keyword.While => new WhileNode(),
@@ -127,6 +132,7 @@ public static class KeywordExtension
 
             Keyword.Unsigned => new UnsignedNode(),
             Keyword.Null => new ConstNullValueNode(),
+            Keyword.Def => new DefineNode(),
 
             _ => new UndefinedNode(),
         };

@@ -37,6 +37,7 @@ ughlang master.ugh
 - if
 - else
 - elif
+- not
 - repeat
 - while
 - foreach
@@ -49,3 +50,4 @@ ughlang master.ugh
 - const
 - unsigned
 - null
+- def

@@ -197,7 +197,7 @@ public interface IOperable;
 /// <summary>
 /// If parent is marked as INamed: NameNode will not try to parse name. Parser will only create NameNode instead of entering them.
 /// </summary>
-public interface INamed;
+public interface INaming;
 
 /// <summary>
 /// Marks node as tag node. Tag node is recognized by parser ad master branch

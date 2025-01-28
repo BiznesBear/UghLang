@@ -20,7 +20,6 @@ public class Parser : IDisposable
 
     public void AddToken(Token token)
     {
-        Debug.Print(token);
         bool instaQuit = currentNode is IInstantQuit;
 
         switch (token.Type)
@@ -62,7 +61,7 @@ public class Parser : IDisposable
 
             case TokenType.Name:
                 ASTNode nameNode = IsMasterBranch() || currentNode is ITag? new NameNode() { Token = token } : new OperableNameNode() { Token = token };
-                if(currentNode is INamed) CreateNode(nameNode);
+                if(currentNode is INaming) CreateNode(nameNode);
                 else EnterNode(nameNode);
                 break;
 
@@ -87,6 +86,9 @@ public class Parser : IDisposable
                 break;
             case TokenType.Colon:
                 EnterNode(new RefrenceNode());
+                break;
+            case TokenType.Preload:
+                EnterNode(new PreloadNode());
                 break;
             case TokenType.Pi:
                 CreateNode(new ConstDoubleValueNode() { Value = Math.PI });

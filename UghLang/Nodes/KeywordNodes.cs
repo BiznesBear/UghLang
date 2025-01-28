@@ -51,11 +51,11 @@ public class FreeNode : AssignedNode<NameNode>, IKeywordNode
 /// <summary>
 /// Declares new function 
 /// </summary>
-public class DeclareFunctionNode : ASTNode, INamed, IKeywordNode
+public class DeclareFunctionNode : ASTNode, INaming, IKeywordNode
 {
-    public override void Load()
+    public override void Execute()
     {
-        base.Load();
+        base.Execute();
         var name = GetNode<NameNode>(0);
 
         Function fun = new(name.Token.StringValue, GetNode<BlockNode>(2), GetNode<ExpressionNode>(1));
@@ -143,6 +143,11 @@ public class ElifNode : IfNode, IKeywordNode
         base.Load();
         ElseNode.ParseIf(this);
     }
+}
+
+public class NotNode : AssignedNode<IReturnAny>, IReturnAny, IOperable
+{
+    public object AnyValue => !(bool)Assigned.AnyValue;
 }
 
 /// <summary>
@@ -283,18 +288,15 @@ public class ForeachNode : ASTNode, IKeywordNode
 /// </summary>
 public class InsertNode : ASTNode, IKeywordNode
 {
-    public override void Load()
+    public override void Execute()
     {
-        base.Load();
+        base.Execute();
         
         var path = GetNode<ConstStringValueNode>(0).Value;
 
         if(File.Exists(path)) { }
         else if (Path.Exists(path)) { path += "/master.ugh"; }
-
-        if (Ugh.IsFileDefined(path)) { return; }
-
-        Ugh.RegisterFile(path);
+        else throw new FileNotFoundException(path);
 
         var file = File.ReadAllText(path);
 
@@ -322,11 +324,11 @@ public class LocalNode : ASTNode, ITag, IKeywordNode
     }
 }
 
-public class ModuleNode : ASTNode, INamed, IKeywordNode
+public class ModuleNode : ASTNode, INaming, IKeywordNode
 {
-    public override void Load()
+    public override void Execute()
     {
-        base.Load();
+        base.Execute();
 
         var strNode = GetNode<NameNode>(0);
 
@@ -340,8 +342,8 @@ public class ModuleNode : ASTNode, INamed, IKeywordNode
 
         if (assembly is null)
         { 
-            Ugh.Std ??= Assembly.GetExecutingAssembly().GetTypes(); 
-            assembly = Ugh.Std; 
+            Ugh.StdAssembly ??= Assembly.GetExecutingAssembly().GetTypes(); 
+            assembly = Ugh.StdAssembly; 
         }
 
         var module = ModuleLoader.LoadModule(strNode.Token.StringValue, assembly, Parent is UnsignedNode);
@@ -362,9 +364,9 @@ public class ModuleNode : ASTNode, INamed, IKeywordNode
 
 public class AssemblyNode : ASTNode, IKeywordNode
 {
-    public override void Load()
+    public override void Execute()
     {
-        base.Load();
+        base.Execute();
 
         var pathNode = GetNode<ConstStringValueNode>(0);
         var asNode = GetNode<AsNode>(1);
@@ -376,7 +378,7 @@ public class AssemblyNode : ASTNode, IKeywordNode
     }
 }
 
-public class AsNode : ASTNode, INamed, IKeywordNode // TODO: Add converting types
+public class AsNode : ASTNode, INaming, IKeywordNode // TODO: Add converting types
 {
     public string StringName 
     {
@@ -392,10 +394,40 @@ public class AsNode : ASTNode, INamed, IKeywordNode // TODO: Add converting type
     }
 }
 
-public class FromNode : AssignedNode<NameNode>, INamed, IKeywordNode
+public class FromNode : AssignedNode<NameNode>, INaming, IKeywordNode
 {
     public AssemblyConst ConstAssembly => Assigned.Name.GetAs<AssemblyConst>(); 
 }
 
 public class ConstNode : ASTNode, ITag, IKeywordNode;
 public class UnsignedNode : ASTNode, ITag, IKeywordNode;
+
+public class DefineNode : ASTNode, INaming, IKeywordNode, IReturnAny, IOperable
+{
+    private string name = string.Empty;
+    private bool isdef;
+
+    public object AnyValue => Ugh.IsDefined(name);
+
+    public override void Load()
+    {
+        base.Load();
+        switch (GetNodeAt(0))
+        {
+            case NameNode nn:
+                name = nn.Token.StringValue;
+                break;
+            case ExpressionNode exn:
+                name = exn.GetNode<NameNode>(0).Token.StringValue;
+                isdef = true;
+                break;
+            default: throw new InvalidSpellingException(this);
+        }
+    }
+
+    public override void Execute()
+    {
+        base.Execute();
+        if(!isdef) Ugh.Define(name);        
+    }
+}

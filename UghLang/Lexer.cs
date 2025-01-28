@@ -10,12 +10,6 @@ public class Lexer : IDisposable
 
     private Token? lastToken;
 
-
-    /// <summary>
-    /// Old way of lexing. Must use semicolons
-    /// </summary>
-    /// <param name="input">Text to lex</param>
-    /// <param name="parser">Parser to send tokens</param>
     public Lexer(string input, Parser parser)  { Parser = parser; Lex(input); AddPart(TokenType.EndOfFile); }
 
     private void Lex(string input)
@@ -82,6 +76,7 @@ public class Lexer : IDisposable
             
             else if (c == ',') AddSingle(TokenType.Comma);
             else if (c == ':') AddSingle(TokenType.Colon);
+            else if (c == '$') AddSingle(TokenType.Preload);
             else if (c == 'π') AddSingle(TokenType.Pi);
 
             else if (char.IsDigit(c) || c == '-' && char.IsDigit(CheckNext()))

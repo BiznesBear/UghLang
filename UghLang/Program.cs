@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using UghLang;
+﻿using UghLang;
 
 
 
@@ -43,39 +42,31 @@ for (var i = 0; i < args.Length; i++)
         }
     }
     else path = arg;
-    
-    string CheckNextArg(int next = 1)
-    {
-        int index = i + next;
-        if (index < args.Length)
-            return args[index];
-        return string.Empty;
-    }
-
-    void SkipArg(int skips = 1)
-    {
-        if (i + skips < args.Length) i += skips;
-    }
 }
 
 if (path == string.Empty) return;
 
 
-var file = File.ReadAllText(path);
 var ugh = new Ugh();
+var file = File.ReadAllText(path);
 var parser = new Parser(ugh, false, noload);
 
 switch (Path.GetExtension(path))
 {
-    case ".ugh" or ".txt":
-        Debug.Print("Tokens:");
-        new Lexer(file, parser);
+    case ".ugh":
+        Debug.Print("Load:");
 
-        ugh.RegisterFile(path);
-
+        _ = new Lexer(file, parser);
         Debug.PrintTree(parser.AST, path);
-        Debug.Print("Output: ");
 
+        Debug.Print("Execute: ");
+
+        if (!noload) parser.Execute();
+        break;
+    case ".txt":
+        string[] list = file.Split(';');
+        foreach (string f in list)
+            _ = new Lexer(f, parser);
         if (!noload) parser.Execute();
         break;
     default: throw new UghException("Wrong file format: " + path);

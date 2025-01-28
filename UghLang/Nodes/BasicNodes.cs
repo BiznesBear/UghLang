@@ -27,7 +27,7 @@ public class ExpressionNode : ASTNode, IReturn<object?>
     public object AnyValue => Value is not null? Value : expressionTree.Express();
 
     private ExpressionTree expressionTree;
-    public override void Load() // TODO: Remove building expression tree when don't needed
+    public override void Load() 
     {
         base.Load();
         expressionTree = new ExpressionTree(this);
@@ -53,17 +53,21 @@ public class NameNode : ASTNode, IReturnAny
     private ArrayNode? arrayNode;
     private BaseFunction? fun;
     private IEnumerable<IReturnAny> args = [];
+    private bool exeAsFun;
+
 
     public override void Load()
     {
         base.Load();
 
-        bool n = Ugh.TryGetName(Token.StringValue, out name);
-        if (Parent is INamed) return;
+        if (Parent is INaming) return;
 
         if (TryGetNode<OperatorNode>(0, out oprNode)) any = oprNode.GetRight();
-        else if (TryGetNode(0, out ExpressionNode exprsNode) && n)
-            (fun, args) = (name.GetAs<BaseFunction>(), args.Concat(exprsNode.GetNodes<IReturnAny>()));
+        else if (TryGetNode(0, out ExpressionNode exprsNode))
+        {
+            args = args.Concat(exprsNode.GetNodes<IReturnAny>());
+            exeAsFun = true;
+        }
         else if (TryGetNode<ArrayNode>(0, out arrayNode) && TryGetNode<OperatorNode>(1, out oprNode))
             any = oprNode.GetRight();
     }
@@ -72,15 +76,21 @@ public class NameNode : ASTNode, IReturnAny
     {
         base.Execute();
 
-        if (oprNode is null || any is null) { fun?.Invoke(args); return; }
-
         if (name is null) Ugh.TryGetName(Token.StringValue, out name);
+
+        if (exeAsFun)
+        {
+            fun ??= name.GetAs<BaseFunction>();
+            fun.Invoke(args);
+            return;
+        }
+
+        if (any is null || oprNode is null) return;
 
         if (name is not null)
         {
             if (arrayNode is not null)
-                (name.Value as IList<object>)![arrayNode.Index] 
-                    = BinaryOperation.Operate(((IList<object>)name.Value)[arrayNode.Index], any.AnyValue, oprNode.Operator);
+                (name.Value as IList<object>)![arrayNode.Index] = BinaryOperation.Operate(((IList<object>)name.Value)[arrayNode.Index], any.AnyValue, oprNode.Operator);
             else name.Value = BinaryOperation.Operate(name.Value, any.AnyValue, oprNode.Operator);
         }
         else
@@ -98,5 +108,14 @@ public class NameNode : ASTNode, IReturnAny
 }
 
 public class OperableNameNode : NameNode, IOperable;
-
 public class RefrenceNode : ExpressionNode;
+
+public class PreloadNode : ASTNode
+{
+    public override void Load()
+    {
+        base.Load();
+        base.Execute();
+    }
+    public override void Execute() { }
+}

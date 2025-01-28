@@ -24,6 +24,7 @@ public enum TokenType : byte
 
     Comma,
     Colon,
+    Preload,
     Pi,
 
     EndOfFile

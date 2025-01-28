@@ -2,28 +2,27 @@
 using UghLang.Nodes;
 namespace UghLang;
 
-
 public class Namespace : Dictionary<string, Name>;
 
 /// <summary>
-/// Contains list of reserved runtime names
+/// Script runner 
 /// </summary>
 public class Ugh
 {
-    private readonly List<string> definedFiles = [];
+    private readonly List<string> definitions = [];
 
+    public Type[]? StdAssembly { get; set; }  
+    public IReadOnlyDictionary<string, Name> Names => names;
 
     /// <summary>
     /// Currently executed function
     /// </summary>
     public Function? Function { get; set; }
-    public Type[]? Std { get; set; }  
-    
+
     /// <summary>
     /// ReturnNode will end this block node
     /// </summary>
     public BlockNode? ReturnBlock { get; private set; }
-    public IReadOnlyDictionary<string, Name> Names => names;
 
     private readonly Namespace names = new();
     private BlockNode? lastReturnBlock;
@@ -34,9 +33,9 @@ public class Ugh
         else { ReturnBlock = node; lastReturnBlock = node; }
     }
 
-    public void RegisterFile(string fileName) => definedFiles.Add(fileName);
-    public bool IsFileDefined(string fileName) => definedFiles.Contains(fileName);
-
+    public void Define(string name) => definitions.Add(name); 
+    public bool IsDefined(string name) => definitions.Contains(name); 
+    
     public void RegisterName(Name name)
     {
         try { names.Add(name.Key, name); }

@@ -14,6 +14,7 @@ public interface IConstantValue
 {
     public object ConstantValue { get; }
 }
+
 public class ConstValueNode<T>(T defalutValue) : ASTNode, IConstantValue, IReturn<T>
 {
     public T Value { get; set; } = defalutValue;
