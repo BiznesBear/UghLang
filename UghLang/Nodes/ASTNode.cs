@@ -147,7 +147,7 @@ public abstract class ASTNode
                 else return;
     }
 
-    public void ForceExecute()
+    public virtual void ForceExecute()
     {
         var startingState = Executable;
         Executable = true;

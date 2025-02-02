@@ -77,27 +77,25 @@ public enum Operator
     HigherEquals,
     And,
     Or,
-    Lambda
 }
 public class BinaryOperation(IReturnAny left, IReturnAny right,Operator op) : IReturnAny
 {
+    public object AnyValue => Operate();
     public Operator Operator { get; set; } = op;
-
     public IReturnAny Left { get=> left ?? throw new NullReferenceException(); set=> left = value; } 
     public IReturnAny Right { get => right ?? throw new NullReferenceException(); set => right = value; } 
     
+
     private IReturnAny? left = left;
     private IReturnAny? right = right;
 
-    public object AnyValue => Operate();
     public object Operate() => Operate(Left.AnyValue, Right.AnyValue, Operator);
-
-    public static object Operate(dynamic left, dynamic right, Operator opr) => OperateType<object>(left, right, opr);
+    public static object Operate(object left, object right, Operator opr) => OperateType<object>(left, right, opr);
     public static T OperateType<T>(dynamic left, dynamic right, Operator opr)
     {
         return opr switch
         {
-            Operator.Equals or Operator.Lambda => right,
+            Operator.Equals => right,
             Operator.Plus => left + right,
             Operator.Minus => left - right,
             Operator.Multiply => left * right,
@@ -121,43 +119,11 @@ public class BinaryOperation(IReturnAny left, IReturnAny right,Operator op) : IR
         };
     }
 
-    public static Operator GetOperator(string opr)
-    {
-        return opr switch
-        {
-            "=" => Operator.Equals,
-            "+" or "+=" => Operator.Plus,
-            "-" or "-=" => Operator.Minus,
-            "*" or "*=" => Operator.Multiply,
-            "/" or "/=" => Operator.Divide,
-            "%" or "%=" => Operator.DivideRest,
-
-            "**" => Operator.Power,
-            "//" => Operator.Sqrt,
-
-            // BOOLEAN
-            "==" => Operator.DoubleEquals,
-            "!=" => Operator.NotEquals,
-            "<" => Operator.Less,
-            ">" => Operator.Higher,
-            "<=" => Operator.LessEquals,
-            ">=" => Operator.HigherEquals,
-            "&&" => Operator.And,
-            "||" => Operator.Or,
-
-            // OTHER
-            "=>" => Operator.Lambda,
-
-            _ => throw new UghException("Cannot find operator " + opr),
-        };
-    }
-
     public static bool IsOperator(char c) => c == '=' || c == '+' || c == '-' || c == '*' || c == '/' || c == '<' || c == '>' || c == '!' || c == '&' || c == '|' || c == '%';
 
     private static readonly Dictionary<Operator, int> operatorPrecedence = new()
     {
         { Operator.Equals, 1 },
-        { Operator.Lambda, 1 },
         { Operator.Or, 2 },
         { Operator.And, 3 },
         { Operator.DoubleEquals, 4 },

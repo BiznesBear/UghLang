@@ -37,7 +37,6 @@ ughlang master.ugh
 - if
 - else
 - elif
-- not
 - repeat
 - while
 - foreach
@@ -47,7 +46,6 @@ ughlang master.ugh
 - module 
 - as
 - from
-- const
 - unsigned
 - null
 - def

@@ -1,5 +1,12 @@
 ﻿namespace UghLang.Nodes;
 
+
+
+public static class IReturnAnyHelpers
+{
+    public static T GetAny<T>(this IReturnAny any) => (T)any.AnyValue;
+}
+
 public interface IReturnAny
 {
     public object AnyValue { get; }

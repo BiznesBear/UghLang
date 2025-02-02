@@ -18,7 +18,6 @@ public enum Keyword : byte
     If,
     Else,
     Elif,
-    Not,
 
     Repeat,
     While,
@@ -33,8 +32,6 @@ public enum Keyword : byte
     As,
     From,
 
-    Const,
-    Unsigned,
     Null,
     Def,
 }
@@ -58,7 +55,6 @@ public static class KeywordExtensions
         { "if", Keyword.If },
         { "else", Keyword.Else },
         { "elif", Keyword.Elif },
-        { "not", Keyword.Not },
 
         { "repeat", Keyword.Repeat },
         { "while", Keyword.While },
@@ -73,8 +69,6 @@ public static class KeywordExtensions
         { "as", Keyword.As },
         { "from", Keyword.From },
 
-        { "const", Keyword.Const },
-        { "unsigned", Keyword.Unsigned },
         { "null", Keyword.Null },
         { "def", Keyword.Def },
     };
@@ -113,7 +107,6 @@ public static class KeywordExtensions
             Keyword.If => new IfNode(),
             Keyword.Else => new ElseNode(),
             Keyword.Elif => new ElifNode(),
-            Keyword.Not => new NotNode(),
 
             Keyword.Repeat => new RepeatNode(),
             Keyword.While => new WhileNode(),
@@ -128,9 +121,6 @@ public static class KeywordExtensions
             Keyword.As => new AsNode(),
             Keyword.From => new FromNode(),
 
-            Keyword.Const => new ConstNode(),
-
-            Keyword.Unsigned => new UnsignedNode(),
             Keyword.Null => new ConstNullValueNode(),
             Keyword.Def => new DefineNode(),
 

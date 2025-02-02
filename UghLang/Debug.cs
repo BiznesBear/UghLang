@@ -13,6 +13,7 @@ public static class Debug
         if (!EnabledMessages) return;
         Console.WriteLine(message);
     }
+
     public static void Info(object message) => Print("[INFO] " + message);
     public static void Warring(object message)
     {

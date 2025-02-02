@@ -2,31 +2,35 @@
 
 public enum TokenType : byte
 {
-    Name, // can be everything 
-    Keyword, // keyword
+    Name, // undefined 
+    Keyword, 
 
-    Operator, // op
-    Separator, // ends somthing
+    Operator, 
+    Separator, // ; - goes back to master branch 
+    
+    // braces
+    OpenExpression, 
+    CloseExpression, 
 
-    OpenExpression, // opens expression
-    CloseExpression, // closes expression
+    OpenBlock, 
+    CloseBlock, 
 
-    OpenBlock, // opens block of code
-    CloseBlock, // closes block of code
+    OpenIndex, 
+    CloseIndex, 
 
-    OpenList, // opens list
-    CloseList, // closes list
+    // values
+    StringValue, 
+    IntValue, 
+    BoolValue, 
+    FloatValue, 
 
-    StringValue, // string 
-    IntValue, // int
-    BoolValue, // boolean
-    FloatValue, // float
-
+    // other
     Comma,
     Colon,
     Preload,
+    Not,
     Pi,
-
+    Lambda,
     EndOfFile
 }
 
@@ -41,7 +45,39 @@ public class Token
     public float FloatValue => float.Parse(StringValue, System.Globalization.CultureInfo.InvariantCulture);
     public double DoubleValue => double.Parse(StringValue, System.Globalization.CultureInfo.InvariantCulture);
    
-    public Operator Operator => BinaryOperation.GetOperator(StringValue);
+    public Operator Operator
+    {
+        get
+        {
+            return StringValue switch
+            {
+                "=" => Operator.Equals,
+                "+" or "+=" => Operator.Plus,
+                "-" or "-=" => Operator.Minus,
+                "*" or "*=" => Operator.Multiply,
+                "/" or "/=" => Operator.Divide,
+                "%" or "%=" => Operator.DivideRest,
+
+                "**" => Operator.Power,
+                "//" => Operator.Sqrt,
+
+                // BOOLEAN
+                "==" => Operator.DoubleEquals,
+                "!=" => Operator.NotEquals,
+                "<" => Operator.Less,
+                ">" => Operator.Higher,
+                "<=" => Operator.LessEquals,
+                ">=" => Operator.HigherEquals,
+                "&&" => Operator.And,
+                "||" => Operator.Or,
+
+                _ => throw new UghException("Cannot find operator " + StringValue)
+            };
+        }
+        
+    }
+
+
     public Keyword? Keyword { get; } // TODO: Remove this 
 
     public Token(string val, TokenType type) 

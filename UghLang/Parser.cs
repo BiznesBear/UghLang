@@ -27,7 +27,7 @@ public class Parser : IDisposable
             case TokenType.Keyword:
                 EnterNode((token.Keyword ?? default).GetNode());
                 break;
-            case TokenType.OpenExpression:
+            case TokenType.OpenExpression or TokenType.Colon:
                 EnterNode(new ExpressionNode()); 
                 break;
             case TokenType.CloseExpression:
@@ -51,12 +51,12 @@ public class Parser : IDisposable
                 RemoveMasterBranch<BlockNode>();
                 break;
 
-            case TokenType.OpenList:
-                EnterNode(new ArrayNode());
+            case TokenType.OpenIndex:
+                EnterNode(new IndexNode());
                 break;
-            case TokenType.CloseList:
+            case TokenType.CloseIndex:
                 QuitNode<IOperable>();
-                QuitNode<ArrayNode>();
+                QuitNode<IndexNode>();
                 break;
 
             case TokenType.Name:
@@ -83,16 +83,20 @@ public class Parser : IDisposable
             case TokenType.Comma: 
                 QuitNode<IOperable>();
                 QuitNode<NameNode>();
-                break;
-            case TokenType.Colon:
-                EnterNode(new RefrenceNode());
-                break;
+                break;     
             case TokenType.Preload:
                 EnterNode(new PreloadNode());
+                break;
+            case TokenType.Not:
+                EnterNode(new NotNode());
                 break;
             case TokenType.Pi:
                 CreateNode(new ConstDoubleValueNode() { Value = Math.PI });
                 break;
+            case TokenType.Lambda:
+                EnterNode(new BlockNode());
+                break;
+
             case TokenType.EndOfFile:
                 AST.AddNode(new EndOfFileNode());
                 break;

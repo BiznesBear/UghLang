@@ -89,7 +89,7 @@ public class ReturnNode : AssignedNode<IReturnAny>, IKeywordNode
         else if (Ugh.ReturnBlock is not null) // Prevent's from breaking ifs, elifs etc.
             Ugh.ReturnBlock.Executable = false;
         else
-            Parent.Executable = false;
+            Parser.AST.Executable = false;
     }
 }
 
@@ -102,7 +102,7 @@ public class IfNode : AssignedIReturnAnyAndBlockNode, IKeywordNode
     {
         base.Execute();
 
-        if ((bool)Assigned.AnyValue)
+        if (Assigned.GetAny<bool>())
             Block.ForceExecute();
         else if (elseNode is not null) elseNode.Executable = true;
         Block.FreeLocalNames();
@@ -143,11 +143,6 @@ public class ElifNode : IfNode, IKeywordNode
         base.Load();
         ElseNode.ParseIf(this);
     }
-}
-
-public class NotNode : AssignedNode<IReturnAny>, IReturnAny, IOperable
-{
-    public object AnyValue => !(bool)Assigned.AnyValue;
 }
 
 /// <summary>
@@ -227,7 +222,7 @@ public class WhileNode : AssignedIReturnAnyAndBlockNode, IKeywordNode
         Ugh.SetReturnBlock(Block);
         Block.Executable = true;
         
-        while ((bool)Assigned.AnyValue) // TODO: Change this 
+        while (Assigned.GetAny<bool>()) // TODO: Change this 
         {
             if (!Block.Executable) break;
             Block.Execute();
@@ -256,17 +251,15 @@ public class ForeachNode : ASTNode, IKeywordNode
     public override void Execute()
     {
         base.Execute();
-        if(itemNode is null || blockNode is null) 
-            throw new InvalidSpellingException(this);
         
         Ugh.SetReturnBlock(blockNode);
 
-        var collection = collectionNode?.AnyValue as IList<object> ?? throw new InvalidSpellingException(this);
+        var collection = collectionNode?.AnyValue as IList<object> ?? throw new UghException($"Can not convert {collectionNode?.Token.StringValue} with value {collectionNode?.AnyValue} to array");
         
-        Variable item = new(itemNode.Token.StringValue, 0);
+        Variable item = new(itemNode!.Token.StringValue, 0);
         Ugh.RegisterName(item);
 
-        blockNode.LocalNames.Add(item);
+        blockNode!.LocalNames.Add(item);
 
         blockNode.Executable = true;
 
@@ -314,8 +307,7 @@ public class LocalNode : ASTNode, ITag, IKeywordNode
 {
     public override void Load()
     {
-        bool state = Parent is UnsignedNode ? !Parser.Inserted : Parser.Inserted;
-        if (state) { Executable = false; return; }
+        if (Parser.Inserted) { Executable = false; return; }
 
         if (TryGetNode<BlockNode>(0, out var tag)) // Nested local
             tag.Executable = true;
@@ -346,7 +338,7 @@ public class ModuleNode : ASTNode, INaming, IKeywordNode
             assembly = Ugh.StdAssembly; 
         }
 
-        var module = ModuleLoader.LoadModule(strNode.Token.StringValue, assembly, Parent is UnsignedNode);
+        var module = ModuleLoader.LoadModule(strNode.Token.StringValue, assembly);
 
         foreach (var method in module.Methods)
         {
@@ -399,8 +391,6 @@ public class FromNode : AssignedNode<NameNode>, INaming, IKeywordNode
     public AssemblyConst ConstAssembly => Assigned.Name.GetAs<AssemblyConst>(); 
 }
 
-public class ConstNode : ASTNode, ITag, IKeywordNode;
-public class UnsignedNode : ASTNode, ITag, IKeywordNode;
 
 public class DefineNode : ASTNode, INaming, IKeywordNode, IReturnAny, IOperable
 {
@@ -423,11 +413,14 @@ public class DefineNode : ASTNode, INaming, IKeywordNode, IReturnAny, IOperable
                 break;
             default: throw new InvalidSpellingException(this);
         }
+
     }
 
     public override void Execute()
     {
         base.Execute();
-        if(!isdef) Ugh.Define(name);        
+
+        if(!isdef) 
+            Ugh.RegisterName(new Constant(name, GetNodeOrDefalut<IReturnAny>(1)?.AnyValue ?? null!));        
     }
 }

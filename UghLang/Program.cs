@@ -1,10 +1,8 @@
 ﻿using UghLang;
 
-
-
 const string version = "v0.1dev";
 const string ughlang = "UghLang " + version;
-const string helpInfo = "Welcome to Ugh language! Arguments list: --debug; --version; --help; --info; --nowarns; --noload";
+const string helpInfo = "Welcome to UghLang!\n Arguments list: \n--debug; --version; \n--help; --info; \n--nowarns; --noload";
 
 if (args.Length < 1) 
 {
@@ -63,12 +61,5 @@ switch (Path.GetExtension(path))
 
         if (!noload) parser.Execute();
         break;
-    case ".txt":
-        string[] list = file.Split(';');
-        foreach (string f in list)
-            _ = new Lexer(f, parser);
-        if (!noload) parser.Execute();
-        break;
     default: throw new UghException("Wrong file format: " + path);
 }
-

@@ -2,15 +2,13 @@
 using UghLang.Nodes;
 namespace UghLang;
 
-public class Namespace : Dictionary<string, Name>;
+
 
 /// <summary>
 /// Script runner 
 /// </summary>
 public class Ugh
 {
-    private readonly List<string> definitions = [];
-
     public Type[]? StdAssembly { get; set; }  
     public IReadOnlyDictionary<string, Name> Names => names;
 
@@ -24,7 +22,7 @@ public class Ugh
     /// </summary>
     public BlockNode? ReturnBlock { get; private set; }
 
-    private readonly Namespace names = new();
+    private readonly Dictionary<string, Name> names = new();
     private BlockNode? lastReturnBlock;
 
     public void SetReturnBlock(BlockNode? node)
@@ -33,8 +31,7 @@ public class Ugh
         else { ReturnBlock = node; lastReturnBlock = node; }
     }
 
-    public void Define(string name) => definitions.Add(name); 
-    public bool IsDefined(string name) => definitions.Contains(name); 
+    public bool IsDefined(string name) => names.ContainsKey(name); 
     
     public void RegisterName(Name name)
     {
@@ -42,13 +39,7 @@ public class Ugh
         catch (Exception ex) { Debug.Error(ex); }
     }
 
-    public bool TryGetName(string name, out Name value)
-    {    
-        names.TryGetValue(name, out var n);
-
-        value = n ?? Name.Null; 
-        return n != null;
-    }
+    public bool TryGetName(string name, out Name value) => names.TryGetValue(name, out value!);
 
     public Name GetName(string name)
     {
@@ -76,11 +67,9 @@ public class Ugh
 /// </summary>
 public interface IGetOnly;
 
-public abstract class Name(string name, object val) : Namespace, IDisposable, IReturnAny
+public abstract class Name(string name, object val) : IDisposable, IReturnAny
 {
-    public const Name Null = default!;
     public string Key { get; } = name;
-
 
     protected object value = val;
     public object Value { get => value; set { if (this is not IGetOnly) this.value = value; } }  

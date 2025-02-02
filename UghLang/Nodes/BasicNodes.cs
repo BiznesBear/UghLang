@@ -7,12 +7,13 @@ public class OperatorNode : ASTNode, IInstantQuit
     public IReturnAny GetRight() => GetNodeOrDefalut<IReturnAny>(0) ?? throw new InvalidSpellingException(this,": cannot find right side of operation");
 }
 
+
 public class BlockNode : ASTNode, IReturnAny
 {
     public BlockNode() => Executable = false;
-    public List<Name> LocalNames { get; } = new();
 
-    public object AnyValue => ArrayNode.NodesToArray(Nodes);
+    public List<Name> LocalNames { get; } = new();
+    public object AnyValue => IndexNode.NodesToArray(Nodes);
 
     public void FreeLocalNames()
     {
@@ -34,7 +35,7 @@ public class ExpressionNode : ASTNode, IReturn<object?>
     }
 }
 
-public class ArrayNode : AssignedNode<IReturnAny>, IReturnAny
+public class IndexNode : AssignedNode<IReturnAny>, IReturnAny
 {
     public int Index => (int)Assigned.AnyValue;
     public object AnyValue => new object[Index];
@@ -50,7 +51,7 @@ public class NameNode : ASTNode, IReturnAny
     private Name? name;
     private IReturnAny? any;
     private OperatorNode? oprNode;
-    private ArrayNode? arrayNode;
+    private IndexNode? arrayNode;
     private BaseFunction? fun;
     private IEnumerable<IReturnAny> args = [];
     private bool exeAsFun;
@@ -68,7 +69,7 @@ public class NameNode : ASTNode, IReturnAny
             args = args.Concat(exprsNode.GetNodes<IReturnAny>());
             exeAsFun = true;
         }
-        else if (TryGetNode<ArrayNode>(0, out arrayNode) && TryGetNode<OperatorNode>(1, out oprNode))
+        else if (TryGetNode<IndexNode>(0, out arrayNode) && TryGetNode<OperatorNode>(1, out oprNode))
             any = oprNode.GetRight();
     }
 
@@ -90,12 +91,12 @@ public class NameNode : ASTNode, IReturnAny
         if (name is not null)
         {
             if (arrayNode is not null)
-                (name.Value as IList<object>)![arrayNode.Index] = BinaryOperation.Operate(((IList<object>)name.Value)[arrayNode.Index], any.AnyValue, oprNode.Operator);
+                (name.Value as IList<object>)![arrayNode.Index] = BinaryOperation.Operate(name.GetAny<IList<object>>()[arrayNode.Index], any.AnyValue, oprNode.Operator);
             else name.Value = BinaryOperation.Operate(name.Value, any.AnyValue, oprNode.Operator);
         }
         else
         {
-            var v = Parent is ConstNode ? new Constant(Token.StringValue, any.AnyValue) : new Variable(Token.StringValue, any.AnyValue);
+            var v = new Variable(Token.StringValue, any.AnyValue);
             Ugh.RegisterName(v);
             name = v;
 
@@ -103,19 +104,26 @@ public class NameNode : ASTNode, IReturnAny
         }
     }
 
-    public object GetValue() => arrayNode is null ? Name.AnyValue : ((IList<object>)Name.AnyValue)![arrayNode.Index];
+    public object GetValue() => arrayNode is null ? Name.AnyValue : Name.GetAny<IList<object>>()![arrayNode.Index];
     public void SetArgs(IReturnAny arg) => args = [arg];
 }
 
 public class OperableNameNode : NameNode, IOperable;
-public class RefrenceNode : ExpressionNode;
 
 public class PreloadNode : ASTNode
 {
     public override void Load()
     {
+        if (TryGetNode<BlockNode>(0, out var tag)) // Nested preload
+            tag.Executable = true;
+
         base.Load();
         base.Execute();
     }
     public override void Execute() { }
+}
+
+public class NotNode : AssignedNode<IReturnAny>, IReturnAny, IOperable, IInstantQuit
+{
+    public object AnyValue => Assigned.GetAny<bool>();
 }

@@ -3,14 +3,11 @@
 public class Lexer : IDisposable
 {
     public Parser Parser { get; }
+    public Lexer(string input, Parser parser) { Parser = parser; Lex(input); AddPart(TokenType.EndOfFile); }
 
     private string currentPart = string.Empty;
-    private bool insideString;
-    private bool insideComment; 
-
+    private bool insideString, insideComment;
     private Token? lastToken;
-
-    public Lexer(string input, Parser parser)  { Parser = parser; Lex(input); AddPart(TokenType.EndOfFile); }
 
     private void Lex(string input)
     {
@@ -71,12 +68,13 @@ public class Lexer : IDisposable
             else if (c == '{') AddSingle(TokenType.OpenBlock);
             else if (c == '}') AddSingle(TokenType.CloseBlock);
 
-            else if (c == '[') AddSingle(TokenType.OpenList);
-            else if (c == ']') AddSingle(TokenType.CloseList);
+            else if (c == '[') AddSingle(TokenType.OpenIndex);
+            else if (c == ']') AddSingle(TokenType.CloseIndex);
             
             else if (c == ',') AddSingle(TokenType.Comma);
             else if (c == ':') AddSingle(TokenType.Colon);
             else if (c == '$') AddSingle(TokenType.Preload);
+            
             else if (c == 'π') AddSingle(TokenType.Pi);
 
             else if (char.IsDigit(c) || c == '-' && char.IsDigit(CheckNext()))
@@ -118,8 +116,9 @@ public class Lexer : IDisposable
                     AddChar(next);
                     Skip();
                 }
-
-                AddPart(TokenType.Operator);
+                if (currentPart == "=>") AddPart(TokenType.Lambda);
+                else if(currentPart == "!") AddPart(TokenType.Not);
+                else AddPart(TokenType.Operator);
             }
             else AddChar(c);
 
@@ -164,7 +163,7 @@ public class Lexer : IDisposable
     private void AddChar(char c) => currentPart += c;
 
     /// <summary>
-    /// Saves last part and makes space for new one.
+    /// Saves and resets current part.
     /// </summary>
     /// <param name="type">Type of last token to seal</param>
     private void AddPart(TokenType type)
