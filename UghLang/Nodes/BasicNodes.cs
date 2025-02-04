@@ -4,16 +4,18 @@ public class EndOfFileNode : ASTNode;
 public class OperatorNode : ASTNode, IInstantQuit
 {
     public required Operator Operator { get; init; }
+    public IReturnAny GetLeft() => GetBrother<IReturnAny>(-1) ?? throw new InvalidSpellingException(this,": cannot find left side of operation");
     public IReturnAny GetRight() => GetNodeOrDefalut<IReturnAny>(0) ?? throw new InvalidSpellingException(this,": cannot find right side of operation");
 }
 
 
-public class BlockNode : ASTNode, IReturnAny
+public class BlockNode : ASTNode, IReturn<object[]>
 {
     public BlockNode() => Executable = false;
-
     public List<Name> LocalNames { get; } = new();
-    public object AnyValue => IndexNode.NodesToArray(Nodes);
+    
+    public object AnyValue => Value;
+    public object[] Value => IndexNode.NodesToArray(Nodes);
 
     public void FreeLocalNames()
     {
@@ -28,6 +30,7 @@ public class ExpressionNode : ASTNode, IReturn<object?>
     public object AnyValue => Value is not null? Value : expressionTree.Express();
 
     private ExpressionTree expressionTree;
+    public IEnumerable<IReturnAny> GetArguments() => GetNodes<IReturnAny>() ?? throw new ValidOperationException("null arguments in expression");
     public override void Load() 
     {
         base.Load();
@@ -48,14 +51,14 @@ public class NameNode : ASTNode, IReturnAny
     public object AnyValue => GetValue();
     public Name Name => name ?? Ugh.GetName(Token.StringValue);
 
+
     private Name? name;
+    
     private IReturnAny? any;
     private OperatorNode? oprNode;
-    private IndexNode? arrayNode;
-    private BaseFunction? fun;
-    private IEnumerable<IReturnAny> args = [];
-    private bool exeAsFun;
+    private IndexNode? indexNode;
 
+    private FunctionCallInfo? callInfo;
 
     public override void Load()
     {
@@ -63,49 +66,52 @@ public class NameNode : ASTNode, IReturnAny
 
         if (Parent is INaming) return;
 
-        if (TryGetNode<OperatorNode>(0, out oprNode)) any = oprNode.GetRight();
-        else if (TryGetNode(0, out ExpressionNode exprsNode))
-        {
-            args = args.Concat(exprsNode.GetNodes<IReturnAny>());
-            exeAsFun = true;
-        }
-        else if (TryGetNode<IndexNode>(0, out arrayNode) && TryGetNode<OperatorNode>(1, out oprNode))
+        if (TryGetNode<OperatorNode>(0, out oprNode) || (TryGetNode<IndexNode>(0, out indexNode) && TryGetNode<OperatorNode>(1, out oprNode))) 
             any = oprNode.GetRight();
+        else if (TryGetNode(0, out ExpressionNode exprsNode))
+            callInfo = new(exprsNode.GetArguments());
     }
 
     public override void Execute()
     {
         base.Execute();
 
-        if (name is null) Ugh.TryGetName(Token.StringValue, out name);
-
-        if (exeAsFun)
+        if (callInfo is not null)
         {
-            fun ??= name.GetAs<BaseFunction>();
-            fun.Invoke(args);
+            callInfo.Function ??= Name.GetAs<BaseFunction>();
+            callInfo.Invoke();
             return;
         }
 
-        if (any is null || oprNode is null) return;
+        if (any is null || oprNode is null) // Get
+            return;
 
-        if (name is not null)
+
+        if (name is not null) // Set
         {
-            if (arrayNode is not null)
-                (name.Value as IList<object>)![arrayNode.Index] = BinaryOperation.Operate(name.GetAny<IList<object>>()[arrayNode.Index], any.AnyValue, oprNode.Operator);
-            else name.Value = BinaryOperation.Operate(name.Value, any.AnyValue, oprNode.Operator);
+            // Operate on array item
+            if (indexNode is not null)
+                (name.Value as IList<object>)![indexNode.Index] = BinaryOperation.Operate(name.GetAny<IList<object>>()[indexNode.Index], any.AnyValue, oprNode.Operator);
+
+            else  // Normal operation
+                name.Value = BinaryOperation.Operate(name.Value, any.AnyValue, oprNode.Operator);
         }
-        else
+        else // Register variable
         {
             var v = new Variable(Token.StringValue, any.AnyValue);
-            Ugh.RegisterName(v);
             name = v;
+            Ugh.RegisterName(v);
 
-            if (Parent is BlockNode blockNode) blockNode.LocalNames.Add(v);
+            if (Parent is BlockNode blockNode) // Add to local names if parent is block node
+                blockNode.LocalNames.Add(v);
         }
     }
 
-    public object GetValue() => arrayNode is null ? Name.AnyValue : Name.GetAny<IList<object>>()![arrayNode.Index];
-    public void SetArgs(IReturnAny arg) => args = [arg];
+    /// <summary>
+    /// Gets real value of the name
+    /// </summary>
+    /// <returns>Value from name</returns>
+    public object GetValue() => indexNode is null ? Name.AnyValue : Name.GetAny<IList<object>>()![indexNode.Index];
 }
 
 public class OperableNameNode : NameNode, IOperable;

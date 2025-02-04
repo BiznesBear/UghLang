@@ -8,9 +8,6 @@ public enum Keyword : byte
 
     Free,
 
-    True,
-    False,
-
     Fun,
     Break,
     Return,
@@ -32,7 +29,6 @@ public enum Keyword : byte
     As,
     From,
 
-    Null,
     Def,
 }
 
@@ -44,9 +40,6 @@ public static class KeywordExtensions
         { "input", Keyword.Input },
 
         { "free", Keyword.Free },
-
-        { "true", Keyword.True },
-        { "false", Keyword.False },
 
         { "fun", Keyword.Fun },
         { "break", Keyword.Break },
@@ -69,24 +62,10 @@ public static class KeywordExtensions
         { "as", Keyword.As },
         { "from", Keyword.From },
 
-        { "null", Keyword.Null },
         { "def", Keyword.Def },
     };
 
-    public static bool TryGetKeyword(this string word, out Keyword keyword, out TokenType type)
-    {
-        if (Keywords.TryGetValue(word, out Keyword value))
-        {
-            keyword = value;
-            type = keyword == Keyword.True || keyword == Keyword.False ?
-                TokenType.BoolValue : TokenType.Keyword;
-            return true;
-        }
-
-        keyword = default;
-        type = default;
-        return false;
-    }
+    public static bool TryGetKeyword(this string word, out Keyword keyword) => Keywords.TryGetValue(word, out keyword);
 
     public static ASTNode GetNode(this Keyword keyword)
     {
@@ -96,9 +75,6 @@ public static class KeywordExtensions
             Keyword.Input => new InputNode(),
 
             Keyword.Free => new FreeNode(),
-
-            Keyword.True => new ConstBoolValueNode() { Value = true },
-            Keyword.False => new ConstBoolValueNode() { Value = false },
 
             Keyword.Fun => new DeclareFunctionNode(),
             Keyword.Break => new BreakNode(),
@@ -121,7 +97,6 @@ public static class KeywordExtensions
             Keyword.As => new AsNode(),
             Keyword.From => new FromNode(),
 
-            Keyword.Null => new ConstNullValueNode(),
             Keyword.Def => new DefineNode(),
 
             _ => new UndefinedNode(),

@@ -3,7 +3,6 @@
 public enum TokenType : byte
 {
     Name, // undefined 
-    Keyword, 
 
     Operator, 
     Separator, // ; - goes back to master branch 
@@ -23,6 +22,9 @@ public enum TokenType : byte
     IntValue, 
     BoolValue, 
     FloatValue, 
+    DoubleValue,
+    ByteValue,
+    NullValue,
 
     // other
     Comma,
@@ -35,16 +37,17 @@ public enum TokenType : byte
 }
 
 
-public class Token 
+public class Token(string val, TokenType type)
 {
-    public TokenType Type { get; }
-    public string StringValue { get; }
+    public TokenType Type { get; } = type;
+    public string StringValue { get; } = val;
 
     public int IntValue => int.Parse(StringValue);
     public bool BoolValue => bool.Parse(StringValue);
     public float FloatValue => float.Parse(StringValue, System.Globalization.CultureInfo.InvariantCulture);
     public double DoubleValue => double.Parse(StringValue, System.Globalization.CultureInfo.InvariantCulture);
-   
+    public byte ByteValue => byte.Parse(StringValue);
+
     public Operator Operator
     {
         get
@@ -71,26 +74,11 @@ public class Token
                 "&&" => Operator.And,
                 "||" => Operator.Or,
 
-                _ => throw new UghException("Cannot find operator " + StringValue)
+                _ => throw new ValidOperationException("Cannot find operator " + StringValue)
             };
         }
         
     }
 
-
-    public Keyword? Keyword { get; } // TODO: Remove this 
-
-    public Token(string val, TokenType type) 
-    {
-        StringValue = val;
-        Type = type;
-
-        if (Type == TokenType.Name && StringValue.TryGetKeyword(out Keyword kw, out TokenType t)) // check if none type can be keyword
-        {
-            Keyword = kw;
-            Type = t;
-        }
-    }
-
-    public override string ToString() => $"{nameof(Token)} {{ Value = {StringValue} | Type = {Type} | Keyword = {Keyword} }}";
+    public override string ToString() => $"{nameof(Token)} {{ Value = {StringValue} | Type = {Type} }}";
 }

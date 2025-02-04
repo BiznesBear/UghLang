@@ -287,8 +287,8 @@ public class InsertNode : ASTNode, IKeywordNode
         
         var path = GetNode<ConstStringValueNode>(0).Value;
 
-        if(File.Exists(path)) { }
-        else if (Path.Exists(path)) { path += "/master.ugh"; }
+        if (!File.Exists(path)) { }
+        if (Path.Exists(path)) { path += "/master.ugh"; }
         else throw new FileNotFoundException(path);
 
         var file = File.ReadAllText(path);
@@ -301,8 +301,8 @@ public class InsertNode : ASTNode, IKeywordNode
 }
 
 /// <summary>
-/// Marks children as local which prevent them from being inserted. 
-/// </summary>
+/// Prevents children from being inserted
+/// /// </summary>
 public class LocalNode : ASTNode, ITag, IKeywordNode
 {
     public override void Load()

@@ -2,17 +2,17 @@
 namespace UghLang;
 
 
-
 public readonly struct ExpressionTree // TODO: add truncation for constant values
 {
     private readonly IReturnAny? Last { get; }
+
     public ExpressionTree(ASTNode node)
     {
         var values = new Stack<IReturnAny>();  
         var operators = new Stack<OperatorNode>(); 
 
-        var first = node.GetNodeOrDefalut<IReturnAny>(0);
         var oprNodes = node.GetNodes<OperatorNode>();
+        var first = node.GetNodeOrDefalut<IReturnAny>(0);
 
         if(first is null) return;
         else if (!oprNodes.Any())

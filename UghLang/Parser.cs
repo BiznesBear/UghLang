@@ -3,19 +3,30 @@ namespace UghLang;
 
 public class Parser : IDisposable
 {
-    public AST AST;
+    public Ugh Ugh { get; }
+    public AST AST { get; }
     public bool Inserted { get; }
     public bool NoLoad { get; }
 
+    private readonly Stack<ASTNode> masterBranches = new();
     private ASTNode currentNode;
-    private Stack<ASTNode> masterBranches = new();
+    
 
     public Parser(Ugh ugh, bool inserted, bool noload)
     {
-        AST = new(ugh, this);
+        AST = new(this);
         currentNode = AST;
+        Ugh = ugh;
         Inserted = inserted;
         NoLoad = noload;
+    }
+
+    public Parser(Ugh ugh, bool inserted, bool noload, IEnumerable<Token> tokens) : this(ugh, inserted, noload) => AddTokens(tokens);
+
+    public void AddTokens(IEnumerable<Token> tokens)
+    {
+        foreach (var t in tokens)
+            AddToken(t);
     }
 
     public void AddToken(Token token)
@@ -24,8 +35,17 @@ public class Parser : IDisposable
 
         switch (token.Type)
         {
-            case TokenType.Keyword:
-                EnterNode((token.Keyword ?? default).GetNode());
+            case TokenType.Name:
+                if(token.StringValue.TryGetKeyword(out Keyword kw))
+                {
+                    EnterNode(kw.GetNode());
+                    break;
+                }
+
+                ASTNode nameNode = IsMasterBranch() || currentNode is ITag ? new NameNode() { Token = token } : new OperableNameNode() { Token = token };
+                if (currentNode is INaming) CreateNode(nameNode);
+                else EnterNode(nameNode);
+
                 break;
             case TokenType.OpenExpression or TokenType.Colon:
                 EnterNode(new ExpressionNode()); 
@@ -34,23 +54,19 @@ public class Parser : IDisposable
                 QuitNode<IOperable>();
                 QuitNode<ExpressionNode>();
                 break;
-
             case TokenType.Operator:
                 QuitNode<IOperable>();
                 EnterNode(new OperatorNode() { Operator = token.Operator });
                 break;
-
             case TokenType.OpenBlock:
                 QuitNode<IOperable>();
                 EnterNode(new BlockNode());
                 CreateMasterBranch();
                 break;
-
             case TokenType.CloseBlock:
                 QuitNode<BlockNode>();
                 RemoveMasterBranch<BlockNode>();
                 break;
-
             case TokenType.OpenIndex:
                 EnterNode(new IndexNode());
                 break;
@@ -58,13 +74,6 @@ public class Parser : IDisposable
                 QuitNode<IOperable>();
                 QuitNode<IndexNode>();
                 break;
-
-            case TokenType.Name:
-                ASTNode nameNode = IsMasterBranch() || currentNode is ITag? new NameNode() { Token = token } : new OperableNameNode() { Token = token };
-                if(currentNode is INaming) CreateNode(nameNode);
-                else EnterNode(nameNode);
-                break;
-
             case TokenType.StringValue:
                 CreateNode(new ConstStringValueNode() { Value = token.StringValue });
                 break;
@@ -76,6 +85,15 @@ public class Parser : IDisposable
                 break;
             case TokenType.FloatValue:
                 CreateNode(new ConstFloatValueNode() { Value = token.FloatValue });
+                break;
+            case TokenType.DoubleValue:
+                CreateNode(new ConstDoubleValueNode() { Value = token.DoubleValue });
+                break;
+            case TokenType.ByteValue:
+                CreateNode(new ConstByteValueNode() { Value = token.ByteValue });
+                break;
+            case TokenType.NullValue:
+                CreateNode(new ConstNullValueNode());
                 break;
             case TokenType.Separator:
                 BackToMasterBranch();
@@ -95,8 +113,7 @@ public class Parser : IDisposable
                 break;
             case TokenType.Lambda:
                 EnterNode(new BlockNode());
-                break;
-
+                break;  
             case TokenType.EndOfFile:
                 AST.AddNode(new EndOfFileNode());
                 break;
@@ -143,8 +160,6 @@ public class Parser : IDisposable
         }
         return false;
     }
-               
-    private void QuitAllNodes<T>() { while (QuitNode<T>()); }
 
 
     /// <summary>
@@ -184,9 +199,6 @@ public class Parser : IDisposable
 
     #endregion
 
-    /// <summary>
-    /// Executes AST
-    /// </summary>
     public void Execute() => AST.Execute();
 
     public void Dispose() => GC.SuppressFinalize(this);

@@ -2,12 +2,14 @@
 
 public class Lexer : IDisposable
 {
-    public Parser Parser { get; }
-    public Lexer(string input, Parser parser) { Parser = parser; Lex(input); AddPart(TokenType.EndOfFile); }
+    public Parser? Parser { get; }
+    public Lexer(string input, Parser? parser = null) { Parser = parser; Lex(input); AddPart(TokenType.EndOfFile); }
+    public IReadOnlyList<Token> Tokens => tokens;
 
-    private string currentPart = string.Empty;
-    private bool insideString, insideComment;
+    private readonly List<Token> tokens = new();
     private Token? lastToken;
+    private bool insideString, insideComment;
+    private string currentPart = string.Empty;
 
     private void Lex(string input)
     {
@@ -81,6 +83,7 @@ public class Lexer : IDisposable
             {
                 AddChar(c);
                 var digitType = TokenType.IntValue;
+
                 while (true)
                 {
                     char ch = CheckNext();
@@ -90,6 +93,7 @@ public class Lexer : IDisposable
                         Skip();
                         continue;
                     }
+
                     switch (ch)
                     {
                         case '.':
@@ -100,6 +104,18 @@ public class Lexer : IDisposable
                         case '_':
                             Skip();
                             continue;
+                        case 'f':
+                            Skip();
+                            digitType = TokenType.FloatValue;
+                            break;
+                        case 'd':
+                            Skip();
+                            digitType = TokenType.DoubleValue;
+                            break;
+                        case 'b':
+                            Skip();
+                            digitType = TokenType.ByteValue;
+                            break;
                     }
                     break;
                 }
@@ -168,9 +184,18 @@ public class Lexer : IDisposable
     /// <param name="type">Type of last token to seal</param>
     private void AddPart(TokenType type)
     {
+        // SPECIAL VALUE NODES
+        type = currentPart switch
+        {
+            "true" or "false" => TokenType.BoolValue,
+            "null" => TokenType.NullValue,
+            _ => type
+        };
+        
         lastToken = new(currentPart, type);
         currentPart = string.Empty;
-        Parser.AddToken(lastToken);
+        tokens.Add(lastToken);
+        Parser?.AddToken(lastToken);
     }
     public void Dispose() => GC.SuppressFinalize(this);
 }

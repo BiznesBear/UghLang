@@ -21,9 +21,9 @@ public static class Debug
         Console.WriteLine("[WARRING] " + message);
     }
 
-    public static void Error(object message)
+    public static void Ugh(object message)
     {
-        Console.WriteLine("[ERROR] " + message);
+        Console.WriteLine("Ughhh: " + message);
     }
     
     public static void PrintTree(ASTNode node, string title = "DEBUG TREE") 

@@ -1,7 +1,5 @@
 ﻿namespace UghLang.Nodes;
 
-
-
 public static class IReturnAnyHelpers
 {
     public static T GetAny<T>(this IReturnAny any) => (T)any.AnyValue;
@@ -9,24 +7,30 @@ public static class IReturnAnyHelpers
 
 public interface IReturnAny
 {
+    /// <summary>
+    /// Returns any value of the object
+    /// </summary>
     public object AnyValue { get; }
 }
 
 public interface IReturn<T> : IReturnAny
 {
-    public T Value { get; set; }
+    /// <summary>
+    /// Returns value of the object
+    /// </summary>
+    public T Value { get; }
 }
 
 public interface IConstantValue
 {
-    public object ConstantValue { get; }
+    public object GetConstantValue();
 }
 
 public class ConstValueNode<T>(T defalutValue) : ASTNode, IConstantValue, IReturn<T>
 {
     public T Value { get; set; } = defalutValue;
     public object AnyValue => Value ?? throw new NullReferenceException("Null value in ValueNode");
-    public object ConstantValue => AnyValue;
+    public object GetConstantValue() => AnyValue;
 }
 
 public class ConstStringValueNode() : ConstValueNode<string>(string.Empty);

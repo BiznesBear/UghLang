@@ -8,6 +8,7 @@ public abstract class ASTNode
     #region Properties
 
     public event ASTNodeEvent? NodeAdded;
+
     public int Position { get; set; } 
     public bool Executable { get; set; } = true;
 
@@ -15,6 +16,15 @@ public abstract class ASTNode
 
     private readonly List<ASTNode> nodes = new();
 
+
+    public Ugh Ugh => Parser.Ugh;
+
+    private Parser? parser;
+    public Parser Parser
+    {
+        get => parser ?? throw new UghException("No Parser assigned in node");
+        set => parser = value;
+    }
 
     private ASTNode? parent;
     public ASTNode Parent
@@ -24,26 +34,11 @@ public abstract class ASTNode
     }
 
 
-    private Ugh? ugh;
-    public Ugh Ugh
-    {
-        get => ugh ?? throw new UghException("No Ugh assigned in node");
-        set => ugh = value;
-    }
-
-    private Parser? parser;
-    public Parser Parser
-    {
-        get => parser ?? throw new UghException("No Parser assigned in node");
-        set => parser = value;
-    }
-
     #endregion
 
     public void AddNode(ASTNode node)
     {
         node.Parent = this;
-        node.Ugh = Ugh;
         node.Parser = Parser;
         nodes.Add(node);
         NodeAdded?.Invoke(node);
@@ -83,7 +78,7 @@ public abstract class ASTNode
         var node = GetNodeOrDefalut<T>(index);
         if(node is not null)
             return node;
-        throw new InvalidSpellingException(this);
+        throw new ExpectedException(typeof(T).ToString(), this);
     }
 
     public bool TryGetNode<T>(int index, out T node) 
@@ -100,12 +95,22 @@ public abstract class ASTNode
         return true;
     }
 
+    /// <summary>
+    /// Get nodes of specified type from assigned nodes
+    /// </summary>
+    /// <typeparam name="T">nodes type</typeparam>
+    /// <returns>IEnumerable with T</returns>
     public IEnumerable<T> GetNodes<T>()
     {
         foreach (var n in Nodes)
             if (n is T t) yield return t;
     }
 
+    /// <summary>
+    /// Get nodes of specified type from assigned nodes and their children
+    /// </summary>
+    /// <typeparam name="T">nodes type</typeparam>
+    /// <returns>IEnumerable with T</returns>
     public IEnumerable<T> GetAllNodes<T>()
     {
         foreach (var n in Nodes)
@@ -116,7 +121,6 @@ public abstract class ASTNode
         }
     }
 
-
     public T? FindNode<T>() => GetNodes<T>().FirstOrDefault();
     public T? SearchForNode<T>() => GetAllNodes<T>().FirstOrDefault();
 
@@ -124,7 +128,7 @@ public abstract class ASTNode
 
 
     /// <summary>
-    /// Used for preloading nodes for faster execution time
+    /// Loads this and assigned nodes
     /// </summary>
     public virtual void Load()
     {
@@ -136,7 +140,7 @@ public abstract class ASTNode
     }
 
     /// <summary>
-    /// Executes all assigned nodes.
+    /// Executes this and assigned nodes
     /// </summary>
     public virtual void Execute()
     {
@@ -147,6 +151,9 @@ public abstract class ASTNode
                 else return;
     }
 
+    /// <summary>
+    /// Force node to execute
+    /// </summary>
     public virtual void ForceExecute()
     {
         var startingState = Executable;
@@ -162,10 +169,9 @@ public abstract class ASTNode
 public class AST : ASTNode
 {
     private ASTNode? previous;
-    public AST(Ugh ugh, Parser parser) 
+    public AST(Parser parser) 
     {
         Parent = this;
-        Ugh = ugh;
         Parser = parser;
         NodeAdded += LoadNode;
     }
@@ -187,24 +193,25 @@ public class AST : ASTNode
 public class UndefinedNode : ASTNode
 {
     public override void Load() => throw new UndefinedInstructions();
+    public override void Execute() => throw new UndefinedInstructions();
 }
 
 /// <summary>
-/// Tags node as operable. Operable nodes can be quited by operators
+/// Operators quits from IOperable nodes 
 /// </summary>
 public interface IOperable;
 
 /// <summary>
-/// If parent is marked as INamed: NameNode will not try to parse name. Parser will only create NameNode instead of entering them.
+/// NameNode children will not try to get name. Parser will create NameNode instead of entering them.
 /// </summary>
 public interface INaming;
 
 /// <summary>
-/// Marks node as tag node. Tag node is recognized by parser ad master branch
+/// Tag node is recognized by parser as master branch
 /// </summary>
 public interface ITag;
 
 /// <summary>
-/// Next node quits after parsing this node
+/// Parser quits this node after adding next node
 /// </summary>
 public interface IInstantQuit;

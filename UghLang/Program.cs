@@ -44,22 +44,21 @@ for (var i = 0; i < args.Length; i++)
 
 if (path == string.Empty) return;
 
+var file = File.ReadAllText(path);
 
 var ugh = new Ugh();
-var file = File.ReadAllText(path);
 var parser = new Parser(ugh, false, noload);
 
 switch (Path.GetExtension(path))
 {
-    case ".ugh":
+    case ".ugh" or ".txt":
         Debug.Print("Load:");
-
         _ = new Lexer(file, parser);
         Debug.PrintTree(parser.AST, path);
 
         Debug.Print("Execute: ");
-
-        if (!noload) parser.Execute();
+        if (!noload) 
+            parser.Execute();
         break;
     default: throw new UghException("Wrong file format: " + path);
 }
