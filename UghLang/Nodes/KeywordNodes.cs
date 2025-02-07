@@ -53,13 +53,22 @@ public class FreeNode : AssignedNode<NameNode>, IKeywordNode
 /// </summary>
 public class DeclareFunctionNode : ASTNode, INaming, IKeywordNode
 {
+    private Function? function;
+
+    public override void Load()
+    {
+        base.Load();
+        var name = GetNode<NameNode>(0).Token.StringValue;
+        var blockNode = GetNode<BlockNode>(2);
+        var localVars = GetNode<ExpressionNode>(1).GetNodes<NameNode>().Select(nn => nn.Token.StringValue).ToArray();
+
+        function = new(name, blockNode, localVars);
+    }
+
     public override void Execute()
     {
         base.Execute();
-        var name = GetNode<NameNode>(0);
-
-        Function fun = new(name.Token.StringValue, GetNode<BlockNode>(2), GetNode<ExpressionNode>(1));
-        Ugh.RegisterName(fun);
+        Ugh.RegisterName(function!);
     }
 }
 
@@ -86,8 +95,8 @@ public class ReturnNode : AssignedNode<IReturnAny>, IKeywordNode
                 Ugh.Function.Value = assigned.AnyValue;
             Ugh.Function.BlockNode.Executable = false;
         }
-        else if (Ugh.ReturnBlock is not null) // Prevent's from breaking ifs, elifs etc.
-            Ugh.ReturnBlock.Executable = false;
+        else if (Ugh.ReturnStack.TryPeek(out var peek)) // Prevents from breaking ifs, elifs etc.
+            peek.Executable = false;
         else
             Parser.AST.Executable = false;
     }
@@ -181,7 +190,7 @@ public class RepeatNode() : ASTNode, IKeywordNode
             BlockNode.LocalNames.Add(var);
         }
 
-        Ugh.SetReturnBlock(BlockNode);
+        Ugh.EnterState(BlockNode);
 
         BlockNode.Executable = true;
 
@@ -200,7 +209,7 @@ public class RepeatNode() : ASTNode, IKeywordNode
 
         BlockNode.Executable = false;
         BlockNode.FreeLocalNames();
-        Ugh.SetReturnBlock(null);
+        Ugh.QuitState();
 
         void Do(int i)
         {
@@ -219,7 +228,7 @@ public class WhileNode : AssignedIReturnAnyAndBlockNode, IKeywordNode
     {
         base.Execute();
 
-        Ugh.SetReturnBlock(Block);
+        Ugh.EnterState(Block);
         Block.Executable = true;
         
         while (Assigned.GetAny<bool>()) // TODO: Change this 
@@ -230,7 +239,7 @@ public class WhileNode : AssignedIReturnAnyAndBlockNode, IKeywordNode
 
         Block.Executable = false;
         Block.FreeLocalNames();
-        Ugh.SetReturnBlock(null);
+        Ugh.QuitState();
     }
 }
 
@@ -252,7 +261,7 @@ public class ForeachNode : ASTNode, IKeywordNode
     {
         base.Execute();
         
-        Ugh.SetReturnBlock(blockNode);
+        Ugh.EnterState(blockNode!);
 
         var collection = collectionNode?.AnyValue as IList<object> ?? throw new UghException($"Can not convert {collectionNode?.Token.StringValue} with value {collectionNode?.AnyValue} to array");
         
@@ -272,31 +281,62 @@ public class ForeachNode : ASTNode, IKeywordNode
         blockNode.Executable = false;
         blockNode.FreeLocalNames();
 
-        Ugh.SetReturnBlock(null);
+        Ugh.QuitState();
     }
 }
 
 /// <summary>
-/// Imports other ugh files and mark them as inserted
+/// Imports other ugh files (and mark them as inserted) or loads modules
 /// </summary>
-public class InsertNode : ASTNode, IKeywordNode
+public class InsertNode : ASTNode, IKeywordNode, INaming
 {
     public override void Execute()
     {
         base.Execute();
-        
-        var path = GetNode<ConstStringValueNode>(0).Value;
 
-        if (!File.Exists(path)) { }
-        if (Path.Exists(path)) { path += "/master.ugh"; }
-        else throw new FileNotFoundException(path);
+        switch (GetNodeAt(0))
+        {
+            case ConstStringValueNode strValNode:
+                var path = GetNode<ConstStringValueNode>(0).Value;
 
-        var file = File.ReadAllText(path);
+                if (!File.Exists(path)) { }
+                if (Path.Exists(path)) { path += "/master.ugh"; }
+                else throw new FileNotFoundException(path);
 
-        using var parser = new Parser(Ugh, true, Parser.NoLoad);
-        using var lexer = new Lexer(file, parser);
-        
-        parser.Execute();
+                var file = File.ReadAllText(path);
+
+                var parser = new Parser(Ugh, true, Parser.NoLoad);
+                _ = new Lexer(file, parser);
+
+                parser.Execute();
+                break;
+            case NameNode nn:
+                var strNode = nn.Token.StringValue;
+
+                var asNode = SearchForNode<AsNode>();
+                var fromNode = SearchForNode<FromNode>();
+
+                var name = asNode is null ? strNode : asNode.StringName;
+                var fullName = string.IsNullOrEmpty(name) ? string.Empty : name + '.';
+
+                var assembly = fromNode?.ConstAssembly.Assembly;
+                assembly ??= Ugh.CurrentAssembly;
+
+                var module = ModuleLoader.LoadModule(strNode, assembly);
+
+                foreach (var method in module.Methods)
+                {
+                    ModuleFunction function = new($"{fullName}{method.Key}", Ugh, method.Value);
+                    Ugh.RegisterName(function);
+                }
+
+                foreach (var field in module.Fields)
+                {
+                    Constant con = new($"{fullName}{field.Key}", field.Value.GetValue(null) ?? 0);
+                    Ugh.RegisterName(con);
+                }
+                break;
+        }
     }
 }
 
@@ -313,44 +353,6 @@ public class LocalNode : ASTNode, ITag, IKeywordNode
             tag.Executable = true;
 
         base.Load(); // Load other things 
-    }
-}
-
-public class ModuleNode : ASTNode, INaming, IKeywordNode
-{
-    public override void Execute()
-    {
-        base.Execute();
-
-        var strNode = GetNode<NameNode>(0);
-
-        var asNode = SearchForNode<AsNode>();
-        var fromNode = SearchForNode<FromNode>();
-
-        var name = asNode is null? strNode.Token.StringValue : asNode.StringName;
-        var fullName = string.IsNullOrEmpty(name) ? string.Empty : name + '.';
-
-        var assembly = fromNode?.ConstAssembly.Assembly;
-
-        if (assembly is null)
-        { 
-            Ugh.StdAssembly ??= Assembly.GetExecutingAssembly().GetTypes(); 
-            assembly = Ugh.StdAssembly; 
-        }
-
-        var module = ModuleLoader.LoadModule(strNode.Token.StringValue, assembly);
-
-        foreach (var method in module.Methods)
-        {
-            ModuleFunction function = new($"{fullName}{method.Key}", Ugh, method.Value);
-            Ugh.RegisterName(function);
-        }
-
-        foreach (var field in module.Fields)
-        {
-            Constant con = new($"{fullName}{field.Key}", field.Value.GetValue(null) ?? 0);
-            Ugh.RegisterName(con);
-        }
     }
 }
 
@@ -413,7 +415,6 @@ public class DefineNode : ASTNode, INaming, IKeywordNode, IReturnAny, IOperable
                 break;
             default: throw new InvalidSpellingException(this);
         }
-
     }
 
     public override void Execute()
@@ -421,6 +422,6 @@ public class DefineNode : ASTNode, INaming, IKeywordNode, IReturnAny, IOperable
         base.Execute();
 
         if(!isdef) 
-            Ugh.RegisterName(new Constant(name, GetNodeOrDefalut<IReturnAny>(1)?.AnyValue ?? null!));        
+            Ugh.RegisterName(new Constant(name, GetNodeOrDefalut<IReturnAny>(1)?.AnyValue ?? null!));
     }
 }

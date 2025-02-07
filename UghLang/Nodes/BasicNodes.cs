@@ -30,7 +30,8 @@ public class ExpressionNode : ASTNode, IReturn<object?>
     public object AnyValue => Value is not null? Value : expressionTree.Express();
 
     private ExpressionTree expressionTree;
-    public IEnumerable<IReturnAny> GetArguments() => GetNodes<IReturnAny>() ?? throw new ValidOperationException("null arguments in expression");
+    public IReturnAny[] GetArguments() => GetNodes<IReturnAny>().ToArray() ?? throw new ValidOperationException("null arguments in expression");
+
     public override void Load() 
     {
         base.Load();
@@ -41,7 +42,25 @@ public class ExpressionNode : ASTNode, IReturn<object?>
 public class IndexNode : AssignedNode<IReturnAny>, IReturnAny
 {
     public int Index => (int)Assigned.AnyValue;
-    public object AnyValue => new object[Index];
+    public object AnyValue
+    {
+        get
+        {
+            var qinit = GetBrother<BlockNode>()?.Value ?? [];
+
+            if (qinit is object[] existingArray)
+            {
+                var newArray = new object[Index];
+
+                Array.Copy(existingArray, newArray, Math.Min(existingArray.Length, Index));
+
+                return newArray;
+            }
+
+            return Enumerable.Repeat(qinit, Index).ToArray();
+        }
+    } 
+
     public static object[] NodesToArray(IReadOnlyList<ASTNode> nodes) => nodes.OfType<IReturnAny>().Select(a => a.AnyValue).ToArray();
 }
 
@@ -51,13 +70,11 @@ public class NameNode : ASTNode, IReturnAny
     public object AnyValue => GetValue();
     public Name Name => name ?? Ugh.GetName(Token.StringValue);
 
-
     private Name? name;
-    
     private IReturnAny? any;
+
     private OperatorNode? oprNode;
     private IndexNode? indexNode;
-
     private FunctionCallInfo? callInfo;
 
     public override void Load()
@@ -86,6 +103,7 @@ public class NameNode : ASTNode, IReturnAny
         if (any is null || oprNode is null) // Get
             return;
 
+        Ugh.TryGetName(Token.StringValue, out name);
 
         if (name is not null) // Set
         {
@@ -110,7 +128,7 @@ public class NameNode : ASTNode, IReturnAny
     /// <summary>
     /// Gets real value of the name
     /// </summary>
-    /// <returns>Value from name</returns>
+    /// <returns>Name value</returns>
     public object GetValue() => indexNode is null ? Name.AnyValue : Name.GetAny<IList<object>>()![indexNode.Index];
 }
 

@@ -1,7 +1,7 @@
 ﻿namespace UghLang.Modules;
 
-[Module("Convert")]
-public static class ConvertModule
+[Module("Types")]
+public static class TypesModule
 {
     private static T ConvertType<T>(object obj)
     {
@@ -9,6 +9,8 @@ public static class ConvertModule
         catch (Exception ex) { Debug.Warring(ex.Message); }
         return default!;
     }
+
+    public static string GetType(object obj) => obj.GetType().Name;
     public static string String(object obj) => ConvertType<string>(obj);
     public static int Int(object obj) => ConvertType<int>(obj);
     public static bool Bool(object obj) => ConvertType<bool>(obj);

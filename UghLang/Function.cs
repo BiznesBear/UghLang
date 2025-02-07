@@ -6,32 +6,25 @@ namespace UghLang;
 public abstract class BaseFunction(string name, Ugh ugh) : Name(name, 0)
 {
     protected Ugh Ugh => ugh;
-    public abstract void Invoke(IEnumerable<IReturnAny> args);
+    public abstract void Invoke(IReturnAny[] args);
 }
 
-public class Function(string name, BlockNode node, ExpressionNode exprs) : BaseFunction(name, node.Ugh)
+public class Function(string name, BlockNode node, string[] localNames) : BaseFunction(name, node.Ugh)
 {
     public BlockNode BlockNode { get; } = node;
-    private ExpressionNode ExpressionNode { get; } = exprs;
+    private readonly string[] localNames = localNames;
 
-
-    public override void Invoke(IEnumerable<IReturnAny> args)
+    public override void Invoke(IReturnAny[] args)
     {
         var lastFun = Ugh.Function;
         Ugh.Function = this;
 
-        var nodes = ExpressionNode.GetNodes<NameNode>();
+        if (localNames.Length != args.Length) 
+            throw new IncorrectArgumentsException(Key);
 
-        var nameNodes = nodes as NameNode[] ?? nodes.ToArray();
-        var arguments = args as IReturnAny[] ?? args.ToArray();
-
-        if (nameNodes.Length != arguments.Length) throw new IncorrectArgumentsException(Key);
-
-        for (int i = 0; i < nameNodes.Length; i++) // declaring local variables 
+        for (int i = 0; i < localNames.Length; i++) // declaring local variables 
         {
-            var nameNode = nameNodes[i];
-
-            Variable v = new(nameNode.Token.StringValue, arguments[i].AnyValue);
+            Variable v = new(localNames[i], args[i].AnyValue);
 
             Ugh.RegisterName(v);
             BlockNode.LocalNames.Add(v);
@@ -46,15 +39,15 @@ public class Function(string name, BlockNode node, ExpressionNode exprs) : BaseF
 
 public class ModuleFunction(string name, Ugh ugh, MethodInfo method) : BaseFunction(name, ugh)
 {
-    public override void Invoke(IEnumerable<IReturnAny> args)
+    public override void Invoke(IReturnAny[] args)
     {
         Value = method.Invoke(null, args.Select(item => item.AnyValue).ToArray()) ?? 0;
     }
 }
 
-public class FunctionCallInfo(IEnumerable<IReturnAny> args)
+public class FunctionCallInfo(IReturnAny[] args)
 {
-    public IEnumerable<IReturnAny> Arguments { get; set; } = args;
+    public IReturnAny[] Arguments { get; set; } = args;
     public BaseFunction? Function { get; set; }
     public void Invoke() => Function?.Invoke(Arguments);
 }

@@ -23,7 +23,7 @@ public static class Debug
 
     public static void Ugh(object message)
     {
-        Console.WriteLine("Ughhh: " + message);
+        Console.WriteLine($"Ughhh {Environment.ExitCode}: {message}");
     }
     
     public static void PrintTree(ASTNode node, string title = "DEBUG TREE") 

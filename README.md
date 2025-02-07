@@ -43,9 +43,7 @@ ughlang master.ugh
 - insert
 - local
 - assembly
-- module 
 - as
 - from
-- unsigned
 - null
 - def

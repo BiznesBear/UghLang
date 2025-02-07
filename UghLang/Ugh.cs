@@ -1,4 +1,5 @@
-﻿using UghLang.Nodes;
+﻿using System.Reflection;
+using UghLang.Nodes;
 namespace UghLang;
 
 
@@ -7,29 +8,49 @@ namespace UghLang;
 /// </summary>
 public class Ugh
 {
+    /// <summary>
+    /// Dictionary with registred names
+    /// </summary>
     public IReadOnlyDictionary<string, Name> Names => names;
+
 
     /// <summary>
     /// Currently executing function
     /// </summary>
     public Function? Function { get; set; }
-    public Type[]? StdAssembly { get; set; }  
+
+    /// <summary>
+    /// Contains array of stdlib types 
+    /// </summary>
+    public Type[] CurrentAssembly { get; }
+
+
+    /// <summary>
+    /// Return node will end peek 
+    /// </summary>
+    public Stack<ASTNode> ReturnStack { get; } = new();
+
 
     private readonly Dictionary<string, Name> names = new();
-    
-
-
-    public BlockNode? ReturnBlock { get; private set; } // return will end this node 
-
-    private BlockNode? lastReturnBlock;
-
-    public void SetReturnBlock(BlockNode? node)
+   
+    public Ugh() 
     {
-        if(node is null) 
-            ReturnBlock = lastReturnBlock;
-        else { ReturnBlock = node; lastReturnBlock = node; }
+        CurrentAssembly = Assembly.GetExecutingAssembly().GetTypes();
     }
 
+    /// <summary>
+    /// Push node to return stack
+    /// </summary>
+    public void EnterState(ASTNode node) => ReturnStack.Push(node);
+
+    /// <summary>
+    /// Pops node from return stack
+    /// </summary>
+    public void QuitState() => ReturnStack.Pop();
+
+    /// <summary>
+    /// Checks if name is defined in registry
+    /// </summary>
     public bool IsDefined(string name) => names.ContainsKey(name); 
     
     public void RegisterName(Name name)
