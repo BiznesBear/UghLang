@@ -297,11 +297,11 @@ public class InsertNode : ASTNode, IKeywordNode, INaming
         switch (GetNodeAt(0))
         {
             case ConstStringValueNode strValNode:
-                var path = GetNode<ConstStringValueNode>(0).Value;
+                var path = strValNode.Value;
 
-                if (!File.Exists(path)) { }
-                if (Path.Exists(path)) { path += "/master.ugh"; }
-                else throw new FileNotFoundException(path);
+                if(Directory.Exists(path)) { path += "\\master.ugh"; }
+                else if (!File.Exists(path)) 
+                    throw new FileNotFoundException(path);
 
                 var file = File.ReadAllText(path);
 

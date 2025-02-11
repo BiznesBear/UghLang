@@ -4,10 +4,10 @@ public delegate void ASTNodeEvent(ASTNode node);
 public abstract class ASTNode
 {
     public const ASTNode NULL = default;
+    public event ASTNodeEvent? NodeAdded;
+    public Ugh Ugh => Parser.Ugh;
 
     #region Properties
-
-    public event ASTNodeEvent? NodeAdded;
 
     public int Position { get; set; } 
     public bool Executable { get; set; } = true;
@@ -16,8 +16,6 @@ public abstract class ASTNode
 
     private readonly List<ASTNode> nodes = new();
 
-
-    public Ugh Ugh => Parser.Ugh;
 
     private Parser? parser;
     public Parser Parser

@@ -39,6 +39,7 @@ public enum TokenType : byte
 
 public class Token(string val, TokenType type)
 {
+
     public TokenType Type { get; } = type;
     public string StringValue { get; } = val;
 
