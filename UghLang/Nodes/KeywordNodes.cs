@@ -425,3 +425,7 @@ public class DefineNode : ASTNode, INaming, IKeywordNode, IReturnAny, IOperable
             Ugh.RegisterName(new Constant(name, GetNodeOrDefalut<IReturnAny>(1)?.AnyValue ?? null!));
     }
 }
+public class ObjectNode : ASTNode, INaming, IKeywordNode
+{
+
+}

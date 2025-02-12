@@ -5,7 +5,7 @@ public enum TokenType : byte
     Name, // undefined 
 
     Operator, 
-    Separator, // ; - goes back to master branch 
+    Separator, // ; goes back to master branch 
     
     // braces
     OpenExpression, 
@@ -33,13 +33,13 @@ public enum TokenType : byte
     Not,
     Pi,
     Lambda,
+
     EndOfFile
 }
 
 
 public class Token(string val, TokenType type)
 {
-
     public TokenType Type { get; } = type;
     public string StringValue { get; } = val;
 

@@ -27,8 +27,7 @@ public enum Keyword : byte
     
     As,
     From,
-
-    Def,
+    Def
 }
 
 public static class KeywordExtensions

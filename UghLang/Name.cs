@@ -2,11 +2,11 @@
 
 namespace UghLang;
 
-public abstract class Name(string name, object val) : IDisposable, IReturnAny
+public abstract class Name(string name, object? val = null) : IDisposable, IReturnAny
 {
     public string Key { get; } = name;
 
-    protected object value = val;
+    protected object value = val!;
     public object Value
     {
         get => value;
@@ -27,9 +27,9 @@ public abstract class Name(string name, object val) : IDisposable, IReturnAny
     public override string ToString() => $"{nameof(Name)}{{{nameof(Key)} = {Key}; {nameof(Value)} = {Value}}}";
 }
 
-public class Variable(string name, object value) : Name(name, value) { }
+public class Variable(string name, object? value) : Name(name, value) { }
 
-public class Constant(string name, object value) : Variable(name, value), IConstantValue
+public class Constant(string name, object? value) : Variable(name, value), IConstantValue
 {
     public object GetConstantValue() => AnyValue;
 }
