@@ -24,7 +24,7 @@ public abstract class Name(string name, object? val = null) : IDisposable, IRetu
     public T GetAs<T>() where T : Name => GetAsOrNull<T>() ?? throw new UghException($"{GetType()} is not {typeof(T)}");
 
     public void Dispose() => GC.SuppressFinalize(this);
-    public override string ToString() => $"{nameof(Name)}{{{nameof(Key)} = {Key}; {nameof(Value)} = {Value}}}";
+    public override string ToString() => $"{{{nameof(Key)} = {Key}; {nameof(Value)} = {Value}}}";
 }
 
 public class Variable(string name, object? value) : Name(name, value) { }

@@ -2,7 +2,7 @@
   "profiles": {
     "UghLang": {
       "commandName": "Project",
-      "commandLineArgs": "master.ugh --debug --noload"
+      "commandLineArgs": "master.ugh --debug"
     }
   }
 }

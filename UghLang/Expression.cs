@@ -54,7 +54,7 @@ public readonly struct ExpressionTree // TODO: add truncation for constant value
         Last = values.Pop();
     }
 
-    public readonly object Express() => Last?.AnyValue ?? null!;
+    public object Express() => Last?.AnyValue ?? null!;
 }
 
 public enum Operator

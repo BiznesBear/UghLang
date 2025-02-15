@@ -3,21 +3,20 @@ using UghLang.Nodes;
 
 namespace UghLang;
 
-public abstract class BaseFunction(string name, Ugh ugh) : Name(name, 0)
+public abstract class BaseFunction(string name, Rnm rnm) : Name(name, 0)
 {
-    protected Ugh Ugh => ugh;
+    protected Rnm Rnm => rnm;
     public abstract void Invoke(IReturnAny[] args);
 }
 
-public class Function(string name, BlockNode node, string[] localNames) : BaseFunction(name, node.Ugh)
+public class Function(string name, BlockNode node, string[] localNames) : BaseFunction(name, node.Rnm)
 {
     public BlockNode BlockNode { get; } = node;
-    private readonly string[] localNames = localNames;
-
+    
     public override void Invoke(IReturnAny[] args)
     {
-        var lastFun = Ugh.Function;
-        Ugh.Function = this;
+        var lastFun = Rnm.Function;
+        Rnm.Function = this;
 
         if (localNames.Length != args.Length) 
             throw new IncorrectArgumentsException(Key);
@@ -26,18 +25,18 @@ public class Function(string name, BlockNode node, string[] localNames) : BaseFu
         {
             Variable v = new(localNames[i], args[i].AnyValue);
 
-            Ugh.RegisterName(v);
+            Rnm.RegisterName(v);
             BlockNode.LocalNames.Add(v);
         }
 
         BlockNode.ForceExecute();
         BlockNode.FreeLocalNames();
 
-        Ugh.Function = lastFun;
+        Rnm.Function = lastFun;
     }
 }
 
-public class ModuleFunction(string name, Ugh ugh, MethodInfo method) : BaseFunction(name, ugh)
+public class ModuleFunction(string name, Rnm rnm, MethodInfo method) : BaseFunction(name, rnm)
 {
     public override void Invoke(IReturnAny[] args)
     {

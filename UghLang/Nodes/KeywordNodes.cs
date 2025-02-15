@@ -7,19 +7,19 @@ public interface IKeywordNode;
 /// <summary>
 /// Writes value 
 /// </summary>
-public class PrintNode : AssignedNode<IReturnAny>, IKeywordNode
+public class PrintNode : ParsedExpressionNode, IKeywordNode
 {
     public override void Execute()
     {
         base.Execute();
-        Console.WriteLine(assigned?.AnyValue);
+        Console.WriteLine(Expression.Express());
     }
 }
 
 /// <summary>
 /// Creates input field and writes value 
 /// </summary>
-public class InputNode : AssignedNode<IReturnAny>, IReturn<string>, IOperable, IKeywordNode
+public class InputNode : ParsedExpressionNode, IReturn<string>, IOperableNode, IKeywordNode
 {
     public string Value { get; set; } = string.Empty;
     public object AnyValue => Value;
@@ -27,7 +27,7 @@ public class InputNode : AssignedNode<IReturnAny>, IReturn<string>, IOperable, I
     public override void Execute()
     {
         base.Execute();
-        Console.Write(assigned?.AnyValue);
+        Console.Write(Expression.Express());
         Value = Console.ReadLine() ?? string.Empty;
     }
 }
@@ -41,9 +41,9 @@ public class FreeNode : AssignedNode<NameNode>, IKeywordNode
     {
         base.Execute();
         if (assigned is not null)
-            Ugh.FreeName(assigned.Name);
+            Rnm.FreeName(assigned.Name);
         else if (TryGetNode<ConstNullValueNode>(0, out _))
-            Ugh.FreeAll();
+            Rnm.FreeAll();
         else throw new InvalidSpellingException(this);
     }
 }
@@ -51,7 +51,7 @@ public class FreeNode : AssignedNode<NameNode>, IKeywordNode
 /// <summary>
 /// Declares new function 
 /// </summary>
-public class DeclareFunctionNode : ASTNode, INaming, IKeywordNode
+public class DeclareFunctionNode : ASTNode, INamingNode, IKeywordNode
 {
     private Function? function;
 
@@ -62,13 +62,13 @@ public class DeclareFunctionNode : ASTNode, INaming, IKeywordNode
         var blockNode = GetNode<BlockNode>(2);
         var localVars = GetNode<ExpressionNode>(1).GetNodes<NameNode>().Select(nn => nn.Token.StringValue).ToArray();
 
-        function = new(name, blockNode, localVars);
+        function = new Function(name, blockNode, localVars);
     }
 
     public override void Execute()
     {
         base.Execute();
-        Ugh.RegisterName(function!);
+        Rnm.RegisterName(function!);
     }
 }
 
@@ -89,13 +89,13 @@ public class ReturnNode : AssignedNode<IReturnAny>, IKeywordNode
     {
         base.Execute();
 
-        if (Ugh.Function is not null) 
+        if (Rnm.Function is not null) 
         {
             if (assigned is not null)
-                Ugh.Function.Value = assigned.AnyValue;
-            Ugh.Function.BlockNode.Executable = false;
+                Rnm.Function.Value = assigned.AnyValue;
+            Rnm.Function.BlockNode.Executable = false;
         }
-        else if (Ugh.ReturnStack.TryPeek(out var peek)) // Prevents from breaking ifs, elifs etc.
+        else if (Rnm.ReturnStack.TryPeek(out var peek)) // Prevents from breaking ifs, elifs etc.
             peek.Executable = false;
         else
             Parser.AST.Executable = false;
@@ -143,7 +143,7 @@ public class ElseNode : AssignedNode<BlockNode>, IKeywordNode
     }
 }
 
-public class ElifNode : IfNode, IKeywordNode
+public class ElifNode : IfNode
 {
     public ElifNode() => Executable = false;
 
@@ -186,11 +186,11 @@ public class RepeatNode() : ASTNode, IKeywordNode
 
         if(var.Key != string.Empty)
         {
-            Ugh.RegisterName(var);
+            Rnm.RegisterName(var);
             BlockNode.LocalNames.Add(var);
         }
 
-        Ugh.EnterState(BlockNode);
+        Rnm.EnterState(BlockNode);
 
         BlockNode.Executable = true;
 
@@ -209,7 +209,7 @@ public class RepeatNode() : ASTNode, IKeywordNode
 
         BlockNode.Executable = false;
         BlockNode.FreeLocalNames();
-        Ugh.QuitState();
+        Rnm.QuitState();
 
         void Do(int i)
         {
@@ -228,7 +228,7 @@ public class WhileNode : AssignedIReturnAnyAndBlockNode, IKeywordNode
     {
         base.Execute();
 
-        Ugh.EnterState(Block);
+        Rnm.EnterState(Block);
         Block.Executable = true;
         
         while (Assigned.GetAny<bool>()) // TODO: Change this 
@@ -239,7 +239,7 @@ public class WhileNode : AssignedIReturnAnyAndBlockNode, IKeywordNode
 
         Block.Executable = false;
         Block.FreeLocalNames();
-        Ugh.QuitState();
+        Rnm.QuitState();
     }
 }
 
@@ -261,12 +261,12 @@ public class ForeachNode : ASTNode, IKeywordNode
     {
         base.Execute();
         
-        Ugh.EnterState(blockNode!);
+        Rnm.EnterState(blockNode!);
 
         var collection = collectionNode?.AnyValue as IList<object> ?? throw new UghException($"Can not convert {collectionNode?.Token.StringValue} with value {collectionNode?.AnyValue} to array");
         
         Variable item = new(itemNode!.Token.StringValue, 0);
-        Ugh.RegisterName(item);
+        Rnm.RegisterName(item);
 
         blockNode!.LocalNames.Add(item);
 
@@ -281,14 +281,14 @@ public class ForeachNode : ASTNode, IKeywordNode
         blockNode.Executable = false;
         blockNode.FreeLocalNames();
 
-        Ugh.QuitState();
+        Rnm.QuitState();
     }
 }
 
 /// <summary>
 /// Imports other ugh files (and mark them as inserted) or loads modules
 /// </summary>
-public class InsertNode : ASTNode, IKeywordNode, INaming
+public class InsertNode : ASTNode, IKeywordNode, INamingNode
 {
     public override void Execute()
     {
@@ -305,7 +305,7 @@ public class InsertNode : ASTNode, IKeywordNode, INaming
 
                 var file = File.ReadAllText(path);
 
-                var parser = new Parser(Ugh, true, Parser.NoLoad);
+                var parser = new Parser(Rnm, true, Parser.OnlyLoad);
                 _ = new Lexer(file, parser);
 
                 parser.Execute();
@@ -320,21 +320,22 @@ public class InsertNode : ASTNode, IKeywordNode, INaming
                 var fullName = string.IsNullOrEmpty(name) ? string.Empty : name + '.';
 
                 var assembly = fromNode?.ConstAssembly.Assembly;
-                assembly ??= Ugh.CurrentAssembly;
+                assembly ??= Rnm.CurrentAssembly;
 
                 var module = ModuleLoader.LoadModule(strNode, assembly);
 
                 foreach (var method in module.Methods)
                 {
-                    ModuleFunction function = new($"{fullName}{method.Key}", Ugh, method.Value);
-                    Ugh.RegisterName(function);
+                    ModuleFunction function = new($"{fullName}{method.Key}", Rnm, method.Value);
+                    Rnm.RegisterName(function);
                 }
 
                 foreach (var field in module.Fields)
                 {
                     Constant con = new($"{fullName}{field.Key}", field.Value.GetValue(null) ?? 0);
-                    Ugh.RegisterName(con);
+                    Rnm.RegisterName(con);
                 }
+
                 break;
         }
     }
@@ -356,8 +357,11 @@ public class LocalNode : ASTNode, ITag, IKeywordNode
     }
 }
 
-public class AssemblyNode : ASTNode, IKeywordNode
+public class AssemblyNode : ASTNode, IKeywordNode, IReturn<Type[]>
 {
+    public object AnyValue => Value;
+    public Type[] Value { get; private set; } = [];
+    
     public override void Execute()
     {
         base.Execute();
@@ -365,14 +369,15 @@ public class AssemblyNode : ASTNode, IKeywordNode
         var pathNode = GetNode<ConstStringValueNode>(0);
         var asNode = GetNode<AsNode>(1);
 
-        var assembly = ModuleLoader.LoadAssembly(pathNode.Value);
+        Value = ModuleLoader.LoadAssembly(pathNode.Value);
 
-        var name = new AssemblyConst(asNode.StringName, assembly);
-        Ugh.RegisterName(name);
+        var name = new AssemblyConst(asNode.StringName, Value);
+        Rnm.RegisterName(name);
     }
+
 }
 
-public class AsNode : ASTNode, INaming, IKeywordNode // TODO: Add converting types
+public class AsNode : ASTNode, INamingNode, IKeywordNode // TODO: Add converting types
 {
     public string StringName 
     {
@@ -388,22 +393,23 @@ public class AsNode : ASTNode, INaming, IKeywordNode // TODO: Add converting typ
     }
 }
 
-public class FromNode : AssignedNode<NameNode>, INaming, IKeywordNode
+public class FromNode : AssignedNode<NameNode>, INamingNode, IKeywordNode
 {
     public AssemblyConst ConstAssembly => Assigned.Name.GetAs<AssemblyConst>(); 
 }
 
 
-public class DefineNode : ASTNode, INaming, IKeywordNode, IReturnAny, IOperable
+public class DefineNode : ASTNode, INamingNode, IKeywordNode, IReturnAny, IOperableNode
 {
     private string name = string.Empty;
     private bool isdef;
 
-    public object AnyValue => Ugh.IsDefined(name);
+    public object AnyValue => Rnm.IsDefined(name);
 
     public override void Load()
     {
         base.Load();
+        
         switch (GetNodeAt(0))
         {
             case NameNode nn:
@@ -413,7 +419,8 @@ public class DefineNode : ASTNode, INaming, IKeywordNode, IReturnAny, IOperable
                 name = exn.GetNode<NameNode>(0).Token.StringValue;
                 isdef = true;
                 break;
-            default: throw new InvalidSpellingException(this);
+            default: 
+                throw new InvalidSpellingException(this);
         }
     }
 
@@ -422,10 +429,27 @@ public class DefineNode : ASTNode, INaming, IKeywordNode, IReturnAny, IOperable
         base.Execute();
 
         if(!isdef) 
-            Ugh.RegisterName(new Constant(name, GetNodeOrDefalut<IReturnAny>(1)?.AnyValue ?? null!));
+            Rnm.RegisterName(new Constant(name, GetNodeOrDefalut<IReturnAny>(1)?.AnyValue ?? null!));
     }
 }
-public class ObjectNode : ASTNode, INaming, IKeywordNode
-{
 
+public class ObjectNode : ASTNode, IKeywordNode, IReturnAny
+{
+    public object AnyValue => nmsc;
+
+    private readonly Namespace nmsc = new();
+    
+    public override void Load()
+    {
+        base.Load();
+        var blockNode = GetNode<BlockNode>(0);
+        var properties = blockNode.GetNodes<NameNode>();
+
+        foreach (var property in properties)
+        {
+            var variable = new Variable(property.Token.StringValue, property.GetNode<IReturnAny>(0).AnyValue);
+            nmsc.Add(variable.Key, variable);
+        }
+        
+    }
 }

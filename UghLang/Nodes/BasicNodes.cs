@@ -1,10 +1,9 @@
 ﻿namespace UghLang.Nodes;
 
 public class EndOfFileNode : ASTNode;
-public class OperatorNode : ASTNode, IInstantQuit
+public class OperatorNode : ASTNode, INextQuit
 {
     public required Operator Operator { get; init; }
-    public IReturnAny GetLeft() => GetBrother<IReturnAny>(-1) ?? throw new InvalidSpellingException(this,": cannot find left side of operation");
     public IReturnAny GetRight() => GetNodeOrDefalut<IReturnAny>(0) ?? throw new InvalidSpellingException(this,": cannot find right side of operation");
 }
 
@@ -19,7 +18,7 @@ public class BlockNode : ASTNode, IReturn<object[]>
 
     public void FreeLocalNames()
     {
-        LocalNames.ForEach(Ugh.FreeName);
+        LocalNames.ForEach(Rnm.FreeName);
         LocalNames.Clear();
     }
 }
@@ -27,7 +26,7 @@ public class BlockNode : ASTNode, IReturn<object[]>
 public class ExpressionNode : ASTNode, IReturn<object?>
 {
     public object? Value { get; set; } = null;
-    public object AnyValue => Value is not null? Value : expressionTree.Express();
+    public object AnyValue => Value ?? expressionTree.Express();
 
     private ExpressionTree expressionTree;
     public IReturnAny[] GetArguments() => GetNodes<IReturnAny>().ToArray() ?? throw new ValidOperationException("null arguments in expression");
@@ -64,29 +63,32 @@ public class IndexNode : AssignedNode<IReturnAny>, IReturnAny
     public static object[] NodesToArray(IReadOnlyList<ASTNode> nodes) => nodes.OfType<IReturnAny>().Select(a => a.AnyValue).ToArray();
 }
 
-public class NameNode : ASTNode, IReturnAny
+public class NameNode : ASTNode, IReturnAny // TODO: ADD REQUESTS
 {
     public required Token Token { get; init; }
     public object AnyValue => GetValue();
-    public Name Name => name ?? Ugh.GetName(Token.StringValue);
+    public Name Name => name ?? Rnm.GetName(Token.StringValue);
 
     private Name? name;
     private IReturnAny? any;
 
     private OperatorNode? oprNode;
     private IndexNode? indexNode;
+    private RefrenceNode? refrenceNode;
     private FunctionCallInfo? callInfo;
 
     public override void Load()
     {
         base.Load();
 
-        if (Parent is INaming) return;
+        if (Parent is INamingNode) 
+            return;
 
         if (TryGetNode<OperatorNode>(0, out oprNode) || (TryGetNode<IndexNode>(0, out indexNode) && TryGetNode<OperatorNode>(1, out oprNode))) 
             any = oprNode.GetRight();
         else if (TryGetNode(0, out ExpressionNode exprsNode))
-            callInfo = new(exprsNode.GetArguments());
+            callInfo = new FunctionCallInfo(exprsNode.GetArguments());
+        else TryGetNode(0, out refrenceNode);
     }
 
     public override void Execute()
@@ -100,10 +102,14 @@ public class NameNode : ASTNode, IReturnAny
             return;
         }
 
+        if (refrenceNode is not null)
+            name = refrenceNode.ReflectName(this);
+        
         if (any is null || oprNode is null) // Get
             return;
 
-        Ugh.TryGetName(Token.StringValue, out name);
+        if(name is null)
+            Rnm.TryGetName(Token.StringValue, out name);
 
         if (name is not null) // Set
         {
@@ -118,7 +124,7 @@ public class NameNode : ASTNode, IReturnAny
         {
             var v = new Variable(Token.StringValue, any.AnyValue);
             name = v;
-            Ugh.RegisterName(v);
+            Rnm.RegisterName(v);
 
             if (Parent is BlockNode blockNode) // Add to local names if parent is block node
                 blockNode.LocalNames.Add(v);
@@ -132,7 +138,7 @@ public class NameNode : ASTNode, IReturnAny
     public object GetValue() => indexNode is null ? Name.AnyValue : Name.GetAny<IList<object>>()![indexNode.Index];
 }
 
-public class OperableNameNode : NameNode, IOperable;
+public class OperableNodeNameNode : NameNode, IOperableNode;
 
 public class PreloadNode : ASTNode
 {
@@ -147,7 +153,24 @@ public class PreloadNode : ASTNode
     public override void Execute() { }
 }
 
-public class NotNode : AssignedNode<IReturnAny>, IReturnAny, IOperable, IInstantQuit
+public class NotNode : AssignedNode<IReturnAny>, IReturnAny, IOperableNode, INextQuit
 {
-    public object AnyValue => Assigned.GetAny<bool>();
+    public object AnyValue => !Assigned.GetAny<bool>();
+}
+
+public class RefrenceNode : ASTNode, IOperableNode
+{
+    private NameNode? nameNode;
+    public override void Load()
+    {
+        base.Load();
+        nameNode = GetNode<NameNode>(0);
+    }
+
+    public Name ReflectName(NameNode parent)
+    {
+        var orginal = Rnm.GetName(parent.Token.StringValue);
+        var nameSpace = orginal.Value as Namespace ?? throw new InvalidOperationException($"{orginal.Key} is not an object.");
+        return nameSpace.GetName(nameNode!.Token.StringValue);
+    } 
 }

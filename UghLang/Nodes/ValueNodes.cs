@@ -13,7 +13,7 @@ public interface IReturnAny
     public object AnyValue { get; }
 }
 
-public interface IReturn<T> : IReturnAny
+public interface IReturn<out T> : IReturnAny
 {
     /// <summary>
     /// Returns value of the object
@@ -33,6 +33,7 @@ public class ConstValueNode<T>(T defalutValue) : ASTNode, IConstantValue, IRetur
     public object GetConstantValue() => AnyValue;
 }
 
+public class ConstCharValueNode() : ConstValueNode<char>('\0');
 public class ConstStringValueNode() : ConstValueNode<string>(string.Empty);
 public class ConstIntValueNode() : ConstValueNode<int>(0);
 public class ConstBoolValueNode() : ConstValueNode<bool>(false);

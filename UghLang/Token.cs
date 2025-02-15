@@ -28,7 +28,7 @@ public enum TokenType : byte
 
     // other
     Comma,
-    Colon,
+    Colons,
     Preload,
     Not,
     Pi,

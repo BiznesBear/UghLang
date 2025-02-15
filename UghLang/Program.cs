@@ -1,7 +1,6 @@
 ﻿using UghLang;
 
 const string version = "v0.1dev";
-const string ughlang = "UghLang " + version;
 const string helpInfo = "Welcome to UghLang!\n Arguments list: \n--debug; --version; \n--help; --info; \n--nowarns; --noload";
 
 if (args.Length < 1) 
@@ -10,7 +9,7 @@ if (args.Length < 1)
     return;
 }
 
-bool noload = false;
+bool onlyload = false;
 string path = string.Empty;
 
 for (var i = 0; i < args.Length; i++)
@@ -22,7 +21,7 @@ for (var i = 0; i < args.Length; i++)
         switch (arg)
         {
             case "--version":
-                Console.WriteLine(ughlang);
+                Console.WriteLine(version);
                 break;
             case "--info" or "--help":
                 Console.WriteLine(helpInfo);
@@ -33,8 +32,8 @@ for (var i = 0; i < args.Length; i++)
             case "--nowarns":
                 Debug.EnabledWarrings = false;
                 break;
-            case "--noload":
-                noload = true;
+            case "--onlyload":
+                onlyload = true;
                 break;
             default: throw new UghException($"Cannot find argument '{arg}'");
         }
@@ -44,21 +43,16 @@ for (var i = 0; i < args.Length; i++)
 
 if (path == string.Empty) return;
 
-var file = File.ReadAllText(path);
+var text = File.ReadAllText(path);
 
-var ugh = new Ugh();
-var parser = new Parser(ugh, false, noload);
+var ugh = new Rnm();
+var parser = new Parser(ugh, false, onlyload);
 
-switch (Path.GetExtension(path))
-{
-    case ".ugh" or ".txt":
-        Debug.Print("Load:");
-        _ = new Lexer(file, parser);
-        Debug.PrintTree(parser.AST, path);
+Debug.Print("Load:");
+_ = new Lexer(text, parser);
 
-        Debug.Print("Execute: ");
-        if (!noload) 
-            parser.Execute();
-        break;
-    default: throw new UghException("Wrong file format: " + path);
-}
+Debug.PrintTree(parser.AST, path);
+
+Debug.Print("Execute: ");
+if (!onlyload) 
+    parser.Execute();

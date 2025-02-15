@@ -3,25 +3,26 @@ namespace UghLang;
 
 public class Parser : IDisposable
 {
-    public Ugh Ugh { get; }
+    public Rnm Rnm { get; }
     public AST AST { get; }
     public bool Inserted { get; }
-    public bool NoLoad { get; }
+    public bool OnlyLoad { get; }
 
     private readonly Stack<ASTNode> masterBranches = new();
     private ASTNode currentNode;
     
 
-    public Parser(Ugh ugh, bool inserted, bool noload)
+    public Parser(Rnm rnm, bool inserted, bool onlyload)
     {
-        AST = new(this);
-        currentNode = AST;
-        Ugh = ugh;
+        AST = new AST(this);
+        Rnm = rnm;
         Inserted = inserted;
-        NoLoad = noload;
+        OnlyLoad = onlyload;
+
+        currentNode = AST;
     }
 
-    public Parser(Ugh ugh, bool inserted, bool noload, IEnumerable<Token> tokens) : this(ugh, inserted, noload) => AddTokens(tokens);
+    public Parser(Rnm rnm, bool inserted, bool onlyload, IEnumerable<Token> tokens) : this(rnm, inserted, onlyload) => AddTokens(tokens);
 
     public void AddTokens(IEnumerable<Token> tokens)
     {
@@ -31,35 +32,35 @@ public class Parser : IDisposable
 
     public void AddToken(Token token)
     {
-        bool instaQuit = currentNode is IInstantQuit;
+        bool nextQuit = currentNode is INextQuit;
 
         switch (token.Type)
         {
             case TokenType.Name:
-                if(token.StringValue.TryGetKeyword(out Keyword kw))
+                if(token.StringValue.TryGetKeyword(out var kw))
                 {
                     EnterNode(kw.GetNode());
                     break;
                 }
 
-                ASTNode nameNode = IsMasterBranch() || currentNode is ITag ? new NameNode() { Token = token } : new OperableNameNode() { Token = token };
-                if (currentNode is INaming) CreateNode(nameNode);
+                ASTNode nameNode = IsMasterBranch() || currentNode is ITag ? new NameNode() { Token = token } : new OperableNodeNameNode() { Token = token };
+                if (currentNode is INamingNode) CreateNode(nameNode);
                 else EnterNode(nameNode);
 
                 break;
-            case TokenType.OpenExpression or TokenType.Colon:
+            case TokenType.OpenExpression:
                 EnterNode(new ExpressionNode()); 
                 break;
             case TokenType.CloseExpression:
-                QuitNode<IOperable>();
+                QuitAll<IOperableNode>();
                 QuitNode<ExpressionNode>();
                 break;
             case TokenType.Operator:
-                QuitNode<IOperable>();
+                QuitAll<IOperableNode>();
                 EnterNode(new OperatorNode() { Operator = token.Operator });
                 break;
             case TokenType.OpenBlock:
-                QuitNode<IOperable>();
+                QuitAll<IOperableNode>();
                 EnterNode(new BlockNode());
                 CreateMasterBranch();
                 break;
@@ -71,8 +72,11 @@ public class Parser : IDisposable
                 EnterNode(new IndexNode());
                 break;
             case TokenType.CloseIndex:
-                QuitNode<IOperable>();
+                QuitAll<IOperableNode>();
                 QuitNode<IndexNode>();
+                break;
+            case TokenType.Colons:
+                EnterNode(new RefrenceNode());
                 break;
             case TokenType.StringValue:
                 CreateNode(new ConstStringValueNode() { Value = token.StringValue });
@@ -99,7 +103,7 @@ public class Parser : IDisposable
                 BackToMasterBranch();
                 break;
             case TokenType.Comma: 
-                QuitNode<IOperable>();
+                QuitAll<IOperableNode>();
                 QuitNode<NameNode>();
                 break;     
             case TokenType.Preload:
@@ -120,7 +124,8 @@ public class Parser : IDisposable
             default: throw new UghException($"Unhandled token type: {token.Type}");
         }
 
-        if (instaQuit) QuitNode<IInstantQuit>();
+        if (nextQuit) 
+            QuitNode<INextQuit>();
     }
 
 
@@ -161,6 +166,11 @@ public class Parser : IDisposable
         return false;
     }
 
+    private void QuitAll<T>()
+    {
+        while (QuitNode<T>());
+    }
+    
 
     /// <summary>
     /// Adds currentNode to masterBranches

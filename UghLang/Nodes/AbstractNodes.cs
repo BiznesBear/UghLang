@@ -33,3 +33,15 @@ public abstract class AssignedIReturnAnyAndBlockNode(int anyIndex = 0, int tagIn
         block = GetNodeOrDefalut<BlockNode>(tagIndex);
     }
 }
+
+public abstract class ParsedExpressionNode : ASTNode
+{
+    protected ExpressionTree Expression;
+    public override void Load()
+    {
+        base.Load();
+        Expression = new ExpressionTree(this);
+    }
+}
+
+

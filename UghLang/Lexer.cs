@@ -3,7 +3,8 @@
 public class Lexer : IDisposable
 {
     public Parser? Parser { get; }
-    public Lexer(string input, Parser? parser = null) { Parser = parser; Lex(input); AddPart(TokenType.EndOfFile); }
+    public Lexer(string input, Parser? parser = null) { Parser = parser; LexText(input); EndLexing(); }
+    
     public IReadOnlyList<Token> Tokens => tokens;
 
     private readonly List<Token> tokens = new();
@@ -11,7 +12,7 @@ public class Lexer : IDisposable
     private bool insideString, insideComment;
     private string currentPart = string.Empty;
 
-    private void Lex(string input)
+    public void LexText(string input)
     {
         for (int i = 0; i < input.Length; i++)
         {
@@ -61,24 +62,6 @@ public class Lexer : IDisposable
                 if (IsPartEmpty()) continue;
                 AddPart(TokenType.Name);
             }
-            
-            else if (c == ';') AddSingle(TokenType.Separator);
-
-            else if (c == '(') AddSingle(TokenType.OpenExpression);
-            else if (c == ')') AddSingle(TokenType.CloseExpression);
-
-            else if (c == '{') AddSingle(TokenType.OpenBlock);
-            else if (c == '}') AddSingle(TokenType.CloseBlock);
-
-            else if (c == '[') AddSingle(TokenType.OpenIndex);
-            else if (c == ']') AddSingle(TokenType.CloseIndex);
-            
-            else if (c == ',') AddSingle(TokenType.Comma);
-            else if (c == ':') AddSingle(TokenType.Colon);
-            else if (c == '$') AddSingle(TokenType.Preload);
-            
-            else if (c == 'π') AddSingle(TokenType.Pi);
-
             else if (char.IsDigit(c) || c == '-' && char.IsDigit(CheckNext()))
             {
                 AddChar(c);
@@ -136,9 +119,54 @@ public class Lexer : IDisposable
                 else if(currentPart == "!") AddPart(TokenType.Not);
                 else AddPart(TokenType.Operator);
             }
-            else AddChar(c);
-
+            else switch (c)
+            {
+                case ';':
+                    AddSingle(TokenType.Separator);
+                    break;
+                case '(':
+                    AddSingle(TokenType.OpenExpression);
+                    break;
+                case ')':
+                    AddSingle(TokenType.CloseExpression);
+                    break;
+                case '{':
+                    AddSingle(TokenType.OpenBlock);
+                    break;
+                case '}':
+                    AddSingle(TokenType.CloseBlock);
+                    break;
+                case '[':
+                    AddSingle(TokenType.OpenIndex);
+                    break;
+                case ']':
+                    AddSingle(TokenType.CloseIndex);
+                    break;
+                case ',':
+                    AddSingle(TokenType.Comma);
+                    break;
+                case ':':
+                    if (CheckNext() == ':')
+                    {
+                        AddChar(':');    
+                        AddPart(TokenType.Colons);
+                        Skip();
+                    }
+                    else AddSingle(TokenType.OpenExpression); // open expression
+                    break;
+                case '$':
+                    AddSingle(TokenType.Preload);
+                    break;
+                case 'π':
+                    AddSingle(TokenType.Pi);
+                    break;
+                default: 
+                    AddChar(c);
+                    break;
+            }
             
+
+
             void Skip(int skips = 1)
             {
                 if (i + skips < input.Length) i += skips;
@@ -165,9 +193,12 @@ public class Lexer : IDisposable
                 AddPart(type);
             }
         }
-        if(!IsPartEmpty()) AddPart(TokenType.Name);
+        
+        if(!IsPartEmpty()) 
+            AddPart(TokenType.Name);
     }
     
+    public void EndLexing() => AddPart(TokenType.EndOfFile);
     
     private void StartNew()
     {
@@ -177,11 +208,6 @@ public class Lexer : IDisposable
 
     private bool IsPartEmpty() => currentPart == string.Empty;
     private void AddChar(char c) => currentPart += c;
-
-    /// <summary>
-    /// Saves and resets current part.
-    /// </summary>
-    /// <param name="type">Type of last token to seal</param>
     private void AddPart(TokenType type)
     {
         // SPECIAL VALUE NODES
@@ -192,7 +218,7 @@ public class Lexer : IDisposable
             _ => type
         };
         
-        lastToken = new(currentPart, type);
+        lastToken = new Token(currentPart, type);
         currentPart = string.Empty;
         tokens.Add(lastToken);
         Parser?.AddToken(lastToken);

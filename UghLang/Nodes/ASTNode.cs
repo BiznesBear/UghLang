@@ -5,7 +5,7 @@ public abstract class ASTNode
 {
     public const ASTNode NULL = default;
     public event ASTNodeEvent? NodeAdded;
-    public Ugh Ugh => Parser.Ugh;
+    public Rnm Rnm => Parser.Rnm;
 
     #region Properties
 
@@ -152,14 +152,14 @@ public abstract class ASTNode
     /// <summary>
     /// Force node to execute
     /// </summary>
-    public virtual void ForceExecute()
+    public void ForceExecute()
     {
         var startingState = Executable;
         Executable = true;
         Execute();
         Executable = startingState;
     }
-
+    
     public override string ToString() => $"{GetType().Name}({Position})";
 }
 
@@ -176,7 +176,7 @@ public class AST : ASTNode
 
     private void LoadNode(ASTNode node)
     {
-        if (Parser.NoLoad) return;
+        if (Parser.OnlyLoad) return;
 
         if (previous is not null)
         {
@@ -197,12 +197,12 @@ public class UndefinedNode : ASTNode
 /// <summary>
 /// Operators quits from IOperable nodes 
 /// </summary>
-public interface IOperable;
+public interface IOperableNode;
 
 /// <summary>
 /// NameNode children will not try to get name. Parser will create NameNode instead of entering them.
 /// </summary>
-public interface INaming;
+public interface INamingNode;
 
 /// <summary>
 /// Tag node is recognized by parser as master branch
@@ -212,4 +212,4 @@ public interface ITag;
 /// <summary>
 /// Parser quits this node after adding next node
 /// </summary>
-public interface IInstantQuit;
+public interface INextQuit;

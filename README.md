@@ -1,5 +1,6 @@
 # 🤡 UghLang
 Written in C# interpreted programing language created for educational purpose and to show the power of simplicity.
+This language contains almost no error handling and has odd parsing so please don't take this project seriously.
 
 # ⚙️ Building
 Make sure you have .net 9 installed.
@@ -23,27 +24,4 @@ ughlang master.ugh
 - `--version` (prints version)
 - `--info` or `--help` (displays info about the language)
 - `--nowarns` (disables warnings)
-- `--noload` (prevents AST from being loaded and executed)
-
-# 📄 Keywords list
-- print
-- input
-- free
-- true
-- false
-- fun
-- break
-- return 
-- if
-- else
-- elif
-- repeat
-- while
-- foreach
-- insert
-- local
-- assembly
-- as
-- from
-- null
-- def
+- `--onlyload` (prevents AST from being loaded and executed)

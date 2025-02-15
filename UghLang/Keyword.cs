@@ -27,7 +27,8 @@ public enum Keyword : byte
     
     As,
     From,
-    Def
+    Def,
+    Object
 }
 
 public static class KeywordExtensions
@@ -60,6 +61,7 @@ public static class KeywordExtensions
         { "from", Keyword.From },
 
         { "def", Keyword.Def },
+        { "object", Keyword.Object },
     };
 
     public static bool TryGetKeyword(this string word, out Keyword keyword) => Keywords.TryGetValue(word, out keyword);
@@ -94,6 +96,7 @@ public static class KeywordExtensions
             Keyword.From => new FromNode(),
 
             Keyword.Def => new DefineNode(),
+            Keyword.Object => new ObjectNode(),
 
             _ => new UndefinedNode(),
         };

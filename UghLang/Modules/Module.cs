@@ -21,7 +21,7 @@ public static class ModuleLoader
 
                 Debug.Info($"Loaded {methods.Count} methods and {fields.Count} constants from {moduleName}");
 
-                return new(methods, fields);
+                return new ModuleInfo(methods, fields);
             }
         throw new UghException("Cannot find module " +  moduleName);        
     }
