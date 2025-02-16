@@ -3,7 +3,6 @@
 public delegate void AstNodeEvent(ASTNode node);
 public abstract class ASTNode
 {
-    public const ASTNode Null = default!;
     public event AstNodeEvent? NodeAdded;
     public Rnm Rnm => Parser.Rnm;
 
@@ -15,7 +14,7 @@ public abstract class ASTNode
     public IReadOnlyList<ASTNode> Nodes => nodes;
 
     private readonly List<ASTNode> nodes = new();
-
+    
 
     private Parser? parser;
     public Parser Parser
@@ -44,8 +43,6 @@ public abstract class ASTNode
 
 
     #region GettingNodes
-
-    public bool HasEmptyBranch() => Nodes.Count < 1;
     
     public T? GetBrother<T>(int skips = 1) 
     {

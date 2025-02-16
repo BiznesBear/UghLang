@@ -1,4 +1,11 @@
-﻿
+﻿coll = { 0, 10 , 20, 22 };
+
+foreach item, coll {
+    print item;
+}
+
+
+
 # TODO: 
 - totalnie usunąć listy nodów z nodów, bo tworzy to za duży stacktrace
 zamiast tego przypisywać tylko parenta a listę wszystkich przechowywać w AST
