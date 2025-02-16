@@ -84,11 +84,14 @@ public class NameNode : ASTNode, IReturnAny // TODO: ADD REQUESTS
         if (Parent is INamingNode) 
             return;
 
-        if (TryGetNode<OperatorNode>(0, out oprNode) || (TryGetNode<IndexNode>(0, out indexNode) && TryGetNode<OperatorNode>(1, out oprNode))) 
+        oprNode = FindNode<OperatorNode>();
+        indexNode = FindNode<IndexNode>();
+        refrenceNode = FindNode<RefrenceNode>();
+        
+        if (oprNode is not null) 
             any = oprNode.GetRight();
         else if (TryGetNode(0, out ExpressionNode exprsNode))
             callInfo = new FunctionCallInfo(exprsNode.GetArguments());
-        else TryGetNode(0, out refrenceNode);
     }
 
     public override void Execute()
@@ -101,16 +104,15 @@ public class NameNode : ASTNode, IReturnAny // TODO: ADD REQUESTS
             callInfo.Invoke();
             return;
         }
-
-        if (refrenceNode is not null)
-            name = refrenceNode.ReflectName(this);
         
         if (any is null || oprNode is null) // Get
             return;
-
+        
         if(name is null)
             Rnm.TryGetName(Token.StringValue, out name);
-
+        if (refrenceNode is not null)
+            name = refrenceNode.ReflectName(this);
+        
         if (name is not null) // Set
         {
             // Operate on array item
@@ -130,12 +132,8 @@ public class NameNode : ASTNode, IReturnAny // TODO: ADD REQUESTS
                 blockNode.LocalNames.Add(v);
         }
     }
-
-    /// <summary>
-    /// Gets real value of the name
-    /// </summary>
-    /// <returns>Name value</returns>
-    public object GetValue() => indexNode is null ? Name.AnyValue : Name.GetAny<IList<object>>()![indexNode.Index];
+    
+    private object GetValue() => indexNode is null ? Name.AnyValue : Name.GetAny<IList<object>>()![indexNode.Index];
 }
 
 public class OperableNodeNameNode : NameNode, IOperableNode;

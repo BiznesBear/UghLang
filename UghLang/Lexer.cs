@@ -148,6 +148,7 @@ public class Lexer : IDisposable
                 case ':':
                     if (CheckNext() == ':')
                     {
+                        StartNew();
                         AddChar(':');    
                         AddPart(TokenType.Colons);
                         Skip();

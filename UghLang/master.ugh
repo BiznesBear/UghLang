@@ -1,6 +1,8 @@
 ﻿# TODO: 
 - zreworkować clienta ugh
-- objekty i listy zamiast array i przesunąc tą funkcjonalność do modułu
+- listy zamiast array i przesunąc tą funkcjonalność do modułu
 - break and return and functions rework
-- wraps ?
+- cleanup
+- update extension
+- release 0.2dev
 #
