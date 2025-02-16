@@ -1,4 +1,7 @@
-﻿# TODO: 
+﻿
+# TODO: 
+- totalnie usunąć listy nodów z nodów, bo tworzy to za duży stacktrace
+zamiast tego przypisywać tylko parenta a listę wszystkich przechowywać w AST
 - zreworkować clienta ugh
 - listy zamiast array i przesunąc tą funkcjonalność do modułu
 - break and return and functions rework

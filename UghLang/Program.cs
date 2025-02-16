@@ -9,7 +9,7 @@ if (args.Length < 1)
     return;
 }
 
-bool onlyload = false;
+bool noexe = false;
 string path = string.Empty;
 
 for (var i = 0; i < args.Length; i++)
@@ -32,8 +32,8 @@ for (var i = 0; i < args.Length; i++)
             case "--nowarns":
                 Debug.EnabledWarrings = false;
                 break;
-            case "--onlyload":
-                onlyload = true;
+            case "--noexe":
+                noexe = true;
                 break;
             default: throw new UghException($"Cannot find argument '{arg}'");
         }
@@ -41,18 +41,19 @@ for (var i = 0; i < args.Length; i++)
     else path = arg;
 }
 
-if (path == string.Empty) return;
+if (path == string.Empty) 
+    return;
 
 var text = File.ReadAllText(path);
 
 var ugh = new Rnm();
-var parser = new Parser(ugh, false, onlyload);
+var parser = new Parser(ugh, false, noexe);
 
 Debug.Print("Load:");
 _ = new Lexer(text, parser);
 
 Debug.PrintTree(parser.AST, path);
-
 Debug.Print("Execute: ");
-if (!onlyload) 
+
+if (!noexe) 
     parser.Execute();

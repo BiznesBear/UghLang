@@ -32,7 +32,7 @@ public class Parser : IDisposable
 
     public void AddToken(Token token)
     {
-        bool nextQuit = currentNode is INextQuit;
+        bool nextQuit = currentNode is INextQuitNode;
 
         switch (token.Type)
         {
@@ -43,7 +43,7 @@ public class Parser : IDisposable
                     break;
                 }
 
-                ASTNode nameNode = IsMasterBranch() || currentNode is ITag ? new NameNode() { Token = token } : new OperableNodeNameNode() { Token = token };
+                ASTNode nameNode = IsMasterBranch() || currentNode is ITagNode ? new NameNode { Token = token } : new OperableNodeNameNode { Token = token };
                 if (currentNode is INamingNode) CreateNode(nameNode);
                 else EnterNode(nameNode);
 
@@ -76,7 +76,7 @@ public class Parser : IDisposable
                 QuitNode<IndexNode>();
                 break;
             case TokenType.Colons:
-                EnterNode(new RefrenceNode());
+                EnterNode(new ReferenceNode());
                 break;
             case TokenType.StringValue:
                 CreateNode(new ConstStringValueNode() { Value = token.StringValue });
@@ -125,7 +125,7 @@ public class Parser : IDisposable
         }
 
         if (nextQuit) 
-            QuitNode<INextQuit>();
+            QuitNode<INextQuitNode>();
     }
 
 

@@ -171,7 +171,7 @@ public class RepeatNode() : ASTNode, IKeywordNode
         base.Load();
         minNode = GetNode<IReturnAny>(0);
         maxNode = GetNode<IReturnAny>(1);
-        nameNode = GetNodeOrDefalut<NameNode>(2);
+        nameNode = GetNodeOrDefault<NameNode>(2);
         blockNode = GetNode<BlockNode>(nameNode is null? 2 : 3);
     }
 
@@ -344,7 +344,7 @@ public class InsertNode : ASTNode, IKeywordNode, INamingNode
 /// <summary>
 /// Prevents children from being inserted
 /// /// </summary>
-public class LocalNode : ASTNode, ITag, IKeywordNode
+public class LocalNode : ASTNode, ITagNode, IKeywordNode
 {
     public override void Load()
     {
@@ -429,27 +429,31 @@ public class DefineNode : ASTNode, INamingNode, IKeywordNode, IReturnAny, IOpera
         base.Execute();
 
         if(!isdef) 
-            Rnm.RegisterName(new Constant(name, GetNodeOrDefalut<IReturnAny>(1)?.AnyValue ?? null!));
+            Rnm.RegisterName(new Constant(name, GetNodeOrDefault<IReturnAny>(1)?.AnyValue ?? null!));
     }
 }
 
 public class ObjectNode : ASTNode, IKeywordNode, IReturnAny
 {
-    public object AnyValue => nmsc;
+    public object AnyValue => names;
 
-    private readonly Namespace nmsc = new();
+    private readonly Namespace names = new();
+    private IEnumerable<NameNode> properties = [];
     
     public override void Load()
     {
         base.Load();
         var blockNode = GetNode<BlockNode>(0);
-        var properties = blockNode.GetNodes<NameNode>();
+        properties = blockNode.GetNodes<NameNode>();
+    }
 
+    public override void Execute()
+    {
+        base.Execute();
         foreach (var property in properties)
         {
             var variable = new Variable(property.Token.StringValue, property.GetNode<IReturnAny>(0).AnyValue);
-            nmsc.Add(variable.Key, variable);
+            names.Add(variable.Key, variable);
         }
-        
     }
 }

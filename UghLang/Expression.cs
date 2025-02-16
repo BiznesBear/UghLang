@@ -12,7 +12,7 @@ public readonly struct ExpressionTree // TODO: add truncation for constant value
         var operators = new Stack<OperatorNode>(); 
 
         var oprNodes = node.GetNodes<OperatorNode>();
-        var first = node.GetNodeOrDefalut<IReturnAny>(0);
+        var first = node.GetNodeOrDefault<IReturnAny>(0);
 
         if(first is null) return;
         if (!oprNodes.Any())

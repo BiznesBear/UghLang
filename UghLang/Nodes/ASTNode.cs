@@ -1,10 +1,10 @@
 ﻿namespace UghLang.Nodes;
 
-public delegate void ASTNodeEvent(ASTNode node);
+public delegate void AstNodeEvent(ASTNode node);
 public abstract class ASTNode
 {
-    public const ASTNode NULL = default;
-    public event ASTNodeEvent? NodeAdded;
+    public const ASTNode Null = default!;
+    public event AstNodeEvent? NodeAdded;
     public Rnm Rnm => Parser.Rnm;
 
     #region Properties
@@ -68,12 +68,12 @@ public abstract class ASTNode
     public ASTNode? GetNodeAt(int index) 
         => index < Nodes.Count? Nodes[index] : default;
 
-    public T? GetNodeOrDefalut<T>(int index) 
+    public T? GetNodeOrDefault<T>(int index) 
         => index < Nodes.Count && Nodes[index] is T t ? t : default;
 
     public T GetNode<T>(int index)
     {
-        var node = GetNodeOrDefalut<T>(index);
+        var node = GetNodeOrDefault<T>(index);
         if(node is not null)
             return node;
         throw new ExpectedException(typeof(T).ToString(), this);
@@ -81,7 +81,7 @@ public abstract class ASTNode
 
     public bool TryGetNode<T>(int index, out T node) 
     {
-        var n = GetNodeOrDefalut<T>(index);
+        var n = GetNodeOrDefault<T>(index);
 
         if (n is null)
         {
@@ -142,10 +142,10 @@ public abstract class ASTNode
     /// </summary>
     public virtual void Execute()
     {
-        for (int i = 0; i < Nodes.Count; i++)
+        foreach (var t in Nodes)
             if (Executable)
-                if (Nodes[i].Executable)
-                    Nodes[i].Execute();
+                if (t.Executable)
+                    t.Execute();
                 else return;
     }
 
@@ -207,9 +207,9 @@ public interface INamingNode;
 /// <summary>
 /// Tag node is recognized by parser as master branch
 /// </summary>
-public interface ITag;
+public interface ITagNode;
 
 /// <summary>
 /// Parser quits this node after adding next node
 /// </summary>
-public interface INextQuit;
+public interface INextQuitNode;

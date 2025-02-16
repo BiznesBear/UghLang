@@ -24,4 +24,4 @@ ughlang master.ugh
 - `--version` (prints version)
 - `--info` or `--help` (displays info about the language)
 - `--nowarns` (disables warnings)
-- `--onlyload` (prevents AST from being loaded and executed)
+- `--noexe` (prevents AST from being loaded and executed)

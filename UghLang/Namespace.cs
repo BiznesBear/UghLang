@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using UghLang.Nodes;
+
 namespace UghLang;
 
 public class Namespace : Dictionary<string, Name>
@@ -11,6 +12,7 @@ public class Namespace : Dictionary<string, Name>
     
     public void RegisterName(Name name)
     {
+        Debug.Print($"Declared + {name.Key}");
         try { Add(name.Key, name); }
         catch (Exception ex) { Debug.Ugh(ex); }
     }

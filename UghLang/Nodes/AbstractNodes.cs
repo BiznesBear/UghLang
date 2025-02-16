@@ -13,7 +13,7 @@ public abstract class AssignedNode<T>(int index = 0) : ASTNode
     public override void Load()
     {
         base.Load();
-        assigned = GetNodeOrDefalut<T>(index);
+        assigned = GetNodeOrDefault<T>(index);
     }
 }
 
@@ -30,7 +30,7 @@ public abstract class AssignedIReturnAnyAndBlockNode(int anyIndex = 0, int tagIn
     public override void Load()
     {
         base.Load();
-        block = GetNodeOrDefalut<BlockNode>(tagIndex);
+        block = GetNodeOrDefault<BlockNode>(tagIndex);
     }
 }
 
