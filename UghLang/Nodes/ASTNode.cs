@@ -5,17 +5,19 @@ public abstract class ASTNode
 {
     public event AstNodeEvent? NodeAdded;
     public Rnm Rnm => Parser.Rnm;
+    public AST AST => Parser.AST;
 
     #region Properties
 
     public int Position { get; set; } 
     public bool Executable { get; set; } = true;
-
+    
     public IReadOnlyList<ASTNode> Nodes => nodes;
-
     private readonly List<ASTNode> nodes = new();
     
-
+    private Memory<ASTNode> nodesMemory;
+    
+    
     private Parser? parser;
     public Parser Parser
     {

@@ -46,7 +46,7 @@ public class ModuleFunction(string name, Rnm rnm, MethodInfo method) : BaseFunct
 
 public class FunctionCallInfo(IReturnAny[] args)
 {
-    public IReturnAny[] Arguments { get; set; } = args;
+    public IReturnAny[] Arguments { get; } = args;
     public BaseFunction? Function { get; set; }
     public void Invoke() => Function?.Invoke(Arguments);
 }

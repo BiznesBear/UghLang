@@ -1,7 +1,7 @@
 ﻿using UghLang;
 
-const string version = "v0.1dev";
-const string helpInfo = "Welcome to UghLang!\n Arguments list: \n--debug; --version; \n--help; --info; \n--nowarns; --noload";
+const string version = "UghLang 0.1dev";
+const string helpInfo = "Welcome to Ugh!\n Arguments list: \n--debug; --version; \n--help; --info; \n--nowarns; --noload";
 
 if (args.Length < 1) 
 {
@@ -56,5 +56,4 @@ Debug.PrintTree(parser.AST, path);
 Debug.Print("Execute: ");
 
 if (!noexe) 
-    parser.Execute();
-    
+    parser.Execute();    
